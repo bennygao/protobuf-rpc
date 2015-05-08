@@ -1,0 +1,101 @@
+syntax = "proto2";
+
+package yingshibao;
+
+option java_multiple_files = true;
+option java_package = "com.yingshibao.app.idl";
+
+// 用户管理相关服务
+service UserManager {
+	// 注册新用户
+	rpc registerNewUser(UserInfo) returns (RegisterResult) {}
+}
+
+// 服务器端调用客户端的服务
+service Push {
+	// 通知弹幕消息
+	rpc pushBarrage(Barrage) returns (None) {}
+}
+
+
+// 用户注册请求信息
+message UserInfo {
+	// 昵称
+	required string nickName = 1; 
+	
+	// 学校名称
+	optional string schoolName = 2; 
+	
+	// 手机号码
+	required string phone = 3; 
+	
+	// 考试类型 1:四级英语 2:六级英语 3:考研英语 4:考研政治 5:考研数学 6:高考
+	required uint32 examType = 4; 
+	
+	// 用户来源渠道
+	required string channelName = 5;
+}
+
+// 用户注册响应信息
+message RegisterResult {
+	// 错误信息，如果注册成功为null；如果发生错误，存放导致错误的原因。
+	required string errorMessage = 1; 
+	
+	// 用户ID，注册成功时存放服务器生成的userId。
+	optional int32 userId = 2;
+	
+	// sessionId，注册成功时自动登录了，存放服务器生成的sessionId。
+	optional string sessionId = 3;
+}
+
+// 课程类型
+message CourseType {
+	// 课程类型 1:我的课程（已报名、已订购); 2:全部课程
+	required uint32 courseType = 1;
+	
+	// 指定返回列表中最大课程个数
+	required uint32 num = 2;
+	
+	// 指定返回第几页
+	required uint32 pageNum = 3;
+}
+
+// 课程信息
+message CourseInfo {
+	// 课程ID
+	required int32 id = 1;
+	
+	// 课程名称
+	required string name = 2;
+	
+	// 老师姓名
+	required string teacherName = 3;
+	
+	// 课程价格, 0:免费; 其他金额为课程价格，以分为单位。
+	required int32 price = 4;
+	
+	// 课程简介
+	required string descritpion = 5;
+}
+
+// 课程列表
+message CourseList {
+	// 列表实际条数
+	required int32 num = 1;
+	
+	// 课程列表
+	repeated CourseInfo list = 2; 
+}
+
+// 弹幕消息
+message Barrage {
+	// 发弹幕用户昵称
+	required string senderNickname = 1;
+
+	// 弹幕消息
+	required string message = 2;
+}
+
+// 空消息
+message None {
+}

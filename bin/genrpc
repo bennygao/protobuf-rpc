@@ -1,0 +1,58 @@
+#!/bin/sh
+
+script_dir=$(cd "$(dirname "$0")"; pwd)
+
+show_usage()
+{
+        echo "`printf %-16s "Usage: genrpc"` -h"
+        echo "`printf %-16s ` -g <java | objc> -o <src_dir> -p <proto_file>"
+}
+
+while getopts "hg:o:p:" arg
+do
+	case $arg in
+		h)
+			show_usage ;
+			exit 1 ;;
+		g)
+			target=$OPTARG ;;
+		o)
+			outdir=$OPTARG ;;
+		p)
+			proto=$OPTARG ;;
+		?)
+			show_usage ;
+			exit 1 ;;
+	esac
+done
+
+#echo "target=$target"
+#echo "outdir=$outdir"
+#echo "proto=$proto"
+
+if [ ! -n "$target" ]; then
+	echo "ERROR: -g <java | objc> must be specified."
+	show_usage
+	exit 2
+elif [ "$target" != "java" ] && [ "$target" != "objc" ]; then
+	echo "ERROR: not support generate $target code."
+	show_usage
+	exit 3
+fi
+
+if [ ! -n "$outdir" ]; then
+	echo "ERROR: -o <src_dir> must be specified."
+	show_usage
+	exit 2
+fi
+
+if [ ! -n "$proto" ]; then
+	echo "ERROR: -p <proto_file> must be specified."
+	show_usage
+	exit 2
+fi
+
+set -x
+if [ "$target" == "java" ]; then
+	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir --java_out=$outdir $proto
+fi

@@ -1,0 +1,58 @@
+def libsPath = 'lib'
+
+subprojects {  
+    apply plugin: 'java'  
+    version = '1.0'  
+    targetCompatibility = 1.7  
+    [compileJava,compileTestJava,javadoc]*.options*.encoding = 'UTF-8'  
+
+    repositories {
+        mavenCentral()  
+    }  
+
+    dependencies {  
+        compile fileTree(dir: libsPath, include: '*.jar')
+    }
+}
+
+project(':core'){  
+    dependencies {  
+        compile fileTree(dir: libsPath, include: '*.jar')
+    }
+}  
+
+project(':gencode'){  
+}  
+
+project(':nio'){  
+    dependencies {
+        compile project(":core")  
+	}
+}  
+
+project(':mina'){  
+    dependencies {
+        compile project(":core")  
+	}
+}  
+
+project(':client') {
+    dependencies {
+        compile project(":core")  
+        compile project(":nio")  
+        compile fileTree(dir: libsPath, include: '*.jar')
+    }  
+}
+
+project(':server') {
+    dependencies {
+        compile project(":core")  
+        compile project(":mina")  
+    }  
+}
+
+task clean << {
+	ant.delete {
+        fileset(dir: 'bin', includes: "*.jar")
+    }
+}

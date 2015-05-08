@@ -1,0 +1,1555 @@
+file_to_generate: "yingshibao.proto"
+proto_file {
+  name: "yingshibao.proto"
+  package: "yingshibao"
+  message_type {
+    name: "UserInfo"
+    field {
+      name: "nickName"
+      number: 1
+      label: LABEL_REQUIRED
+      type: TYPE_STRING
+    }
+    field {
+      name: "schoolName"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+    }
+    field {
+      name: "phone"
+      number: 3
+      label: LABEL_REQUIRED
+      type: TYPE_STRING
+    }
+    field {
+      name: "examType"
+      number: 4
+      label: LABEL_REQUIRED
+      type: TYPE_UINT32
+    }
+    field {
+      name: "channelName"
+      number: 5
+      label: LABEL_REQUIRED
+      type: TYPE_STRING
+    }
+  }
+  message_type {
+    name: "RegisterResult"
+    field {
+      name: "errorMessage"
+      number: 1
+      label: LABEL_REQUIRED
+      type: TYPE_STRING
+    }
+    field {
+      name: "userId"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_INT32
+    }
+    field {
+      name: "sessionId"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+    }
+  }
+  message_type {
+    name: "CourseType"
+    field {
+      name: "courseType"
+      number: 1
+      label: LABEL_REQUIRED
+      type: TYPE_UINT32
+    }
+    field {
+      name: "num"
+      number: 2
+      label: LABEL_REQUIRED
+      type: TYPE_UINT32
+    }
+    field {
+      name: "pageNum"
+      number: 3
+      label: LABEL_REQUIRED
+      type: TYPE_UINT32
+    }
+  }
+  message_type {
+    name: "CourseInfo"
+    field {
+      name: "id"
+      number: 1
+      label: LABEL_REQUIRED
+      type: TYPE_INT32
+    }
+    field {
+      name: "name"
+      number: 2
+      label: LABEL_REQUIRED
+      type: TYPE_STRING
+    }
+    field {
+      name: "teacherName"
+      number: 3
+      label: LABEL_REQUIRED
+      type: TYPE_STRING
+    }
+    field {
+      name: "price"
+      number: 4
+      label: LABEL_REQUIRED
+      type: TYPE_INT32
+    }
+    field {
+      name: "descritpion"
+      number: 5
+      label: LABEL_REQUIRED
+      type: TYPE_STRING
+    }
+  }
+  message_type {
+    name: "CourseList"
+    field {
+      name: "num"
+      number: 1
+      label: LABEL_REQUIRED
+      type: TYPE_INT32
+    }
+    field {
+      name: "list"
+      number: 2
+      label: LABEL_REPEATED
+      type: TYPE_MESSAGE
+      type_name: ".yingshibao.CourseInfo"
+    }
+  }
+  message_type {
+    name: "Barrage"
+    field {
+      name: "senderNickname"
+      number: 1
+      label: LABEL_REQUIRED
+      type: TYPE_STRING
+    }
+    field {
+      name: "message"
+      number: 2
+      label: LABEL_REQUIRED
+      type: TYPE_STRING
+    }
+  }
+  message_type {
+    name: "None"
+  }
+  service {
+    name: "UserManager"
+    method {
+      name: "registerNewUser"
+      input_type: ".yingshibao.UserInfo"
+      output_type: ".yingshibao.RegisterResult"
+      options {
+      }
+    }
+  }
+  service {
+    name: "Push"
+    method {
+      name: "pushBarrage"
+      input_type: ".yingshibao.Barrage"
+      output_type: ".yingshibao.None"
+      options {
+      }
+    }
+  }
+  options {
+    java_package: "com.yingshibao.app.idl"
+    java_multiple_files: true
+  }
+  source_code_info {
+    location {
+      span: 0
+      span: 0
+      span: 100
+      span: 1
+    }
+    location {
+      path: 2
+      span: 2
+      span: 8
+      span: 18
+    }
+    location {
+      path: 8
+      span: 4
+      span: 0
+      span: 34
+    }
+    location {
+      path: 8
+      path: 999
+      path: 0
+      span: 4
+      span: 0
+      span: 34
+    }
+    location {
+      path: 8
+      path: 999
+      path: 0
+      path: 2
+      span: 4
+      span: 7
+      span: 26
+    }
+    location {
+      path: 8
+      path: 999
+      path: 0
+      path: 2
+      path: 0
+      span: 4
+      span: 7
+      span: 26
+    }
+    location {
+      path: 8
+      path: 999
+      path: 0
+      path: 2
+      path: 0
+      path: 1
+      span: 4
+      span: 7
+      span: 26
+    }
+    location {
+      path: 8
+      path: 999
+      path: 0
+      path: 3
+      span: 4
+      span: 29
+      span: 33
+    }
+    location {
+      path: 8
+      span: 5
+      span: 0
+      span: 47
+    }
+    location {
+      path: 8
+      path: 999
+      path: 1
+      span: 5
+      span: 0
+      span: 47
+    }
+    location {
+      path: 8
+      path: 999
+      path: 1
+      path: 2
+      span: 5
+      span: 7
+      span: 19
+    }
+    location {
+      path: 8
+      path: 999
+      path: 1
+      path: 2
+      path: 0
+      span: 5
+      span: 7
+      span: 19
+    }
+    location {
+      path: 8
+      path: 999
+      path: 1
+      path: 2
+      path: 0
+      path: 1
+      span: 5
+      span: 7
+      span: 19
+    }
+    location {
+      path: 8
+      path: 999
+      path: 1
+      path: 7
+      span: 5
+      span: 22
+      span: 46
+    }
+    location {
+      path: 6
+      path: 0
+      span: 8
+      span: 0
+      span: 11
+      span: 1
+      leading_comments: " 用户管理相关服务
+      "
+    }
+    location {
+      path: 6
+      path: 0
+      path: 1
+      span: 8
+      span: 8
+      span: 19
+    }
+    location {
+      path: 6
+      path: 0
+      path: 2
+      path: 0
+      span: 10
+      span: 8
+      span: 65
+      leading_comments: " 注册新用户
+      "
+    }
+    location {
+      path: 6
+      path: 0
+      path: 2
+      path: 0
+      path: 1
+      span: 10
+      span: 12
+      span: 27
+    }
+    location {
+      path: 6
+      path: 0
+      path: 2
+      path: 0
+      path: 2
+      span: 10
+      span: 28
+      span: 36
+    }
+    location {
+      path: 6
+      path: 0
+      path: 2
+      path: 0
+      path: 3
+      span: 10
+      span: 47
+      span: 61
+    }
+    location {
+      path: 6
+      path: 1
+      span: 14
+      span: 0
+      span: 17
+      span: 1
+      leading_comments: " 服务器端调用客户端的服务
+      "
+    }
+    location {
+      path: 6
+      path: 1
+      path: 1
+      span: 14
+      span: 8
+      span: 12
+    }
+    location {
+      path: 6
+      path: 1
+      path: 2
+      path: 0
+      span: 16
+      span: 8
+      span: 50
+      leading_comments: " 通知弹幕消息
+      "
+    }
+    location {
+      path: 6
+      path: 1
+      path: 2
+      path: 0
+      path: 1
+      span: 16
+      span: 12
+      span: 23
+    }
+    location {
+      path: 6
+      path: 1
+      path: 2
+      path: 0
+      path: 2
+      span: 16
+      span: 24
+      span: 31
+    }
+    location {
+      path: 6
+      path: 1
+      path: 2
+      path: 0
+      path: 3
+      span: 16
+      span: 42
+      span: 46
+    }
+    location {
+      path: 4
+      path: 0
+      span: 21
+      span: 0
+      span: 36
+      span: 1
+      leading_comments: " 用户注册请求信息
+      "
+    }
+    location {
+      path: 4
+      path: 0
+      path: 1
+      span: 21
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 0
+      span: 23
+      span: 8
+      span: 37
+      leading_comments: " 昵称
+      "
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 0
+      path: 4
+      span: 23
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 0
+      path: 5
+      span: 23
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 0
+      path: 1
+      span: 23
+      span: 24
+      span: 32
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 0
+      path: 3
+      span: 23
+      span: 35
+      span: 36
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 1
+      span: 26
+      span: 8
+      span: 39
+      leading_comments: " 学校名称
+      "
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 1
+      path: 4
+      span: 26
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 1
+      path: 5
+      span: 26
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 1
+      path: 1
+      span: 26
+      span: 24
+      span: 34
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 1
+      path: 3
+      span: 26
+      span: 37
+      span: 38
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 2
+      span: 29
+      span: 8
+      span: 34
+      leading_comments: " 手机号码
+      "
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 2
+      path: 4
+      span: 29
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 2
+      path: 5
+      span: 29
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 2
+      path: 1
+      span: 29
+      span: 24
+      span: 29
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 2
+      path: 3
+      span: 29
+      span: 32
+      span: 33
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 3
+      span: 32
+      span: 8
+      span: 37
+      leading_comments: " 考试类型 1:四级英语 2:六级英语 3:考研英语 4:考研政治 5:考研数学 6:高考
+      "
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 3
+      path: 4
+      span: 32
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 3
+      path: 5
+      span: 32
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 3
+      path: 1
+      span: 32
+      span: 24
+      span: 32
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 3
+      path: 3
+      span: 32
+      span: 35
+      span: 36
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 4
+      span: 35
+      span: 8
+      span: 40
+      leading_comments: " 用户来源渠道
+      "
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 4
+      path: 4
+      span: 35
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 4
+      path: 5
+      span: 35
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 4
+      path: 1
+      span: 35
+      span: 24
+      span: 35
+    }
+    location {
+      path: 4
+      path: 0
+      path: 2
+      path: 4
+      path: 3
+      span: 35
+      span: 38
+      span: 39
+    }
+    location {
+      path: 4
+      path: 1
+      span: 39
+      span: 0
+      span: 48
+      span: 1
+      leading_comments: " 用户注册响应信息
+      "
+    }
+    location {
+      path: 4
+      path: 1
+      path: 1
+      span: 39
+      span: 8
+      span: 22
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 0
+      span: 41
+      span: 8
+      span: 41
+      leading_comments: " 错误信息，如果注册成功为null；如果发生错误，存放导致错误的原因。
+      "
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 0
+      path: 4
+      span: 41
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 0
+      path: 5
+      span: 41
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 0
+      path: 1
+      span: 41
+      span: 24
+      span: 36
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 0
+      path: 3
+      span: 41
+      span: 39
+      span: 40
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 1
+      span: 44
+      span: 8
+      span: 34
+      leading_comments: " 用户ID，注册成功时存放服务器生成的userId。
+      "
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 1
+      path: 4
+      span: 44
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 1
+      path: 5
+      span: 44
+      span: 17
+      span: 22
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 1
+      path: 1
+      span: 44
+      span: 23
+      span: 29
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 1
+      path: 3
+      span: 44
+      span: 32
+      span: 33
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 2
+      span: 47
+      span: 8
+      span: 38
+      leading_comments: " sessionId，注册成功时自动登录了，存放服务器生成的sessionId。
+      "
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 2
+      path: 4
+      span: 47
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 2
+      path: 5
+      span: 47
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 2
+      path: 1
+      span: 47
+      span: 24
+      span: 33
+    }
+    location {
+      path: 4
+      path: 1
+      path: 2
+      path: 2
+      path: 3
+      span: 47
+      span: 36
+      span: 37
+    }
+    location {
+      path: 4
+      path: 2
+      span: 51
+      span: 0
+      span: 60
+      span: 1
+      leading_comments: " 课程类型
+      "
+    }
+    location {
+      path: 4
+      path: 2
+      path: 1
+      span: 51
+      span: 8
+      span: 18
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 0
+      span: 53
+      span: 8
+      span: 39
+      leading_comments: " 课程类型 1:我的课程（已报名、已订购); 2:全部课程
+      "
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 0
+      path: 4
+      span: 53
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 0
+      path: 5
+      span: 53
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 0
+      path: 1
+      span: 53
+      span: 24
+      span: 34
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 0
+      path: 3
+      span: 53
+      span: 37
+      span: 38
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 1
+      span: 56
+      span: 8
+      span: 32
+      leading_comments: " 指定返回列表中最大课程个数
+      "
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 1
+      path: 4
+      span: 56
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 1
+      path: 5
+      span: 56
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 1
+      path: 1
+      span: 56
+      span: 24
+      span: 27
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 1
+      path: 3
+      span: 56
+      span: 30
+      span: 31
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 2
+      span: 59
+      span: 8
+      span: 36
+      leading_comments: " 指定返回第几页
+      "
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 2
+      path: 4
+      span: 59
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 2
+      path: 5
+      span: 59
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 2
+      path: 1
+      span: 59
+      span: 24
+      span: 31
+    }
+    location {
+      path: 4
+      path: 2
+      path: 2
+      path: 2
+      path: 3
+      span: 59
+      span: 34
+      span: 35
+    }
+    location {
+      path: 4
+      path: 3
+      span: 63
+      span: 0
+      span: 78
+      span: 1
+      leading_comments: " 课程信息
+      "
+    }
+    location {
+      path: 4
+      path: 3
+      path: 1
+      span: 63
+      span: 8
+      span: 18
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 0
+      span: 65
+      span: 8
+      span: 30
+      leading_comments: " 课程ID
+      "
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 0
+      path: 4
+      span: 65
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 0
+      path: 5
+      span: 65
+      span: 17
+      span: 22
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 0
+      path: 1
+      span: 65
+      span: 23
+      span: 25
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 0
+      path: 3
+      span: 65
+      span: 28
+      span: 29
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 1
+      span: 68
+      span: 8
+      span: 33
+      leading_comments: " 课程名称
+      "
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 1
+      path: 4
+      span: 68
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 1
+      path: 5
+      span: 68
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 1
+      path: 1
+      span: 68
+      span: 24
+      span: 28
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 1
+      path: 3
+      span: 68
+      span: 31
+      span: 32
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 2
+      span: 71
+      span: 8
+      span: 40
+      leading_comments: " 老师姓名
+      "
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 2
+      path: 4
+      span: 71
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 2
+      path: 5
+      span: 71
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 2
+      path: 1
+      span: 71
+      span: 24
+      span: 35
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 2
+      path: 3
+      span: 71
+      span: 38
+      span: 39
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 3
+      span: 74
+      span: 8
+      span: 33
+      leading_comments: " 课程价格, 0:免费; 其他金额为课程价格，以分为单位。
+      "
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 3
+      path: 4
+      span: 74
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 3
+      path: 5
+      span: 74
+      span: 17
+      span: 22
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 3
+      path: 1
+      span: 74
+      span: 23
+      span: 28
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 3
+      path: 3
+      span: 74
+      span: 31
+      span: 32
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 4
+      span: 77
+      span: 8
+      span: 40
+      leading_comments: " 课程简介
+      "
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 4
+      path: 4
+      span: 77
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 4
+      path: 5
+      span: 77
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 4
+      path: 1
+      span: 77
+      span: 24
+      span: 35
+    }
+    location {
+      path: 4
+      path: 3
+      path: 2
+      path: 4
+      path: 3
+      span: 77
+      span: 38
+      span: 39
+    }
+    location {
+      path: 4
+      path: 4
+      span: 81
+      span: 0
+      span: 87
+      span: 1
+      leading_comments: " 课程列表
+      "
+    }
+    location {
+      path: 4
+      path: 4
+      path: 1
+      span: 81
+      span: 8
+      span: 18
+    }
+    location {
+      path: 4
+      path: 4
+      path: 2
+      path: 0
+      span: 83
+      span: 8
+      span: 31
+      leading_comments: " 列表实际条数
+      "
+    }
+    location {
+      path: 4
+      path: 4
+      path: 2
+      path: 0
+      path: 4
+      span: 83
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 4
+      path: 2
+      path: 0
+      path: 5
+      span: 83
+      span: 17
+      span: 22
+    }
+    location {
+      path: 4
+      path: 4
+      path: 2
+      path: 0
+      path: 1
+      span: 83
+      span: 23
+      span: 26
+    }
+    location {
+      path: 4
+      path: 4
+      path: 2
+      path: 0
+      path: 3
+      span: 83
+      span: 29
+      span: 30
+    }
+    location {
+      path: 4
+      path: 4
+      path: 2
+      path: 1
+      span: 86
+      span: 8
+      span: 37
+      leading_comments: " 课程列表
+      "
+    }
+    location {
+      path: 4
+      path: 4
+      path: 2
+      path: 1
+      path: 4
+      span: 86
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 4
+      path: 2
+      path: 1
+      path: 6
+      span: 86
+      span: 17
+      span: 27
+    }
+    location {
+      path: 4
+      path: 4
+      path: 2
+      path: 1
+      path: 1
+      span: 86
+      span: 28
+      span: 32
+    }
+    location {
+      path: 4
+      path: 4
+      path: 2
+      path: 1
+      path: 3
+      span: 86
+      span: 35
+      span: 36
+    }
+    location {
+      path: 4
+      path: 5
+      span: 90
+      span: 0
+      span: 96
+      span: 1
+      leading_comments: " 弹幕消息
+      "
+    }
+    location {
+      path: 4
+      path: 5
+      path: 1
+      span: 90
+      span: 8
+      span: 15
+    }
+    location {
+      path: 4
+      path: 5
+      path: 2
+      path: 0
+      span: 92
+      span: 8
+      span: 43
+      leading_comments: " 发弹幕用户昵称
+      "
+    }
+    location {
+      path: 4
+      path: 5
+      path: 2
+      path: 0
+      path: 4
+      span: 92
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 5
+      path: 2
+      path: 0
+      path: 5
+      span: 92
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 5
+      path: 2
+      path: 0
+      path: 1
+      span: 92
+      span: 24
+      span: 38
+    }
+    location {
+      path: 4
+      path: 5
+      path: 2
+      path: 0
+      path: 3
+      span: 92
+      span: 41
+      span: 42
+    }
+    location {
+      path: 4
+      path: 5
+      path: 2
+      path: 1
+      span: 95
+      span: 8
+      span: 36
+      leading_comments: " 弹幕消息
+      "
+    }
+    location {
+      path: 4
+      path: 5
+      path: 2
+      path: 1
+      path: 4
+      span: 95
+      span: 8
+      span: 16
+    }
+    location {
+      path: 4
+      path: 5
+      path: 2
+      path: 1
+      path: 5
+      span: 95
+      span: 17
+      span: 23
+    }
+    location {
+      path: 4
+      path: 5
+      path: 2
+      path: 1
+      path: 1
+      span: 95
+      span: 24
+      span: 31
+    }
+    location {
+      path: 4
+      path: 5
+      path: 2
+      path: 1
+      path: 3
+      span: 95
+      span: 34
+      span: 35
+    }
+    location {
+      path: 4
+      path: 6
+      span: 99
+      span: 0
+      span: 100
+      span: 1
+      leading_comments: " 空消息
+      "
+    }
+    location {
+      path: 4
+      path: 6
+      path: 1
+      span: 99
+      span: 8
+      span: 12
+    }
+  }
+}

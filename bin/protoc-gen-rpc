@@ -1,0 +1,4 @@
+#!/bin/sh
+
+script_dir=$(cd "$(dirname "$0")"; pwd)
+java -jar $script_dir/protobuf-rpc-gencode-1.0.jar $*

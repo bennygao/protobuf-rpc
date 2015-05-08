@@ -1,0 +1,25 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+version = '1.0'
+
+def libsPath = '../lib'
+def targetArchive = "protobuf-rpc-${project.name}-${version}.jar"
+
+dependencies {
+	compile fileTree(dir: libsPath, include: '*.jar')
+}
+
+jar {
+	archiveName = targetArchive
+}
+
+build {
+	copy {
+		from('build/libs') {
+			include('**/*.jar')
+		}
+	
+		into('../bin')
+	}
+}

@@ -1,0 +1,121 @@
+package ${package};
+
+import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Parser;
+
+import com.yingshibao.foundation.rpc.ClientStub;
+import com.yingshibao.foundation.rpc.Endpoint;
+import com.yingshibao.foundation.rpc.RpcSession;
+import com.yingshibao.foundation.rpc.ServiceRegistry;
+
+public class ${serviceName} implements ServiceRegistry {
+	public interface Impl {
+#foreach ($method in $methods)
+#set ($methodCode = ${util.hashCode($method)})
+#set ($inputType = ${util.getBaseName(${method.inputType})})
+#set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
+#set ($outputType = ${util.getBaseName($method.outputType)})
+		public ${outputType} ${method.name}(${inputType} ${argName}, RpcSession session);
+#end
+	}
+
+	public interface IFace {
+#foreach ($method in $methods)
+#set ($methodCode = ${util.hashCode($method)})
+#set ($inputType = ${util.getBaseName(${method.inputType})})
+#set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
+#set ($outputType = ${util.getBaseName($method.outputType)})
+		public ${outputType} ${method.name}(${inputType} ${argName}) throws Exception;
+		public void ${method.name}(${inputType} ${argName}, Endpoint.Callback callback) throws Exception;
+#end
+	}
+	
+	public static class Client extends ClientStub implements IFace {
+		public Client(RpcSession session) {
+			super(session);
+		}
+
+#foreach ($method in $methods)
+#set ($methodCode = ${util.hashCode($method)})
+#set ($inputType = ${util.getBaseName(${method.inputType})})
+#set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
+#set ($outputType = ${util.getBaseName($method.outputType)})
+		@Override
+		public ${outputType} ${method.name}(${inputType} ${argName}) throws Exception {
+			return (${outputType}) syncRpc(${methodCode}, $argName); 
+		} 
+		
+		@Override
+		public void ${method.name}(${inputType} ${argName}, Endpoint.Callback callback) throws Exception {
+			asyncRpc(${methodCode}, ${argName}, callback);
+		}
+#end
+	}
+
+	private Impl serviceImpl;
+	
+	public ${serviceName}(Impl serviceImpl) {
+		this.serviceImpl = serviceImpl;
+	}
+	
+	public ${serviceName}() {
+		this(null);
+	}
+
+	@Override
+	public int[] getServiceList() {
+		return new int[] {
+#foreach ($method in $methods)
+			${util.hashCode($method)},
+#end
+		};
+	}
+
+	@Override
+	public GeneratedMessage invokeService(int serviceId, GeneratedMessage arg, RpcSession session) {
+		switch (serviceId) {
+#foreach ($method in $methods)
+#set ($methodCode = ${util.hashCode($method)})
+#set ($inputType = ${util.getBaseName(${method.inputType})})
+#set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
+#set ($outputType = ${util.getBaseName($method.outputType)})
+		case ${methodCode}:
+			return serviceImpl.${method.name}((${inputType}) arg, session);
+#end
+		default:
+			throw new IllegalArgumentException("not existed service-id: " + serviceId);
+		}
+	}
+
+	@Override
+	public Parser<? extends GeneratedMessage> getParserForRequest(int serviceId) {
+		switch (serviceId) {
+#foreach ($method in $methods)
+#set ($methodCode = ${util.hashCode($method)})
+#set ($inputType = ${util.getBaseName(${method.inputType})})
+#set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
+#set ($outputType = ${util.getBaseName($method.outputType)})
+		case ${methodCode}:
+			return ${inputType}.PARSER;
+#end
+		default:
+			throw new IllegalArgumentException("not existed service-id: " + serviceId);
+		}
+	}
+
+	@Override
+	public Parser<? extends GeneratedMessage> getParserForResponse(int serviceId) {
+		switch (serviceId) {
+#foreach ($method in $methods)
+#set ($methodCode = ${util.hashCode($method)})
+#set ($inputType = ${util.getBaseName(${method.inputType})})
+#set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
+#set ($outputType = ${util.getBaseName($method.outputType)})
+		case ${methodCode}:
+			return ${outputType}.PARSER;
+#end
+		default:
+			throw new IllegalArgumentException("not existed service-id: " + serviceId);
+		}
+	}
+}

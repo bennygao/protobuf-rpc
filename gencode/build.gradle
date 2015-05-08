@@ -1,0 +1,40 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+version = '1.0'
+
+def libsPath = '../lib'
+def targetArchive = "protobuf-rpc-${project.name}-${version}.jar"
+
+dependencies {
+	compile files('../lib/slf4j-api-1.7.7.jar')
+	compile files('../lib/logback-classic-1.0.13.jar')
+	compile files('../lib/logback-core-1.0.13.jar')
+	compile files('../lib/protobuf-java-2.6.1.jar')
+	compile files('../lib/velocity-1.7.jar')
+	compile files('../lib/commons-collections-3.2.1.jar')
+	compile files('../lib/commons-lang-2.6.jar')
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.yingshibao.foundation.rpc.gencode.RpcGenerator'
+        attributes 'Class-Path': new File(libsPath).list().findAll {
+            it.endsWith('.jar') }.collect { "$libsPath/$it" }.join(' ')
+    }
+
+	archiveName = targetArchive
+
+    // 把项目依赖的所有jar也打包进发布的jar包中。
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
+build {
+	copy {
+		from('build/libs') {
+			include('**/*.jar')
+		}
+	
+		into('../bin')
+	}
+}

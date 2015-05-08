@@ -1,0 +1,13 @@
+rootProject.name = 'protobuf-rpc'
+
+include 'core'
+
+include 'gencode'
+
+include 'nio'
+
+include 'mina'
+
+include 'client'
+
+include 'server'
