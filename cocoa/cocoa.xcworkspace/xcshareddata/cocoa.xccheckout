@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>B11BC1B3-B9A1-47A2-8B6C-7C03FD318FE4</string>
+	<key>IDESourceControlProjectName</key>
+	<string>cocoa</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>9BBF3D047703BF27A0D1DBF37B07A08AC2C76BF2</key>
+		<string>http://test.yingshibao.com:8889/bennygao/protobuf-rpc.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>cocoa/cocoa.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>9BBF3D047703BF27A0D1DBF37B07A08AC2C76BF2</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>http://test.yingshibao.com:8889/bennygao/protobuf-rpc.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>9BBF3D047703BF27A0D1DBF37B07A08AC2C76BF2</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>9BBF3D047703BF27A0D1DBF37B07A08AC2C76BF2</string>
+			<key>IDESourceControlWCCName</key>
+			<string>protobuf-rpc</string>
+		</dict>
+	</array>
+</dict>
+</plist>
