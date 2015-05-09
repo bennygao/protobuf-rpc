@@ -31,14 +31,59 @@ static NSString* formatReason(const char *file, const int line, const char *form
     return [NSString stringWithCString:tmpstr encoding:NSASCIIStringEncoding];
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Implementation of Message
+///////////////////////////////////////////////////////////////////////////////
+static const Byte STAGE_UNKNOWN = -1;
+static const Byte STAGE_REQUEST = 0;
+static const Byte STAGE_RESPONSE = 1;
+
+@implementation Message
+
+@synthesize command;
+@synthesize serviceId;
+@synthesize stamp;
+@synthesize stage;
+@synthesize argument;
+@synthesize callback;
+
+- (Message*) initWithCommand:(MESSAGE_COMMAND) cmd {
+    self->command = cmd;
+    self->serviceId = 0;
+    self->stamp = 0;
+    self->stage = STAGE_UNKNOWN;
+    self->argument = nil;
+    self->callback = nil;
+    return self;
+}
+
+- (Message*) initwithServiceId:(int32_t) sid {
+    return [self initwithServiceId:sid stamp:0 stage:0 argument:nil];
+}
+
+- (Message*) initwithServiceId:(int32_t)sid stamp:(int32_t)aStamp stage:(Byte)aStage argument:(PBGeneratedMessage *)arg {
+    self->command = application;
+    self->serviceId = sid;
+    self->stamp = aStamp;
+    self->stage = aStage;
+    self->argument = arg;
+    self->callback = nil;
+    return self;
+}
+
+@end
+
+///////////////////////////////////////////////////////////////////////////////
+// Implementation of MessageQueue
+///////////////////////////////////////////////////////////////////////////////
 static const NSUInteger DEFAULT_QUEUE_SIZE = 16;
 static const NSUInteger PACKAGE_SIZE_FIELD_LENGTH = 4;
 
 static const Byte NOTIFY_TO_SEND_MESSAGE_BEAN = 0;
 static const Byte NOTIFY_TO_STOP = 0xff;
 
-@implementation MessageBeanQueue
--(MessageBeanQueue *) initWithCapacity:(NSUInteger)capacity {
+@implementation MessageQueue
+-(MessageQueue *) initWithCapacity:(NSUInteger)capacity {
     self = [super init];
     if (self) {
         number = 0;
@@ -56,51 +101,43 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     
     if (array != nil) {
         [array removeAllObjects];
-        [array release];
         array = nil;
     }
     
     if (lock != nil) {
-        [lock release];
         lock = nil;
     }
-    
-    [super dealloc];
 }
 
--(MessageBeanQueue *) init {
+-(MessageQueue *) init {
     return [self initWithCapacity:DEFAULT_QUEUE_SIZE];
 }
 
--(void) add:(MessageBean *)bean {
-    if (bean == nil) {
+-(void) add:(Message*)message {
+    if (message == nil) {
         return;
     }
     
     [lock lock];
     @try {
-        NSLog(@"bean.commandID :%d",bean.commandId);
-        [array addObject:bean];
+        [array addObject:message];
         ++number;
     } @finally {
         [lock unlock];
     }
 }
 
--(MessageBean *) take {
+-(Message *) take {
     [lock lock];
     @try {
         if (number == 0) {
             return nil;
         }
         
-        MessageBean *bean = [array objectAtIndex:0];
-        if ([bean retainCount] >= 2)
-        {
-            [array removeObjectAtIndex:0];
-        }
-        --number;
+        Message *bean = [array objectAtIndex:0];
+        [array removeObjectAtIndex:0];
         
+        --number;
         return bean;
     } @finally {
         [lock unlock];
@@ -122,56 +159,275 @@ static const Byte NOTIFY_TO_STOP = 0xff;
 }
 @end
 
-@implementation SegmentHead
+///////////////////////////////////////////////////////////////////////////////
+// Implementation of IOBuffer
+///////////////////////////////////////////////////////////////////////////////
+@implementation IOBuffer
 
-@synthesize commandId;
-@synthesize serialNo;
+@synthesize dataBuffer;
+@synthesize limit;
+@synthesize current;
 
-- (void) getHeadInfo:(uint) type :(IOBuffer *) ibuffer {
-    switch (type) {
-        case 1:
-            commandId = [ibuffer readShort];
-            break;
-            
-        case 0:
-        case 2:
-            commandId = [ibuffer readShort];
-            serialNo = [ibuffer readLong];
-            break;
-            
-        default:
-        {
-            assert(@"SegmentHead not defined");
-            commandId = [ibuffer readShort];
-            break;
-        }
-            // @throw [NSException exceptionWithName:@"SegmentHead#getHeadInfo"
-            //                                reason:formatReason(__FILE__, __LINE__, "Un-defined segment head type %d", type)
-            //                              userInfo:nil];
-    }
-    
+- (IOBuffer *) init {
+    return [self initWithCapacity:DEFAULT_BUFFER_CHUNK_SIZE];
 }
 
-- (void) putHeadInfo:(uint) type :(IOBuffer *) obuffer {
-    switch (type) {
-        case 1:
-            [obuffer writeShort:commandId];
-            break;
-            
-        case 2:
-            [obuffer writeShort:commandId];
-            [obuffer writeLong:serialNo];
-            break;
-            
-        default:
-            @throw [NSException exceptionWithName:@"SegmentHead#putHeadInfo"
-                                           reason:formatReason(__FILE__, __LINE__, "Un-defined segment head type %d", type)
-                                         userInfo:nil];;
+- (IOBuffer *) initWithCapacity:(NSUInteger)capacity {
+    self = [super init];
+    if (self) {
+        dataBuffer = [[NSMutableData alloc] initWithCapacity:capacity];
+        limit = capacity;
+        current = 0;
     }
+    
+    return self;
+}
+
+- (void) dealloc {
+#ifdef DEBUG
+    NSLog(@"**** IOBuffer dealloc");
+#endif
+}
+
+- (void) rewind {
+    current = 0;
+}
+
+- (void) flip {
+    limit = current;
+    current = 0;
+}
+
+- (void) clear {
+    current = 0;
+    limit = [dataBuffer length];
+}
+
+- (NSUInteger) inputRemaining {
+    return limit - current;
+}
+
+- (NSUInteger) outputRemaining {
+    return [dataBuffer length] - current;
+}
+
+- (void) increaseCurrent:(NSUInteger) length {
+    current += length;
+}
+
+- (NSUInteger) copyData:(void *) dest {
+    return [self copyData:dest :(NSRange) {0, limit}];
+}
+
+- (NSUInteger) copyData:(void *) dest :(NSRange) range {
+    [dataBuffer getBytes:dest range:range];
+    return range.length - range.location;
+}
+
++ (void) reverseBytesOrder:(void *)bytes :(int)size {
+    Byte *p = (Byte *) bytes;
+    int half = size / 2;
+    Byte v;
+    for (int i = 0, j = size - 1; i < half; ++i, --j) {
+        v = p[i];
+        p[i] = p[j];
+        p[j] = v;
+    }
+}
+
++ (short) n2lShort:(short)v {
+#if BYTE_ORDER == LITTLE_ENDIAN
+    [self reverseBytesOrder:&v :sizeof(short)];
+#endif
+    return v;
+}
+
++ (int32_t) n2lInt32:(int32_t)v {
+#if BYTE_ORDER == LITTLE_ENDIAN
+    [self reverseBytesOrder:&v :sizeof(int32_t)];
+#endif
+    return v;
+}
+
++ (long long) n2lLong:(long long)v {
+#if BYTE_ORDER == LITTLE_ENDIAN
+    [self reverseBytesOrder:&v :sizeof(long long)];
+#endif
+    return v;
+}
+
++ (float) n2lFloat:(float)v {
+#if BYTE_ORDER == LITTLE_ENDIAN
+    [self reverseBytesOrder:&v :sizeof(float)];
+#endif
+    return v;
+}
+
++ (double) n2lDouble:(double)v {
+#if BYTE_ORDER == LITTLE_ENDIAN
+    [self reverseBytesOrder:&v :sizeof(double)];
+#endif
+    return v;
+}
+
++ (short) l2nShort:(short)v {
+#if BYTE_ORDER == LITTLE_ENDIAN
+    [self reverseBytesOrder:&v :sizeof(short)];
+#endif
+    return v;
+}
+
++ (int32_t) l2nInt32:(int32_t)v {
+#if BYTE_ORDER == LITTLE_ENDIAN
+    [self reverseBytesOrder:&v :sizeof(int32_t)];
+#endif
+    return v;
+}
+
++ (long long) l2nLong:(long long)v {
+#if BYTE_ORDER == LITTLE_ENDIAN
+    [self reverseBytesOrder:&v :sizeof(long long)];
+#endif
+    return v;
+}
+
++ (float) l2nFloat:(float)v {
+#if BYTE_ORDER == LITTLE_ENDIAN
+    [self reverseBytesOrder:&v :sizeof(float)];
+#endif
+    return v;
+}
+
++ (double) l2nDouble:(double)v {
+#if BYTE_ORDER == LITTLE_ENDIAN
+    [self reverseBytesOrder:&v :sizeof(double)];
+#endif
+    return v;
+}
+
+- (void) getBytes:(void*)dest withLength:(NSUInteger)length {
+    if ([self inputRemaining] < length) {
+        NSNumber *ln = [NSNumber numberWithInt:__LINE__];
+        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+                              @"File:", [NSString stringWithUTF8String:__FILE__],
+                              @"Line:", [ln stringValue],
+                              @"Cause:", @"N/A",
+                              @"Stack:", @"N/A",
+                              nil];
+        @throw [NSException exceptionWithName:@"IOBuffer#getBytes" reason:@"buffer overflow" userInfo:dict];
+    } else {
+        [dataBuffer getBytes:dest range:(NSRange) {current, length}];
+        [self increaseCurrent:length];
+    }
+}
+
+- (Byte) readByte {
+    Byte v;
+    [self getBytes:&v withLength:sizeof(Byte)];
+    return v;
+}
+
+- (short) readShort {
+    short v = 0;
+    [self getBytes:&v withLength:sizeof(short)];
+    return [IOBuffer n2lShort:v];
+}
+
+- (int32_t) readInt32 {
+    int v = 0;
+    [self getBytes:&v withLength:sizeof(int32_t)];
+    return [IOBuffer n2lInt32:v];
+}
+
+- (long long) readLong {
+    long long v = 0;
+    [self getBytes:&v withLength:sizeof(long long)];
+    return [IOBuffer n2lLong:v];
+}
+
+- (float) readFloat {
+    float v = 0.00;
+    [self getBytes:(&v) withLength:sizeof(float)];
+    return [IOBuffer n2lFloat:v];
+}
+
+- (double) readDouble {
+    double v = 0.00;
+    [self getBytes:&v withLength:sizeof(double)];
+    return [IOBuffer n2lDouble:v];
+}
+
+- (NSString*) readUTF {
+    NSUInteger len = [self readShort];
+    char cstr[len];
+    [self getBytes:cstr withLength:len];
+    return [[NSString alloc] initWithBytes:cstr length:len encoding:NSUTF8StringEncoding];
+}
+
+- (void) extendBufferToContain:(NSUInteger) length {
+    NSInteger gap = [self outputRemaining] - length;
+    if (gap < 0) {
+        NSInteger num = (- gap) / DEFAULT_BUFFER_CHUNK_SIZE + 1;
+        [self->dataBuffer increaseLengthBy:num * DEFAULT_BUFFER_CHUNK_SIZE];
+    }
+}
+
+- (void) replaceBytes:(const void *)src :(NSRange)range {
+    [self->dataBuffer replaceBytesInRange:range withBytes:src];
+}
+
+- (void) putBytes:(const void *)src :(NSUInteger)length {
+    [self extendBufferToContain:length];
+    NSRange range = (NSRange) {current, length};
+    [self->dataBuffer replaceBytesInRange:range withBytes:src];
+    [self increaseCurrent:length];
+}
+
+- (void) putData:(NSData *) data {
+    [self putBytes:[data bytes] :[data length]];
+}
+
+- (void) writeByte:(Byte)v {
+    [self putBytes:&v :sizeof(Byte)];
+}
+
+- (void) writeShort:(short)v {
+    v = [IOBuffer l2nShort:v];
+    [self putBytes:&v :sizeof(short)];
+}
+
+- (void) writeInt32:(int32_t)v {
+    v = [IOBuffer l2nInt32:v];
+    [self putBytes:&v :sizeof(int32_t)];
+}
+
+- (void) writeLong:(long long)v {
+    v = [IOBuffer l2nLong:v];
+    [self putBytes:&v :sizeof(long long)];
+}
+
+- (void) writeFloat:(float)v {
+    v = [IOBuffer l2nFloat:v];
+    [self putBytes:&v :sizeof(float)];
+}
+
+- (void) writeDouble:(double)v {
+    v = [IOBuffer l2nDouble:v];
+    [self putBytes:&v :sizeof(double)];
+}
+
+- (void) writeUTF:(NSString *)v {
+    short len = [v lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    short nlen = [IOBuffer l2nShort:len];
+    [self putBytes:&nlen :sizeof(short)];
+    [self putBytes:(void*) [v cStringUsingEncoding:NSUTF8StringEncoding] :len];
 }
 
 @end
 
+///////////////////////////////////////////////////////////////////////////////
+// Implementation of Segment
+///////////////////////////////////////////////////////////////////////////////
 @implementation Segment
 
 @synthesize totalRecvBytesNumber;
@@ -180,7 +436,6 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     self = [super init];
     if (self) {
         ibuffer = nil;
-        head = nil;
         totalRecvBytesNumber = 0;
         
         [self reset];
@@ -193,16 +448,12 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     phase = read_segment_size;
     needBytes = PACKAGE_SIZE_FIELD_LENGTH;
     gotBytes = 0;
-    segmentSize = 0;
+    messageSize = 0;
     
     if (ibuffer == nil) {
         ibuffer = [[IOBuffer alloc] init];
     } else {
         [ibuffer clear];
-    }
-    
-    if (head == nil) {
-        head = [[SegmentHead alloc] init];
     }
 }
 
@@ -210,13 +461,6 @@ static const Byte NOTIFY_TO_STOP = 0xff;
 #ifdef DEBUG
     NSLog(@"**** Segment dealloc");
 #endif
-    [ibuffer release];
-    ibuffer = nil;
-    
-    [head release];
-    head = nil;
-    
-    [super dealloc];
 }
 
 
@@ -226,23 +470,20 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     return cnt;
 }
 
--(MessageBean *) action:(int) sock {
+-(Message *) action:(int) sock {
     size_t cnt;
-    short commandId;
-    long long serialNo;
-    uint headType;
     
     if (phase == read_segment_size) {
         if (needBytes > 0) {
-            cnt = [self recv:sock  :bytes + gotBytes :needBytes];
+            cnt = [self recv:sock :bytes + gotBytes :needBytes];
             needBytes -= cnt;
             gotBytes += cnt;
         }
         
         if (needBytes == 0) {
-            int *ptr = (int *) bytes;
-            segmentSize = [IOBuffer n2lInt:*ptr];
-            needBytes = segmentSize;
+            int32_t *ptr = (int32_t *) bytes;
+            messageSize = [IOBuffer n2lInt32:*ptr];
+            needBytes = messageSize;
             gotBytes = 0;
             phase = read_segment_content;
         }
@@ -258,16 +499,19 @@ static const Byte NOTIFY_TO_STOP = 0xff;
         if (needBytes == 0) {
             [ibuffer flip];
             
-            // 读取一个字节的SegmentHead类型
-            headType = [ibuffer readByte];
+            // stamp int32_t (4 bytes)
+            int32_t stamp = [ibuffer readInt32];
             
-            // 根据SegmentHead类型读取完整的SegmentHead信息
-            [head getHeadInfo:headType :ibuffer];
-            commandId = head.commandId;
-            serialNo = head.serialNo;
+            // serviceId int32_t (4 bytes)
+            int32_t serviceId = [ibuffer readInt32];
+            
+            // stage byte (1 bytes)
+            Byte stage = [ibuffer readByte];
+            
             
             // 反序列化MessageBean
-            MessageBean *bean = [MessageBuffer unpack:commandId :ibuffer];
+            //            Message *bean = [MessageBuffer unpack:commandId :ibuffer];
+            Message *bean;
             
             [ibuffer clear];
             phase = read_segment_size;
@@ -405,21 +649,14 @@ static const Byte NOTIFY_TO_STOP = 0xff;
         localSocketPair[0] = -1;
         localSocketPair[1] = -1;
         
-        sendQueue = [[MessageBeanQueue alloc] init];
-        recvQueue = [[MessageBeanQueue alloc] init];
+        sendQueue = [[MessageQueue alloc] init];
+        recvQueue = [[MessageQueue alloc] init];
         
         segment = [[Segment alloc] init];
-        head = [[SegmentHead alloc] init];
         obuffer = [[IOBuffer alloc] init];
         
         threadLock = [[NSCondition alloc] init];
         totalSendBytesNumber = 0;
-        
-        isCheckingHeartbeat = false; // 是否正在主动检测心跳标识
-        // 客户端主动检测服务器心跳的指令编号为1000，服务器返回-1000。
-        cHeartbeatMessage = [[NullMessageBean alloc] initWithCommandId:1000];
-        // 服务器主动检测客户端心跳的指令编号为-9999，客户端返回9999。
-        sHeartbeatMessage = [[NullMessageBean alloc] initWithCommandId:9999];
     }
     
     return self;
@@ -466,7 +703,6 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     
     serverHost = nil;
     serverPort = 0;
-    isCheckingHeartbeat = false;
 }
 
 -(void) stop {
@@ -480,79 +716,38 @@ static const Byte NOTIFY_TO_STOP = 0xff;
 #ifdef DEBUG
     NSLog(@"**** SocketEngine dealloc");
 #endif
-    [self clear];
-    
-    if (sendQueue != nil) {
-        [sendQueue release];
-        sendQueue = nil;
-    }
-    
-    if (recvQueue != nil) {
-        [recvQueue release];
-        recvQueue = nil;
-    }
-    
-    if (segment != nil) {
-        [segment release];
-        segment = nil;
-    }
-    
-    if (head != nil) {
-        [head release];
-        head = nil;
-    }
-    
-    if (obuffer != nil) {
-        [obuffer release];
-        obuffer = nil;
-    }
-    
-    if (cHeartbeatMessage != nil) {
-        [cHeartbeatMessage release];
-        cHeartbeatMessage = nil;
-    }
-    
-    if (sHeartbeatMessage != nil) {
-        [sHeartbeatMessage release];
-        sHeartbeatMessage = nil;
-    }
-    
-    [super dealloc];
 }
 
--(void) sendMessageBean:(MessageBean *)message {
-    [message retain];
+-(void) sendMessage:(Message *)message {
     //NSLog(@"message.commandID: %d",message.commandId);
     [sendQueue add:message];
     send(localSocketPair[1], &NOTIFY_TO_SEND_MESSAGE_BEAN, sizeof(Byte), 0);
 }
 
--(MessageBean *) recvMessageBean {
+-(Message *) recvMessage {
     return [recvQueue take];
 }
 
--(void) doSend:(MessageBean *) bean {
+-(void) doSend:(Message *) bean {
     NSUInteger pkgSize = 0;
-    short commandId = [bean commandId];
     [obuffer clear];
     
     // 预留一个整数（4个字节）的报文长度
-    [obuffer writeInt:0];
+    [obuffer writeInt32:0];
     
     // 写入一个字节的SegmentHead类型信息
     // 当前客户端固定为 1
     [obuffer writeByte:1];
     
     // 写入完整SegmentHead信息
-    head.commandId = commandId;
-    [head putHeadInfo:1 :obuffer];
+
     
     // 写入MessageBean
-    [MessageBuffer pack:commandId :bean :obuffer];
+    //    [MessageBuffer pack:commandId :bean :obuffer];
     
     // 回填报文长度
     pkgSize = [obuffer current] - sizeof(int);
-    pkgSize = [IOBuffer l2nInt:(int) pkgSize];
+    pkgSize = [IOBuffer l2nInt32:(int) pkgSize];
     [obuffer replaceBytes:&pkgSize :(NSRange) {0, sizeof(int)}];
     
     [obuffer flip];
@@ -562,34 +757,18 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     NSUInteger rest = total % IO_BUFFER_SIZE;
     size_t cnt = 0;
     for (int i = 0; i < count; ++i) {
-        [obuffer getBytes:bytes :IO_BUFFER_SIZE];
+        [obuffer getBytes:bytes withLength:IO_BUFFER_SIZE];
         cnt = send(hostLink, bytes, IO_BUFFER_SIZE, 0);
         totalSendBytesNumber += cnt;
     }
     
-    [obuffer getBytes:bytes :rest];
+    [obuffer getBytes:bytes withLength:rest];
     cnt = send(hostLink, bytes, rest, 0);
     totalSendBytesNumber += cnt;
 }
 
-- (void) requestHeartbeat {
-#ifdef DEBUG
-    NSLog(@"Client request heartbeat by message id 1000");
-#endif
-    [self doSend:cHeartbeatMessage];
-}
-
-- (void) responseServerHeartbeat {
-#ifdef DEBUG
-    NSLog(@"Client response server heartbeat by message id 9999");
-#endif
-    [self doSend:sHeartbeatMessage];
-}
-
 - (void) notityLinkLost {
-    NullMessageBean *bean = [[NullMessageBean alloc] initWithCommandId:0];
-    [recvQueue add:bean];
-    [bean release];
+    
 }
 
 -(void) run {
@@ -598,22 +777,19 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     int maxfd = MAX(hostLink, localSocketPair[0]) + 1;
     int nread = 0;
     Byte notification = 0;
-    MessageBean *bean;
+    Message *message;
     time_t lastRead = time(NULL);
     time_t current;
     struct timeval tval;
     
     bzero(&tval, sizeof(tval));
     while (TRUE) {
-        bean = nil;
+        message = nil;
         FD_ZERO(&rset);
         FD_SET(hostLink, &rset);
         FD_SET(localSocketPair[0], &rset);
         
-        // 设置空闲时间为60秒，超过60秒没有收到服务器任何消息的话，
-        // 就主动向服务器发心跳检测信号。
-        tval.tv_sec = isCheckingHeartbeat ? 30 : 60;
-        select(maxfd, &rset, NULL, NULL, &tval);
+        select(maxfd, &rset, NULL, NULL, NULL);
         if (FD_ISSET(hostLink, &rset)) {
             lastRead = time(NULL);
             ioctl(hostLink, FIONREAD, &nread);
@@ -624,51 +800,22 @@ static const Byte NOTIFY_TO_STOP = 0xff;
                 [self notityLinkLost];
                 // 结束线程循环，退出线程
                 break;
-            } else
-            {
-                bean = [[segment action:hostLink] retain];
-                if (bean != nil)
-                {
-                    if (bean.commandId == -1000) { // 服务器返回心跳正常
-                        isCheckingHeartbeat = false;
-                        [bean release];
-                    } else if (bean.commandId == -9999) { // 服务器主动检测心跳
-                        [bean release];
-                        // 返回消息给服务器
-                        [self responseServerHeartbeat];
-                    } else {
-                        [recvQueue add:bean];
-                        [bean release];
-                    }
+            } else {
+                if (message != nil) {
+                    [recvQueue add:message];
                 }
             }
         }
         
         current = time(NULL);
-        if (current - lastRead > tval.tv_sec) { // 超时时间里没有网络读写事件
-            if (isCheckingHeartbeat) { // 又过了30秒还没有网络读写事件
-#ifdef DEBUG
-                NSLog(@"Client heartbeat timed-out");
-#endif
-                // 判断为与服务器断开连接
-                [self notityLinkLost];
-                // 结束线程循环，退出线程
-                break;
-            } else { // 检测心跳
-                isCheckingHeartbeat = true;
-                [self requestHeartbeat];
-                continue;
-            }
-        }
         
         if (FD_ISSET(localSocketPair[0], &rset)) {
             recv(localSocketPair[0], &notification, sizeof(Byte), 0);
             if (notification == NOTIFY_TO_STOP) { // 结束线程运行
                 break;
             } else {
-                bean = [sendQueue take];
-                [self doSend:bean];
-                [bean release];
+                message = [sendQueue take];
+                [self doSend:message];
             }
         }
     }

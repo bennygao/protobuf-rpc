@@ -13,37 +13,44 @@
 #import <ProtocolBuffers/GeneratedMessage.h>
 #include <ProtocolBuffers/ProtocolBuffers.h>
 
-enum MessageCommand {
-    application, // 应用消息
-    stop, // 停止endpoint运行
-    cancel // 取消正在等待响应的处理
-};
+#define DEFAULT_BUFFER_CHUNK_SIZE   1024
 
-enum RpcStrategy {
-    sync_rpc, // 同步方法调用
-    async_rpc // 异步方法调用
-};
+typedef enum {
+    application = 0, // 应用消息
+    stop = 1, // 停止endpoint运行
+    cancel = 2 // 取消正在等待响应的处理
+} MESSAGE_COMMAND;
 
+typedef enum {
+    sync_rpc = 1, // 同步方法调用
+    async_rpc = 2 // 异步方法调用
+} RPC_STRATEGY;
 
+@class Message;
 
-@interface ResponseHandle : NSObject {
-@private
-    enum RpcStrategy strategy;
-    
-}
-@end
+typedef void (^ CallbackBlock)(Message*);
+
 
 @interface Message : NSObject {
 @private
-    enum MessageCommand command;
+    MESSAGE_COMMAND command;
     int32_t serviceId;
     uint32_t stamp;
     Byte stage;
     PBGeneratedMessage* argument;
+    CallbackBlock callback;
 }
 
-- (Message *) initWithCommand:(enum MessageCommand) command;
-- (Message *) initwithServiceId:(int32_t) serviceId;
+@property (readonly) MESSAGE_COMMAND command;
+@property (readonly) int32_t serviceId;
+@property (readonly) uint32_t stamp;
+@property (readonly) Byte stage;
+@property (readonly, strong) PBGeneratedMessage* argument;
+@property (strong) CallbackBlock callback;
+
+- (Message*) initWithCommand:(MESSAGE_COMMAND)cmd;
+- (Message*) initwithServiceId:(int32_t)sid;
+- (Message*) initwithServiceId:(int32_t)sid stamp:(int32_t)stamp stage:(Byte) stage argument:(PBGeneratedMessage*) arg;
 @end
 
 @interface MessageQueue : NSObject {
@@ -56,7 +63,7 @@ enum RpcStrategy {
 -(MessageQueue *) init;
 -(MessageQueue *) initWithCapacity:(NSUInteger) capacity;
 
--(void) add:(Message *) bean;
+-(void) add:(Message *) message;
 -(Message *) take;
 -(NSUInteger) size;
 -(void) clear;
@@ -69,17 +76,62 @@ typedef enum  {
 
 #define IO_BUFFER_SIZE    ((size_t) 1024)
 
-@interface SegmentHead : NSObject {
-@private
-    short commandId;
-    long long serialNo;
+@interface IOBuffer : NSObject {
+    NSMutableData *dataBuffer;
+    NSUInteger limit;
+    NSUInteger current;
 }
 
-@property short commandId;
-@property long long serialNo;
+@property (readonly) NSMutableData *dataBuffer;
+@property (readonly) NSUInteger limit;
+@property (readonly) NSUInteger current;
 
-- (void) getHeadInfo:(uint) type :(IOBuffer *) ibuffer;
-- (void) putHeadInfo:(uint) type :(IOBuffer *) obuffer;
+- (IOBuffer *) init;
+- (IOBuffer *) initWithCapacity:(NSUInteger) capacity;
+- (void) rewind;
+- (void) flip;
+- (void) clear;
+- (NSUInteger) inputRemaining;
+- (NSUInteger) outputRemaining;
+- (void) increaseCurrent:(NSUInteger) length;
+- (void) extendBufferToContain:(NSUInteger) length;
+- (NSUInteger) copyData:(void *) dest;
+- (NSUInteger) copyData:(void *) dest :(NSRange) range;
+
++ (void) reverseBytesOrder:(void*) bytes :(int) size;
+
++ (short) n2lShort:(short) v;
++ (int32_t) n2lInt32:(int32_t) v;
++ (long long) n2lLong:(long long) v;
++ (float) n2lFloat:(float) v;
++ (double) n2lDouble:(double) v;
+
++ (short) l2nShort:(short) v;
++ (int32_t) l2nInt32:(int32_t) v;
++ (long long)l2nLong:(long long) v;
++ (float) l2nFloat:(float) v;
++ (double) l2nDouble:(double) v;
+
+- (void) getBytes:(void*)dest withLength:(NSUInteger)length;
+- (Byte) readByte;
+- (short) readShort;
+- (int32_t) readInt32;
+- (long long) readLong;
+- (float) readFloat;
+- (double) readDouble;
+- (NSString*) readUTF;
+
+- (void) replaceBytes:(const void *) src :(NSRange) range;
+- (void) putBytes:(const void *) src :(NSUInteger) length;
+- (void) putData:(NSData *) data;
+- (void) writeByte:(Byte) v;
+- (void) writeShort:(short) v;
+- (void) writeInt32:(int32_t) v;
+- (void) writeLong:(long long) v;
+- (void) writeFloat:(float) v;
+- (void) writeDouble:(double) v;
+- (void) writeUTF:(NSString*) v;
+
 @end
 
 @interface Segment : NSObject {
@@ -87,10 +139,9 @@ typedef enum  {
     SEGMENT_PHASE phase;
     NSUInteger needBytes;
     NSUInteger gotBytes;
-    NSUInteger segmentSize;
+    NSUInteger messageSize;
     Byte bytes[IO_BUFFER_SIZE];
     IOBuffer *ibuffer;
-    SegmentHead *head;
     
     NSUInteger totalRecvBytesNumber;
 }
@@ -109,23 +160,18 @@ typedef enum  {
     int hostLink;
     int localSocketPair[2];
     
-    MessageBeanQueue *sendQueue;
-    MessageBeanQueue *recvQueue;
+    MessageQueue *sendQueue;
+    MessageQueue *recvQueue;
     
     Byte bytes[IO_BUFFER_SIZE];
     NSUInteger totalSendBytesNumber;
     
     Segment *segment;
-    SegmentHead *head;
     IOBuffer *obuffer;
     NSCondition *threadLock;
-    
-    BOOL isCheckingHeartbeat; // 是否正在主动检测心跳标志
-    NullMessageBean *cHeartbeatMessage; // 客户端主动检测心跳消息
-    NullMessageBean *sHeartbeatMessage; // 响应服务器心跳检测消息
 }
 
-@property (readonly, weak) NSString *serverHost;
+@property (readonly) NSString *serverHost;
 @property (readonly) ushort serverPort;
 
 -(SocketEngine *) init;
@@ -136,8 +182,8 @@ typedef enum  {
 -(void) stop;
 -(void) run;
 
--(void) sendMessageBean:(MessageBean *) bean;
--(MessageBean *) recvMessageBean;
+-(void) sendMessage:(Message *) bean;
+-(Message *) recvMessageBean;
 
 -(NSUInteger) getTotalRecvBytesNumber;
 -(NSUInteger) getTotalSendBytesNumber;
