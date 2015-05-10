@@ -26,3 +26,6 @@ MacOSX中必须先安装了CocoaPods，如何安装CocoaPods请参阅[CocoaPods�
 	[!] Please close any current Xcode sessions and use `cocoa.xcworkspace` for this project from now on.
 
 下次用xcode打开cocoa.xcworkspace工程文件。
+
+# protobuf的objective-c插件
+［protobuf的objective-c插件](https://github.com/alexeyxo/protobuf-objc.git)
