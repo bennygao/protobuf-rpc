@@ -124,17 +124,15 @@ public class ProtobufRpcHandler implements IoHandler {
 		// 删除session上绑定的receiver对象
 		ioSession.removeAttribute(IoBufferMessageReceiver.KEY);
 
+		// 清理session上注册的响应事件处理
+		clearStampHandle(session);
 	}
 
 	@Override
 	public void sessionCreated(IoSession session) throws Exception {
-		// 清理session上注册的响应事件处理
-		clearStampHandle(session);
-
 		// 把Receiver对象绑定在session上
 		session.setAttribute(IoBufferMessageReceiver.KEY,
 				new IoBufferMessageReceiver(session, endpoint));
-
 	}
 
 	@Override
