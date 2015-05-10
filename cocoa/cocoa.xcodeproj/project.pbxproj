@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E6818051AFF8670009007E2 /* Yingshibao.pb.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E6818041AFF8670009007E2 /* Yingshibao.pb.m */; };
 		97A3AE28F833331398BC4E17 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F82FBA779AE51B2DE45D6425 /* libPods.a */; };
 		B286D86A1AFDAE1600A1ADA5 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B286D8691AFDAE1600A1ADA5 /* main.m */; };
 		B286D87A1AFDC07800A1ADA5 /* Endpoint.m in Sources */ = {isa = PBXBuildFile; fileRef = B286D8791AFDC07800A1ADA5 /* Endpoint.m */; };
@@ -25,6 +26,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5E6818031AFF8670009007E2 /* Yingshibao.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Yingshibao.pb.h; sourceTree = "<group>"; };
+		5E6818041AFF8670009007E2 /* Yingshibao.pb.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Yingshibao.pb.m; sourceTree = "<group>"; };
 		616ECBE4FDB3646EE7265DF2 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		B286D8661AFDAE1600A1ADA5 /* cocoa */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cocoa; sourceTree = BUILT_PRODUCTS_DIR; };
 		B286D8691AFDAE1600A1ADA5 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -76,6 +79,8 @@
 		B286D8681AFDAE1600A1ADA5 /* cocoa */ = {
 			isa = PBXGroup;
 			children = (
+				5E6818031AFF8670009007E2 /* Yingshibao.pb.h */,
+				5E6818041AFF8670009007E2 /* Yingshibao.pb.m */,
 				B286D8691AFDAE1600A1ADA5 /* main.m */,
 			);
 			path = cocoa;
@@ -191,6 +196,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B286D87A1AFDC07800A1ADA5 /* Endpoint.m in Sources */,
+				5E6818051AFF8670009007E2 /* Yingshibao.pb.m in Sources */,
 				B286D86A1AFDAE1600A1ADA5 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
