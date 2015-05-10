@@ -28,7 +28,7 @@ public class ProtobufRpcHandler implements IoHandler {
 
 	public ProtobufRpcHandler(Endpoint endpoint) {
 		this.endpoint = endpoint;
-		this.sessionStampsMap = new HashMap<Long, Map<Integer, ResponseHandle>>();
+		this.sessionStampsMap = new HashMap<>();
 		this.lock = new ReentrantLock();
 	}
 
@@ -40,7 +40,7 @@ public class ProtobufRpcHandler implements IoHandler {
 				Map<Integer, ResponseHandle> stampsMap = sessionStampsMap
 						.get(ioSession.getId());
 				if (stampsMap == null) {
-					stampsMap = new HashMap<Integer, ResponseHandle>();
+					stampsMap = new HashMap<>();
 					sessionStampsMap.put(ioSession.getId(), stampsMap);
 				}
 				stampsMap.put(message.getStamp(), handle);
@@ -75,7 +75,7 @@ public class ProtobufRpcHandler implements IoHandler {
 		}
 
 		for (ResponseHandle handle : stampsMap.values()) {
-			handle.execute(cancelMessage);
+			handle.onResponse(cancelMessage);
 		}
 	}
 
@@ -105,7 +105,7 @@ public class ProtobufRpcHandler implements IoHandler {
 			if (handle == null) {
 				logger.warn("response's handle unregistered: " + message);
 			} else {
-				handle.execute(message);
+				handle.onResponse(message);
 			}
 		}
 	}

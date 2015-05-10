@@ -2,13 +2,12 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/client/client.iml" filepath="$PROJECT_DIR$/client/client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/core/core.iml" filepath="$PROJECT_DIR$/core/core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/gencode/gencode.iml" filepath="$PROJECT_DIR$/gencode/gencode.iml" />
-      <module fileurl="file://$PROJECT_DIR$/mina/mina.iml" filepath="$PROJECT_DIR$/mina/mina.iml" />
-      <module fileurl="file://$PROJECT_DIR$/nio/nio.iml" filepath="$PROJECT_DIR$/nio/nio.iml" />
-      <module fileurl="file://$PROJECT_DIR$/protobuf-rpc.iml" filepath="$PROJECT_DIR$/protobuf-rpc.iml" />
-      <module fileurl="file://$PROJECT_DIR$/server/server.iml" filepath="$PROJECT_DIR$/server/server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/client/src/main/client.iml" filepath="$PROJECT_DIR$/client/src/main/client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/core/src/main/core.iml" filepath="$PROJECT_DIR$/core/src/main/core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gencode/src/main/gencode.iml" filepath="$PROJECT_DIR$/gencode/src/main/gencode.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mina/src/main/mina.iml" filepath="$PROJECT_DIR$/mina/src/main/mina.iml" />
+      <module fileurl="file://$PROJECT_DIR$/nio/src/main/nio.iml" filepath="$PROJECT_DIR$/nio/src/main/nio.iml" />
+      <module fileurl="file://$PROJECT_DIR$/server/src/main/server.iml" filepath="$PROJECT_DIR$/server/src/main/server.iml" />
     </modules>
   </component>
 </project>

@@ -13,7 +13,7 @@ public class Server {
 
 	public static void main(String[] args) throws Exception {
 		Logger logger = LoggerFactory.getLogger(Server.class);
-		MinaTcpEndpoint endpoint = new MinaTcpEndpoint("MinaTcp", new InetSocketAddress("localhost", 10000));
+		MinaTcpEndpoint endpoint = new MinaTcpEndpoint("MinaTcp", new InetSocketAddress(10000));
 
 		endpoint.registerService(new UserManager(new UserManagerImpl()));
 		endpoint.registerService(new Push());
