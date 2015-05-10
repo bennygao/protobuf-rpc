@@ -58,4 +58,9 @@ public class ResponseHandle implements Runnable {
 			callback.onResponse(response.getArgument());
 		}
 	}
+
+	public void onResponse(Message response) {
+		this.response = response;
+		run();
+	}
 }

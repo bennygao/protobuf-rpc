@@ -187,7 +187,6 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
     private ByteBuffer cmdBuffer;
     private Receiver receiver;
     private Sender sender;
-//    private MessageProcessor processor;
     private ExecutorService executors;
     private Map<Integer, ResponseHandle> stampsMap;
     private Thread thread;
@@ -199,7 +198,6 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         receiver = new Receiver(this);
         sender = new Sender();
         commandBuffer = ByteBuffer.allocate(1);
-//        processor = new MessageProcessor(this);
 
         stampsMap = new HashMap<>();
         logger = LoggerFactory.getLogger(getClass());
@@ -239,8 +237,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
 
     public void start() throws IOException {
         try {
-//            processor.start();
-            executors = Executors.newCachedThreadPool();
+            executors = Executors.newFixedThreadPool(2);
             pipe = Pipe.open();
             sinkChannel = pipe.sink();
             sourceChannel = pipe.source();
