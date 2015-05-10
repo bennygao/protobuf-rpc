@@ -73,7 +73,7 @@ public class MessageProcessor implements Runnable {
 
 
 		for (ResponseHandle handle : stampsMap.values()) {
-			handle.execute(cancelMessage);
+//			handle.execute(cancelMessage);
 		}
 
 		stampsMap.clear();
@@ -99,7 +99,7 @@ public class MessageProcessor implements Runnable {
 			if (handle == null) {
 				logger.error("未注册处理的消息: " + message);
 			} else {
-				handle.execute(message);
+//				handle.execute(message);
 			}
 		} else { // 处理请求
 			ServiceRegistry registry = endpoint

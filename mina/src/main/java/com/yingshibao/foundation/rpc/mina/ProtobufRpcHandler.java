@@ -75,7 +75,8 @@ public class ProtobufRpcHandler implements IoHandler {
 		}
 
 		for (ResponseHandle handle : stampsMap.values()) {
-			handle.execute(cancelMessage);
+			handle.assignResponse(cancelMessage);
+			handle.run();
 		}
 	}
 
@@ -105,7 +106,8 @@ public class ProtobufRpcHandler implements IoHandler {
 			if (handle == null) {
 				logger.warn("response's handle unregistered: " + message);
 			} else {
-				handle.execute(message);
+				handle.assignResponse(message);
+				handle.run();
 			}
 		}
 	}
