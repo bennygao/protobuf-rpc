@@ -303,7 +303,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         }
     }
 
-    private void addToSendQueue(Message message) throws IOException {
+    private synchronized void addToSendQueue(Message message) throws IOException {
         cmdBuffer.clear();
         cmdBuffer.putInt(ControlCommand.send_message.ordinal());
         cmdBuffer.flip();

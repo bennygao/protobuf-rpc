@@ -125,7 +125,7 @@ public class ProtobufRpcHandler implements IoHandler {
 		ioSession.removeAttribute(IoBufferMessageReceiver.KEY);
 
 		// 清理session上注册的响应事件处理
-		clearStampHandle(session);
+		clearStampHandle(ioSession);
 	}
 
 	@Override
