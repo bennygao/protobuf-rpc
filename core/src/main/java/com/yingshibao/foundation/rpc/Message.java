@@ -6,7 +6,6 @@ import com.google.protobuf.TextFormat;
 public class Message {
 	public enum Type {
 		application, // 应用消息
-		stop, // 停止endpint运行
 		cancel // 取消等待
 	};
 	
@@ -68,10 +67,6 @@ public class Message {
 
 	public GeneratedMessage getArgument() {
 		return argument;
-	}
-
-	public void setArgument(GeneratedMessage argument) {
-		this.argument = argument;
 	}
 
 	@Override

@@ -11,13 +11,13 @@ public class ClientStub {
 
 	public ClientStub(RpcSession session) {
 		this.session = session;
-		this.queuePool = new ConcurrentLinkedQueue<LinkedBlockingQueue<Message>>();
+		this.queuePool = new ConcurrentLinkedQueue<>();
 	}
 
 	protected LinkedBlockingQueue<Message> borrowQueue() {
 		LinkedBlockingQueue<Message> queue = queuePool.poll();
 		if (queue == null) {
-			queue = new LinkedBlockingQueue<Message>();
+			queue = new LinkedBlockingQueue<>();
 		}
 
 		return queue;
