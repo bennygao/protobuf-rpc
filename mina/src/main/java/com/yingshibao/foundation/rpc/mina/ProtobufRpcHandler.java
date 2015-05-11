@@ -28,7 +28,7 @@ public class ProtobufRpcHandler implements IoHandler {
 
 	public ProtobufRpcHandler(Endpoint endpoint) {
 		this.endpoint = endpoint;
-		this.sessionStampsMap = new HashMap<Long, Map<Integer, ResponseHandle>>();
+		this.sessionStampsMap = new HashMap<>();
 		this.lock = new ReentrantLock();
 	}
 
@@ -40,7 +40,7 @@ public class ProtobufRpcHandler implements IoHandler {
 				Map<Integer, ResponseHandle> stampsMap = sessionStampsMap
 						.get(ioSession.getId());
 				if (stampsMap == null) {
-					stampsMap = new HashMap<Integer, ResponseHandle>();
+					stampsMap = new HashMap<>();
 					sessionStampsMap.put(ioSession.getId(), stampsMap);
 				}
 				stampsMap.put(message.getStamp(), handle);
@@ -75,7 +75,7 @@ public class ProtobufRpcHandler implements IoHandler {
 		}
 
 		for (ResponseHandle handle : stampsMap.values()) {
-			handle.execute(cancelMessage);
+			handle.onResponse(cancelMessage);
 		}
 	}
 
@@ -105,7 +105,7 @@ public class ProtobufRpcHandler implements IoHandler {
 			if (handle == null) {
 				logger.warn("response's handle unregistered: " + message);
 			} else {
-				handle.execute(message);
+				handle.onResponse(message);
 			}
 		}
 	}
@@ -124,17 +124,15 @@ public class ProtobufRpcHandler implements IoHandler {
 		// 删除session上绑定的receiver对象
 		ioSession.removeAttribute(IoBufferMessageReceiver.KEY);
 
+		// 清理session上注册的响应事件处理
+		clearStampHandle(session);
 	}
 
 	@Override
 	public void sessionCreated(IoSession session) throws Exception {
-		// 清理session上注册的响应事件处理
-		clearStampHandle(session);
-
 		// 把Receiver对象绑定在session上
 		session.setAttribute(IoBufferMessageReceiver.KEY,
 				new IoBufferMessageReceiver(session, endpoint));
-
 	}
 
 	@Override
