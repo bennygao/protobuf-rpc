@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <ProtocolBuffers/TextFormat.h>
 #import "Yingshibao.pb.h"
+#import "ProtobufRpc.h"
 
 @interface AClass : NSObject
 + (NSArray*) serviceList;
@@ -29,47 +30,6 @@ void test_id(Class clazz)
     NSArray *ary = [clazz serviceList];
     NSLog(@"value=%@\n", ary);
 }
-
-@interface BlockingQueue : NSObject {
-@private
-    NSMutableArray *array;
-    NSCondition *lock;
-}
-
-- (BlockingQueue*) init;
-- (void) add:(NSNumber*)num;
-- (NSNumber*) take;
-@end
-
-@implementation BlockingQueue
-
-- (BlockingQueue*) init {
-    array = [[NSMutableArray alloc] initWithCapacity:10];
-    lock = [[NSCondition alloc] init];
-    return self;
-}
-
-- (void) add:(NSNumber*) num {
-    [lock lock];
-    [array addObject:num];
-    [lock signal];
-    [lock unlock];
-}
-
-- (NSNumber*) take {
-    [lock lock];
-    while ([array count] == 0) {
-        NSLog(@"wait for products");
-        [lock wait];
-    }
-    
-    NSNumber *data = [array objectAtIndex:0];
-    [array removeObjectAtIndex:0];
-    [lock unlock];
-    return data;
-}
-
-@end
 
 
 void test_lock(void)

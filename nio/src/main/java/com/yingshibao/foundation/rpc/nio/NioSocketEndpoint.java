@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.yingshibao.foundation.rpc.ResponseHandle;
 import org.slf4j.Logger;
@@ -174,7 +173,6 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         }
     }
 
-    private static AtomicInteger STAMP = new AtomicInteger(0);
 
     private SocketAddress remoteAddress;
     private Queue<Message> sendQueue;
@@ -312,9 +310,6 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
     }
 
     public void sendRequest(Message request) throws IOException {
-        int stamp = STAMP.incrementAndGet();
-        request.setStamp(stamp);
-        request.setStage(Message.STAGE_REQUEST);
         addToSendQueue(request);
     }
 

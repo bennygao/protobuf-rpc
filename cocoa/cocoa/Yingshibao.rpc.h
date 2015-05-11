@@ -21,7 +21,7 @@
 - (void) registerNewUserAsync:(UserInfo*) userInfo :(CallbackBlock) callback;
 @end
 
-@interface UserManager : NSObject <RpcServiceRegistry> {
+@interface UserManager : RpcServiceRegistry {
 @private
     UserManagerService *serviceImpl;
 }

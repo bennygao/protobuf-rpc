@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5E6818051AFF8670009007E2 /* Yingshibao.pb.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E6818041AFF8670009007E2 /* Yingshibao.pb.m */; };
+		5EBE42B41B01045E00BE7752 /* Yingshibao.rpc.m in Sources */ = {isa = PBXBuildFile; fileRef = 5EBE42B31B01045E00BE7752 /* Yingshibao.rpc.m */; };
 		97A3AE28F833331398BC4E17 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F82FBA779AE51B2DE45D6425 /* libPods.a */; };
 		B286D86A1AFDAE1600A1ADA5 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B286D8691AFDAE1600A1ADA5 /* main.m */; };
 		B286D89B1B00C8AE00A1ADA5 /* ProtobufRpc.m in Sources */ = {isa = PBXBuildFile; fileRef = B286D89A1B00C8AE00A1ADA5 /* ProtobufRpc.m */; };
@@ -28,6 +29,7 @@
 /* Begin PBXFileReference section */
 		5E6818031AFF8670009007E2 /* Yingshibao.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Yingshibao.pb.h; sourceTree = "<group>"; };
 		5E6818041AFF8670009007E2 /* Yingshibao.pb.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Yingshibao.pb.m; sourceTree = "<group>"; };
+		5EBE42B31B01045E00BE7752 /* Yingshibao.rpc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Yingshibao.rpc.m; sourceTree = "<group>"; };
 		616ECBE4FDB3646EE7265DF2 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		B286D8661AFDAE1600A1ADA5 /* cocoa */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cocoa; sourceTree = BUILT_PRODUCTS_DIR; };
 		B286D8691AFDAE1600A1ADA5 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -84,6 +86,7 @@
 				5E6818041AFF8670009007E2 /* Yingshibao.pb.m */,
 				B286D8691AFDAE1600A1ADA5 /* main.m */,
 				B286D8931B00C1BF00A1ADA5 /* Yingshibao.rpc.h */,
+				5EBE42B31B01045E00BE7752 /* Yingshibao.rpc.m */,
 			);
 			path = cocoa;
 			sourceTree = "<group>";
@@ -200,6 +203,7 @@
 				5E6818051AFF8670009007E2 /* Yingshibao.pb.m in Sources */,
 				B286D89B1B00C8AE00A1ADA5 /* ProtobufRpc.m in Sources */,
 				B286D86A1AFDAE1600A1ADA5 /* main.m in Sources */,
+				5EBE42B41B01045E00BE7752 /* Yingshibao.rpc.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

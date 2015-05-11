@@ -116,6 +116,7 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     [lock lock];
     @try {
         [array addObject:object];
+        [lock signal];
     } @finally {
         [lock unlock];
     }
@@ -174,7 +175,44 @@ static const Byte NOTIFY_TO_STOP = 0xff;
 ///////////////////////////////////////////////////////////////////////////////
 // Implementation of ClientStub
 ///////////////////////////////////////////////////////////////////////////////
+static uint32_t STAMP = 0;
 
+@implementation ClientStub
+
+- (ClientStub*) initWithRpcSession:(RpcSession *)rs {
+    session = rs;
+    lock = [[NSCondition alloc] init];
+    return self;
+}
+
+- (uint32_t) getStamp {
+    [lock lock];
+    @try {
+        return ++STAMP;
+    } @finally {
+        [lock unlock];
+    }
+}
+
+- (PBGeneratedMessage*) syncRpc:(uint32_t)serviceId :(PBGeneratedMessage *)arg {
+    Message *request = [[Message alloc] initwithServiceId:serviceId stamp:[self getStamp] stage:STAGE_REQUEST argument:arg];
+    BlockingQueue *queue = [[BlockingQueue alloc] initWithCapacity:1];
+    request.callback = ^ (PBGeneratedMessage *response) {
+        [queue add:response];
+    };
+    
+    [session sendRequest:request];
+    PBGeneratedMessage *response = [queue take];
+    return response;
+}
+
+- (void) asyncRpc:(int32_t)serviceId :(PBGeneratedMessage *)arg :(CallbackBlock)callback {
+    Message *request = [[Message alloc] initwithServiceId:serviceId stamp:[self getStamp] stage:STAGE_REQUEST argument:arg];
+    request.callback = callback;
+    [session sendRequest:request];
+}
+
+@end
 
 ///////////////////////////////////////////////////////////////////////////////
 // Implementation of BytesOrderUtil
@@ -301,13 +339,6 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     
     return [buffer length];
 }
-
--(void) dealloc {
-#ifdef DEBUG
-    NSLog(@"**** Segment dealloc");
-#endif
-}
-
 
 -(size_t) recv:(int) sock :(void *) buf :(size_t) len {
     size_t cnt = recv(sock, buf, len, 0);

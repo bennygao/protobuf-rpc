@@ -2,10 +2,13 @@ package com.yingshibao.foundation.rpc;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.protobuf.GeneratedMessage;
 
 public class ClientStub {
+	private final static AtomicInteger STAMP = new AtomicInteger(0);
+
 	private RpcSession session;
 	private ConcurrentLinkedQueue<LinkedBlockingQueue<Message>> queuePool;
 
@@ -32,7 +35,7 @@ public class ClientStub {
 
 	protected GeneratedMessage syncRpc(int serviceId, GeneratedMessage arg)
 			throws Exception {
-		Message request = new Message(serviceId, 0, Message.STAGE_REQUEST, arg);
+		Message request = new Message(serviceId, STAMP.incrementAndGet(), Message.STAGE_REQUEST, arg);
 		LinkedBlockingQueue<Message> queue = borrowQueue();
 		queue.clear();
 		request.setResponseHandle(new ResponseHandle(queue));
@@ -55,7 +58,7 @@ public class ClientStub {
 
 	protected void asyncRpc(int serviceId, GeneratedMessage arg,
 			Endpoint.Callback callback) throws Exception {
-		Message request = new Message(serviceId, 0, Message.STAGE_REQUEST, arg);
+		Message request = new Message(serviceId, STAMP.incrementAndGet(), Message.STAGE_REQUEST, arg);
 		request.setResponseHandle(new ResponseHandle(callback));
 		session.sendRequest(request);
 	}

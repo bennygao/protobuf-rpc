@@ -59,15 +59,21 @@ typedef enum {
 - (void) sendRequest:(Message*) message;
 @end
 
-@protocol RpcServiceRegistry <NSObject>
+@interface RpcServiceRegistry <NSObject>
 - (NSArray*) getServiceList;
 - (PBGeneratedMessageBuilder*) getBuilderForRequest:(int32_t)serviceId;
 - (PBGeneratedMessageBuilder*) getBuilderForResponse:(int32_t)serviceId;
 - (PBGeneratedMessage*) invokeService:(int32_t)serviceId :(PBGeneratedMessage*)arg :(RpcSession*)session;
 @end
 
+@interface ClientStub : NSObject {
+@private
+    RpcSession *session;
+    NSCondition *lock;
+}
 
-@interface ClientStub : NSObject
+- (ClientStub*) initWithRpcSession:(RpcSession*) rs;
+- (uint32_t) getStamp;
 - (PBGeneratedMessage*) syncRpc:(uint32_t) serviceId :(PBGeneratedMessage*) arg;
 - (void) asyncRpc:(int32_t) serviceId :(PBGeneratedMessage*) arg :(CallbackBlock) callback;
 @end
