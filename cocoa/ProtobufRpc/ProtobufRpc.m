@@ -11,7 +11,7 @@
 #import <sys/socket.h>
 #import <fcntl.h>
 #import <netdb.h>
-#import "Endpoint.h"
+#import "ProtobufRpc.h"
 
 #define GET_REASON(r)    getReason(__FILE__, __LINE__, (r))
 static NSString* getReason(const char *file, const int line, const char *routine);
@@ -82,11 +82,10 @@ static const NSUInteger PACKAGE_SIZE_FIELD_LENGTH = 4;
 static const Byte NOTIFY_TO_SEND_MESSAGE_BEAN = 0;
 static const Byte NOTIFY_TO_STOP = 0xff;
 
-@implementation MessageQueue
--(MessageQueue *) initWithCapacity:(NSUInteger)capacity {
+@implementation BlockingQueue
+- (BlockingQueue *) initWithCapacity:(NSUInteger)capacity {
     self = [super init];
     if (self) {
-        number = 0;
         array = [[NSMutableArray alloc] initWithCapacity:capacity];
         lock = [[NSCondition alloc] init];
     }
@@ -94,11 +93,7 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     return self;
 }
 
--(void) dealloc {
-#ifdef DEBUG
-    NSLog(@"**** MessageBeanQueue dealloc");
-#endif
-    
+- (void) dealloc {
     if (array != nil) {
         [array removeAllObjects];
         array = nil;
@@ -109,50 +104,67 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     }
 }
 
--(MessageQueue *) init {
+- (BlockingQueue *) init {
     return [self initWithCapacity:DEFAULT_QUEUE_SIZE];
 }
 
--(void) add:(Message*)message {
-    if (message == nil) {
+- (void) add:(id)object {
+    if (object == nil) {
         return;
     }
-    
+
     [lock lock];
     @try {
-        [array addObject:message];
-        ++number;
+        [array addObject:object];
     } @finally {
         [lock unlock];
     }
 }
 
--(Message *) take {
+- (id) take {
     [lock lock];
     @try {
-        if (number == 0) {
-            return nil;
+        while ([array count] == 0) {
+            [lock wait];
         }
         
-        Message *bean = [array objectAtIndex:0];
+        id object = [array objectAtIndex:0];
         [array removeObjectAtIndex:0];
-        
-        --number;
-        return bean;
+        return object;
     } @finally {
         [lock unlock];
     }
 }
 
--(NSUInteger) size {
-    return number;
+- (id) poll {
+    [lock lock];
+    @try {
+        if ([array count] == 0) {
+            return nil;
+        } else {
+            id object = [array objectAtIndex:0];
+            [array removeObjectAtIndex:0];
+            return object;
+        }
+    } @finally {
+        [lock unlock];
+    }
 }
 
--(void) clear {
+
+- (NSUInteger) size {
+    [lock lock];
+    @try {
+        return [array count];
+    } @finally {
+        [lock unlock];
+    }
+}
+
+- (void) clear {
     [lock lock];
     @try {
         [array removeAllObjects];
-        number = 0;
     } @finally {
         [lock unlock];
     }
@@ -160,69 +172,14 @@ static const Byte NOTIFY_TO_STOP = 0xff;
 @end
 
 ///////////////////////////////////////////////////////////////////////////////
-// Implementation of IOBuffer
+// Implementation of ClientStub
 ///////////////////////////////////////////////////////////////////////////////
-@implementation IOBuffer
 
-@synthesize dataBuffer;
-@synthesize limit;
-@synthesize current;
 
-- (IOBuffer *) init {
-    return [self initWithCapacity:DEFAULT_BUFFER_CHUNK_SIZE];
-}
-
-- (IOBuffer *) initWithCapacity:(NSUInteger)capacity {
-    self = [super init];
-    if (self) {
-        dataBuffer = [[NSMutableData alloc] initWithCapacity:capacity];
-        limit = capacity;
-        current = 0;
-    }
-    
-    return self;
-}
-
-- (void) dealloc {
-#ifdef DEBUG
-    NSLog(@"**** IOBuffer dealloc");
-#endif
-}
-
-- (void) rewind {
-    current = 0;
-}
-
-- (void) flip {
-    limit = current;
-    current = 0;
-}
-
-- (void) clear {
-    current = 0;
-    limit = [dataBuffer length];
-}
-
-- (NSUInteger) inputRemaining {
-    return limit - current;
-}
-
-- (NSUInteger) outputRemaining {
-    return [dataBuffer length] - current;
-}
-
-- (void) increaseCurrent:(NSUInteger) length {
-    current += length;
-}
-
-- (NSUInteger) copyData:(void *) dest {
-    return [self copyData:dest :(NSRange) {0, limit}];
-}
-
-- (NSUInteger) copyData:(void *) dest :(NSRange) range {
-    [dataBuffer getBytes:dest range:range];
-    return range.length - range.location;
-}
+///////////////////////////////////////////////////////////////////////////////
+// Implementation of BytesOrderUtil
+///////////////////////////////////////////////////////////////////////////////
+@implementation BytesOrderUtil
 
 + (void) reverseBytesOrder:(void *)bytes :(int)size {
     Byte *p = (Byte *) bytes;
@@ -305,124 +262,6 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     return v;
 }
 
-- (void) getBytes:(void*)dest withLength:(NSUInteger)length {
-    if ([self inputRemaining] < length) {
-        NSNumber *ln = [NSNumber numberWithInt:__LINE__];
-        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-                              @"File:", [NSString stringWithUTF8String:__FILE__],
-                              @"Line:", [ln stringValue],
-                              @"Cause:", @"N/A",
-                              @"Stack:", @"N/A",
-                              nil];
-        @throw [NSException exceptionWithName:@"IOBuffer#getBytes" reason:@"buffer overflow" userInfo:dict];
-    } else {
-        [dataBuffer getBytes:dest range:(NSRange) {current, length}];
-        [self increaseCurrent:length];
-    }
-}
-
-- (Byte) readByte {
-    Byte v;
-    [self getBytes:&v withLength:sizeof(Byte)];
-    return v;
-}
-
-- (short) readShort {
-    short v = 0;
-    [self getBytes:&v withLength:sizeof(short)];
-    return [IOBuffer n2lShort:v];
-}
-
-- (int32_t) readInt32 {
-    int v = 0;
-    [self getBytes:&v withLength:sizeof(int32_t)];
-    return [IOBuffer n2lInt32:v];
-}
-
-- (long long) readLong {
-    long long v = 0;
-    [self getBytes:&v withLength:sizeof(long long)];
-    return [IOBuffer n2lLong:v];
-}
-
-- (float) readFloat {
-    float v = 0.00;
-    [self getBytes:(&v) withLength:sizeof(float)];
-    return [IOBuffer n2lFloat:v];
-}
-
-- (double) readDouble {
-    double v = 0.00;
-    [self getBytes:&v withLength:sizeof(double)];
-    return [IOBuffer n2lDouble:v];
-}
-
-- (NSString*) readUTF {
-    NSUInteger len = [self readShort];
-    char cstr[len];
-    [self getBytes:cstr withLength:len];
-    return [[NSString alloc] initWithBytes:cstr length:len encoding:NSUTF8StringEncoding];
-}
-
-- (void) extendBufferToContain:(NSUInteger) length {
-    NSInteger gap = [self outputRemaining] - length;
-    if (gap < 0) {
-        NSInteger num = (- gap) / DEFAULT_BUFFER_CHUNK_SIZE + 1;
-        [self->dataBuffer increaseLengthBy:num * DEFAULT_BUFFER_CHUNK_SIZE];
-    }
-}
-
-- (void) replaceBytes:(const void *)src :(NSRange)range {
-    [self->dataBuffer replaceBytesInRange:range withBytes:src];
-}
-
-- (void) putBytes:(const void *)src :(NSUInteger)length {
-    [self extendBufferToContain:length];
-    NSRange range = (NSRange) {current, length};
-    [self->dataBuffer replaceBytesInRange:range withBytes:src];
-    [self increaseCurrent:length];
-}
-
-- (void) putData:(NSData *) data {
-    [self putBytes:[data bytes] :[data length]];
-}
-
-- (void) writeByte:(Byte)v {
-    [self putBytes:&v :sizeof(Byte)];
-}
-
-- (void) writeShort:(short)v {
-    v = [IOBuffer l2nShort:v];
-    [self putBytes:&v :sizeof(short)];
-}
-
-- (void) writeInt32:(int32_t)v {
-    v = [IOBuffer l2nInt32:v];
-    [self putBytes:&v :sizeof(int32_t)];
-}
-
-- (void) writeLong:(long long)v {
-    v = [IOBuffer l2nLong:v];
-    [self putBytes:&v :sizeof(long long)];
-}
-
-- (void) writeFloat:(float)v {
-    v = [IOBuffer l2nFloat:v];
-    [self putBytes:&v :sizeof(float)];
-}
-
-- (void) writeDouble:(double)v {
-    v = [IOBuffer l2nDouble:v];
-    [self putBytes:&v :sizeof(double)];
-}
-
-- (void) writeUTF:(NSString *)v {
-    short len = [v lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-    short nlen = [IOBuffer l2nShort:len];
-    [self putBytes:&nlen :sizeof(short)];
-    [self putBytes:(void*) [v cStringUsingEncoding:NSUTF8StringEncoding] :len];
-}
-
 @end
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -435,7 +274,7 @@ static const Byte NOTIFY_TO_STOP = 0xff;
 -(Segment *) init {
     self = [super init];
     if (self) {
-        ibuffer = nil;
+        buffer = [[NSMutableData alloc] initWithLength:DEFAULT_BUFFER_CHUNK_SIZE];
         totalRecvBytesNumber = 0;
         
         [self reset];
@@ -449,12 +288,18 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     needBytes = PACKAGE_SIZE_FIELD_LENGTH;
     gotBytes = 0;
     messageSize = 0;
-    
-    if (ibuffer == nil) {
-        ibuffer = [[IOBuffer alloc] init];
-    } else {
-        [ibuffer clear];
+}
+
+- (NSUInteger) extendBuffer:(NSUInteger)expectedCapacity {
+    NSInteger gap = expectedCapacity - [buffer length];
+    if (gap > 0) {
+        NSInteger cnt = gap / DEFAULT_BUFFER_CHUNK_SIZE + 1;
+        for (int i = 0; i < cnt; ++i) {
+            [buffer increaseLengthBy:DEFAULT_BUFFER_CHUNK_SIZE];
+        }
     }
+    
+    return [buffer length];
 }
 
 -(void) dealloc {
@@ -472,62 +317,61 @@ static const Byte NOTIFY_TO_STOP = 0xff;
 
 -(Message *) action:(int) sock {
     size_t cnt;
+    uint8_t *ptr = (uint8_t*) [buffer mutableBytes];
     
     if (phase == read_segment_size) {
         if (needBytes > 0) {
-            cnt = [self recv:sock :bytes + gotBytes :needBytes];
+            cnt = [self recv:sock :ptr + gotBytes :needBytes];
             needBytes -= cnt;
             gotBytes += cnt;
         }
         
         if (needBytes == 0) {
-            int32_t *ptr = (int32_t *) bytes;
-            messageSize = [IOBuffer n2lInt32:*ptr];
+            messageSize = [BytesOrderUtil n2lInt32:*((int32_t*) ptr)];
             needBytes = messageSize;
             gotBytes = 0;
             phase = read_segment_content;
+            [self extendBuffer:messageSize];
         }
         
         return nil;
     } else {
-        size_t toread = MIN(IO_BUFFER_SIZE, needBytes);
-        cnt = [self recv:sock  :bytes :toread];
+        cnt = [self recv:sock  :ptr + gotBytes :needBytes];
         needBytes -= cnt;
         gotBytes += cnt;
-        [ibuffer putBytes:bytes :cnt];
         
         if (needBytes == 0) {
-            [ibuffer flip];
-            
             // stamp int32_t (4 bytes)
-            int32_t stamp = [ibuffer readInt32];
+            int32_t stamp = [BytesOrderUtil n2lInt32:*((int32_t*) (ptr))];
+            ptr += sizeof(int32_t);
             
             // serviceId int32_t (4 bytes)
-            int32_t serviceId = [ibuffer readInt32];
+            int32_t serviceId = [BytesOrderUtil n2lInt32:*((int32_t*) (ptr))];
+            ptr += sizeof(int32_t);
             
             // stage byte (1 bytes)
-            Byte stage = [ibuffer readByte];
+            Byte stage = *ptr;
+            ptr += sizeof(Byte);
             
-            
-            // 反序列化MessageBean
-            //            Message *bean = [MessageBuffer unpack:commandId :ibuffer];
+            // 反序列化Protobuf
+
             Message *bean;
             
-            [ibuffer clear];
             phase = read_segment_size;
             needBytes = PACKAGE_SIZE_FIELD_LENGTH;
             gotBytes = 0;
-            
+        
             return bean;
         } else {
             return nil;
         }
+
     }
 }
 
 @end
 
-@implementation SocketEngine
+@implementation Endpoint
 
 @synthesize serverHost;
 @synthesize serverPort;
@@ -639,7 +483,7 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     [self setNonBlockSocket:localSocketPair[0]];
 }
 
--(SocketEngine *) init {
+-(Endpoint *) init {
     self = [super init];
     if (self) {
         serverHost = nil;
@@ -649,11 +493,10 @@ static const Byte NOTIFY_TO_STOP = 0xff;
         localSocketPair[0] = -1;
         localSocketPair[1] = -1;
         
-        sendQueue = [[MessageQueue alloc] init];
-        recvQueue = [[MessageQueue alloc] init];
+        sendQueue = [[BlockingQueue alloc] init];
+        recvQueue = [[BlockingQueue alloc] init];
         
         segment = [[Segment alloc] init];
-        obuffer = [[IOBuffer alloc] init];
         
         threadLock = [[NSCondition alloc] init];
         totalSendBytesNumber = 0;
@@ -699,7 +542,6 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     [recvQueue clear];
     [sendQueue clear];
     [segment reset];
-    [obuffer clear];
     
     serverHost = nil;
     serverPort = 0;
@@ -725,46 +567,45 @@ static const Byte NOTIFY_TO_STOP = 0xff;
 }
 
 -(Message *) recvMessage {
-    return [recvQueue take];
+    return [recvQueue poll];
 }
 
 -(void) doSend:(Message *) bean {
-    NSUInteger pkgSize = 0;
-    [obuffer clear];
-    
-    // 预留一个整数（4个字节）的报文长度
-    [obuffer writeInt32:0];
-    
-    // 写入一个字节的SegmentHead类型信息
-    // 当前客户端固定为 1
-    [obuffer writeByte:1];
-    
-    // 写入完整SegmentHead信息
-
-    
-    // 写入MessageBean
-    //    [MessageBuffer pack:commandId :bean :obuffer];
-    
-    // 回填报文长度
-    pkgSize = [obuffer current] - sizeof(int);
-    pkgSize = [IOBuffer l2nInt32:(int) pkgSize];
-    [obuffer replaceBytes:&pkgSize :(NSRange) {0, sizeof(int)}];
-    
-    [obuffer flip];
-    
-    NSUInteger total = [obuffer limit];
-    NSUInteger count = total / IO_BUFFER_SIZE;
-    NSUInteger rest = total % IO_BUFFER_SIZE;
-    size_t cnt = 0;
-    for (int i = 0; i < count; ++i) {
-        [obuffer getBytes:bytes withLength:IO_BUFFER_SIZE];
-        cnt = send(hostLink, bytes, IO_BUFFER_SIZE, 0);
-        totalSendBytesNumber += cnt;
-    }
-    
-    [obuffer getBytes:bytes withLength:rest];
-    cnt = send(hostLink, bytes, rest, 0);
-    totalSendBytesNumber += cnt;
+//    NSUInteger pkgSize = 0;
+//    
+//    // 预留一个整数（4个字节）的报文长度
+//    [obuffer writeInt32:0];
+//    
+//    // 写入一个字节的SegmentHead类型信息
+//    // 当前客户端固定为 1
+//    [obuffer writeByte:1];
+//    
+//    // 写入完整SegmentHead信息
+//
+//    
+//    // 写入MessageBean
+//    //    [MessageBuffer pack:commandId :bean :obuffer];
+//    
+//    // 回填报文长度
+//    pkgSize = [obuffer current] - sizeof(int);
+//    pkgSize = [IOBuffer l2nInt32:(int) pkgSize];
+//    [obuffer replaceBytes:&pkgSize :(NSRange) {0, sizeof(int)}];
+//    
+//    [obuffer flip];
+//    
+//    NSUInteger total = [obuffer limit];
+//    NSUInteger count = total / DEFAULT_BUFFER_CHUNK_SIZE;
+//    NSUInteger rest = total % DEFAULT_BUFFER_CHUNK_SIZE;
+//    size_t cnt = 0;
+//    for (int i = 0; i < count; ++i) {
+//        [obuffer getBytes:bytes withLength:DEFAULT_BUFFER_CHUNK_SIZE];
+//        cnt = send(hostLink, bytes, DEFAULT_BUFFER_CHUNK_SIZE, 0);
+//        totalSendBytesNumber += cnt;
+//    }
+//    
+//    [obuffer getBytes:bytes withLength:rest];
+//    cnt = send(hostLink, bytes, rest, 0);
+//    totalSendBytesNumber += cnt;
 }
 
 - (void) notityLinkLost {
@@ -814,7 +655,7 @@ static const Byte NOTIFY_TO_STOP = 0xff;
             if (notification == NOTIFY_TO_STOP) { // 结束线程运行
                 break;
             } else {
-                message = [sendQueue take];
+                message = [sendQueue poll];
                 [self doSend:message];
             }
         }
@@ -831,6 +672,21 @@ static const Byte NOTIFY_TO_STOP = 0xff;
 
 -(NSUInteger) getTotalSendBytesNumber {
     return totalSendBytesNumber;
+}
+
+@end
+
+///////////////////////////////////////////////////////////////////////////////
+// Implementation of RpcSession
+///////////////////////////////////////////////////////////////////////////////
+@implementation RpcSession
+- (RpcSession*) initWithEndpoint:(Endpoint *)ep {
+    endpoint = ep;
+    return self;
+}
+
+- (void) sendRequest:(Message *)message {
+    [endpoint sendMessage:message];
 }
 
 @end
