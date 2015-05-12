@@ -15,6 +15,8 @@
 
 #define DEFAULT_BUFFER_CHUNK_SIZE   1024
 
+@class Message;
+typedef void (^ ResponseHandle)(Message*);
 typedef void (^ CallbackBlock)(PBGeneratedMessage*);
 
 typedef enum {
@@ -30,7 +32,7 @@ typedef enum {
     uint32_t stamp;
     Byte stage;
     PBGeneratedMessage *argument;
-    CallbackBlock callback;
+    ResponseHandle responseHandle;
 }
 
 @property (readonly) MESSAGE_COMMAND command;
@@ -38,7 +40,7 @@ typedef enum {
 @property (readonly) uint32_t stamp;
 @property (readonly) Byte stage;
 @property (readonly, strong) PBGeneratedMessage* argument;
-@property (strong) CallbackBlock callback;
+@property (strong) ResponseHandle responseHandle;
 
 - (Message*) initWithCommand:(MESSAGE_COMMAND)cmd;
 - (Message*) initwithServiceId:(int32_t)sid;

@@ -1,0 +1,47 @@
+// ${fileName}
+// Created by protobuf-rpc-gencode.
+// ${createTime}
+// DO NOT EDIT!
+
+#ifndef __${protoName}_rpc_H__
+\#define __${protoName}_rpc_H__
+
+#import "ProtobufRpc.h"
+#import "${protoName}.pb.h"
+
+#foreach ($service in $services)
+#set ($serviceName = $service.name)
+@protocol ${serviceName}Service <NSObject>
+@required
+#foreach ($method in $service.methodList)
+#set ($methodCode = ${util.hashCode($method)})
+#set ($inputType = ${util.getBaseName(${method.inputType})})
+#set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
+#set ($outputType = ${util.getBaseName($method.outputType)})
+- ($outputType*) ${method.name}:($inputType*) $argName;
+@end
+#end
+
+@interface ${serviceName}Client: ClientStub
+- (${serviceName}Client*) initWithRpcSession:(RpcSession*) session;
+#foreach ($method in $service.methodList)
+#set ($methodCode = ${util.hashCode($method)})
+#set ($inputType = ${util.getBaseName(${method.inputType})})
+#set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
+#set ($outputType = ${util.getBaseName($method.outputType)})
+- (${outputType}*) ${method.name}:(${inputType}*) $argName;
+- (void) ${method.name}Async:(${inputType}*) $argName :(CallbackBlock) callback;
+#end
+@end
+
+@interface ${serviceName} : NSObject <RpcServiceRegistry> {
+@private
+    id<${serviceName}Service> serviceImpl;
+}
+
+- (${serviceName}*) init;
+- (${serviceName}*) initWithServiceImpl:(id<${serviceName}Service>) impl;
+@end
+
+#end
+#endif

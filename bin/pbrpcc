@@ -52,7 +52,9 @@ if [ ! -n "$proto" ]; then
 	exit 2
 fi
 
-set -x
+#set -x
 if [ "$target" == "java" ]; then
 	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir --java_out=$outdir $proto
+elif [ "$target" == "objc" ]; then
+	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-objc=$script_dir/protoc-gen-objc --objc_out=$outdir --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir $proto
 fi

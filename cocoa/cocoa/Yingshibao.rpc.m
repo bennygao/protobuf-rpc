@@ -1,16 +1,12 @@
-//
-//  Yingshibao.rpc.m
-//  cocoa
-//
-//  Created by 高波 on 15/5/11.
-//  Copyright (c) 2015年 Benny Gao. All rights reserved.
-//
+// Yingshibao.rpc.m
+// Created by protobuf-rpc-gencode.
+// Tue May 12 20:31:56 CST 2015
+// DO NOT EDIT!
 
 #import <Foundation/Foundation.h>
 #import "Yingshibao.rpc.h"
 
 @implementation UserManager
-
 - (UserManager*) init {
     return [self initWithServiceImpl:nil];
 }
@@ -21,7 +17,9 @@
 }
 
 - (NSArray*) getServiceList {
-    return [NSArray arrayWithObjects:[NSNumber numberWithInt:-2051187760], nil];
+    return [NSArray arrayWithObjects:
+            [NSNumber numberWithInt:-2051187760],
+            nil];
 }
 
 - (PBGeneratedMessage*) invokeService:(int32_t)serviceId :(PBGeneratedMessage *)arg {
@@ -56,22 +54,85 @@
                                          userInfo:nil];
     }
 }
-
 @end
 
 @implementation UserManagerClient
-
-- (UserManagerClient*) initWithRpcSession:(RpcSession *)session {
+- (UserManagerClient*) initWithRpcSession:(RpcSession*)session {
     self = [super initWithRpcSession:session];
     return self;
 }
 
-- (RegisterResult*) registerNewUser:(UserInfo *)userInfo {
+- (RegisterResult*) registerNewUser:(UserInfo*)userInfo {
     return (RegisterResult*) [self syncRpc:-2051187760 :userInfo];
 }
 
-- (void) registerNewUserAsync:(UserInfo *)userInfo :(CallbackBlock)callback {
+- (void) registerNewUserAsync:(UserInfo*)userInfo :(CallbackBlock)callback {
     [self asyncRpc:-2051187760 :userInfo :callback];
 }
-
 @end
+
+@implementation Push
+- (Push*) init {
+    return [self initWithServiceImpl:nil];
+}
+
+- (Push*) initWithServiceImpl:(id<PushService>)impl {
+    serviceImpl = impl;
+    return self;
+}
+
+- (NSArray*) getServiceList {
+    return [NSArray arrayWithObjects:
+            [NSNumber numberWithInt:1816601235],
+            nil];
+}
+
+- (PBGeneratedMessage*) invokeService:(int32_t)serviceId :(PBGeneratedMessage *)arg {
+    switch (serviceId) {
+        case 1816601235:
+            return [serviceImpl pushBarrage:(Barrage*) arg];
+        default:
+            @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
+                                           reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
+                                         userInfo:nil];
+    }
+}
+
+- (PBGeneratedMessageBuilder*) getBuilderForRequest:(int32_t)serviceId {
+    switch (serviceId) {
+        case 1816601235:
+            return [Barrage builder];
+        default:
+            @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
+                                           reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
+                                         userInfo:nil];
+    }
+}
+
+- (PBGeneratedMessageBuilder*) getBuilderForResponse:(int32_t)serviceId {
+    switch (serviceId) {
+        case 1816601235:
+            return [None builder];
+        default:
+            @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
+                                           reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
+                                         userInfo:nil];
+    }
+}
+@end
+
+@implementation PushClient
+- (PushClient*) initWithRpcSession:(RpcSession*)session {
+    self = [super initWithRpcSession:session];
+    return self;
+}
+
+- (None*) pushBarrage:(Barrage*)barrage {
+    return (None*) [self syncRpc:1816601235 :barrage];
+}
+
+- (void) pushBarrageAsync:(Barrage*)barrage :(CallbackBlock)callback {
+    [self asyncRpc:1816601235 :barrage :callback];
+}
+@end
+

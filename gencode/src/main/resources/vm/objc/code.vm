@@ -1,0 +1,103 @@
+// ${fileName}
+// Created by protobuf-rpc-gencode.
+// ${createTime}
+// DO NOT EDIT!
+
+#import <Foundation/Foundation.h>
+#import "${protoName}.rpc.h"
+
+#foreach ($service in $services)
+#set ($serviceName = $service.name)
+@implementation ${serviceName}
+- (${serviceName}*) init {
+    return [self initWithServiceImpl:nil];
+}
+
+- (${serviceName}*) initWithServiceImpl:(id<${serviceName}Service>)impl {
+    serviceImpl = impl;
+    return self;
+}
+
+- (NSArray*) getServiceList {
+    return [NSArray arrayWithObjects:
+#foreach ($method in $service.methodList)
+#set ($methodCode = ${util.hashCode($method)})
+            [NSNumber numberWithInt:${methodCode}],
+#end
+            nil];
+}
+
+- (PBGeneratedMessage*) invokeService:(int32_t)serviceId :(PBGeneratedMessage *)arg {
+    switch (serviceId) {
+#foreach ($method in $service.methodList)
+#set ($methodCode = ${util.hashCode($method)})
+#set ($inputType = ${util.getBaseName(${method.inputType})})
+#set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
+#set ($outputType = ${util.getBaseName($method.outputType)})
+        case ${methodCode}:
+            return [serviceImpl ${method.name}:(${inputType}*) arg];
+#end
+        default:
+            @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
+                                           reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
+                                         userInfo:nil];
+    }
+}
+
+- (PBGeneratedMessageBuilder*) getBuilderForRequest:(int32_t)serviceId {
+    switch (serviceId) {
+#foreach ($method in $service.methodList)
+#set ($methodCode = ${util.hashCode($method)})
+#set ($inputType = ${util.getBaseName(${method.inputType})})
+#set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
+#set ($outputType = ${util.getBaseName($method.outputType)})
+        case ${methodCode}:
+            return [${inputType} builder];
+#end
+        default:
+            @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
+                                           reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
+                                         userInfo:nil];
+    }
+}
+
+- (PBGeneratedMessageBuilder*) getBuilderForResponse:(int32_t)serviceId {
+    switch (serviceId) {
+#foreach ($method in $service.methodList)
+#set ($methodCode = ${util.hashCode($method)})
+#set ($inputType = ${util.getBaseName(${method.inputType})})
+#set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
+#set ($outputType = ${util.getBaseName($method.outputType)})
+        case ${methodCode}:
+            return [${outputType} builder];
+#end
+        default:
+            @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
+                                           reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
+                                         userInfo:nil];
+    }
+}
+@end
+
+@implementation ${serviceName}Client
+- (${serviceName}Client*) initWithRpcSession:(RpcSession*)session {
+    self = [super initWithRpcSession:session];
+    return self;
+}
+
+#foreach ($method in $service.methodList)
+#set ($methodCode = ${util.hashCode($method)})
+#set ($inputType = ${util.getBaseName(${method.inputType})})
+#set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
+#set ($outputType = ${util.getBaseName($method.outputType)})
+- (${outputType}*) ${method.name}:(${inputType}*)${argName} {
+    return (${outputType}*) [self syncRpc:${methodCode} :${argName}];
+}
+
+- (void) ${method.name}Async:(${inputType}*)${argName} :(CallbackBlock)callback {
+    [self asyncRpc:${methodCode} :${argName} :callback];
+}
+#end
+@end
+
+#end

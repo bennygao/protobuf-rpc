@@ -19,6 +19,10 @@ public class RpcGenerator {
 			System.exit(1);
 		}
 
+		PrintStream ps = new PrintStream(new FileOutputStream("/tmp/1"));
+		ps.println("GENRPC_ARGS=" + genrpcArgs);
+		ps.close();
+
 		String[] params = genrpcArgs.split(" ");
 		if (params.length != 2) {
 			System.err.println("ERROR: error GENRPC_ARGS " + genrpcArgs);
@@ -29,7 +33,7 @@ public class RpcGenerator {
 		if (params[0].equalsIgnoreCase("java")) {
 			factory = new JavaCodeGeneratorFactory();
 		} else if (params[0].equalsIgnoreCase("objc")) {
-			factory = null;
+			factory = new ObjcCodeGeneratorFactory();
 		} else {
 			factory = null;
 		}

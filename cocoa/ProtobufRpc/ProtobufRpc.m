@@ -21,15 +21,15 @@ static NSString* getReason(const char *file, const int line, const char *routine
             file, line, routine, errno, strerror(errno)];
 }
 
-static NSString* formatReason(const char *file, const int line, const char *format, ...) {
-    va_list ap;
-    va_start(ap, format);
-    char tmpstr[256];
-    bzero(tmpstr, sizeof(tmpstr));
-    vsnprintf(tmpstr, sizeof(tmpstr) - 1, format, ap);
-    va_end(ap);
-    return [NSString stringWithCString:tmpstr encoding:NSASCIIStringEncoding];
-}
+//static NSString* formatReason(const char *file, const int line, const char *format, ...) {
+//    va_list ap;
+//    va_start(ap, format);
+//    char tmpstr[256];
+//    bzero(tmpstr, sizeof(tmpstr));
+//    vsnprintf(tmpstr, sizeof(tmpstr) - 1, format, ap);
+//    va_end(ap);
+//    return [NSString stringWithCString:tmpstr encoding:NSASCIIStringEncoding];
+//}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Implementation of Message
@@ -45,7 +45,7 @@ static const Byte STAGE_RESPONSE = 1;
 @synthesize stamp;
 @synthesize stage;
 @synthesize argument;
-@synthesize callback;
+@synthesize responseHandle;
 
 - (Message*) initWithCommand:(MESSAGE_COMMAND) cmd {
     self->command = cmd;
@@ -53,7 +53,7 @@ static const Byte STAGE_RESPONSE = 1;
     self->stamp = 0;
     self->stage = STAGE_UNKNOWN;
     self->argument = nil;
-    self->callback = nil;
+    self->responseHandle = nil;
     return self;
 }
 
@@ -67,7 +67,7 @@ static const Byte STAGE_RESPONSE = 1;
     self->stamp = aStamp;
     self->stage = aStage;
     self->argument = arg;
-    self->callback = nil;
+    self->responseHandle = nil;
     return self;
 }
 
@@ -83,13 +83,14 @@ static const Byte NOTIFY_TO_SEND_MESSAGE_BEAN = 0;
 static const Byte NOTIFY_TO_STOP = 0xff;
 
 @implementation BlockingQueue
+
+- (BlockingQueue *) init {
+    return [self initWithCapacity:DEFAULT_QUEUE_SIZE];
+}
+
 - (BlockingQueue *) initWithCapacity:(NSUInteger)capacity {
-    self = [super init];
-    if (self) {
-        array = [[NSMutableArray alloc] initWithCapacity:capacity];
-        lock = [[NSCondition alloc] init];
-    }
-    
+    array = [[NSMutableArray alloc] initWithCapacity:capacity];
+    lock = [[NSCondition alloc] init];
     return self;
 }
 
@@ -104,15 +105,11 @@ static const Byte NOTIFY_TO_STOP = 0xff;
     }
 }
 
-- (BlockingQueue *) init {
-    return [self initWithCapacity:DEFAULT_QUEUE_SIZE];
-}
-
 - (void) add:(id)object {
     if (object == nil) {
         return;
     }
-
+    
     [lock lock];
     @try {
         [array addObject:object];
@@ -200,18 +197,20 @@ static uint32_t STAMP = 0;
 - (PBGeneratedMessage*) syncRpc:(int32_t)serviceId :(PBGeneratedMessage *)arg {
     Message *request = [[Message alloc] initwithServiceId:serviceId stamp:[self getStamp] stage:STAGE_REQUEST argument:arg];
     BlockingQueue *queue = [[BlockingQueue alloc] initWithCapacity:1];
-    request.callback = ^ (PBGeneratedMessage *response) {
-        [queue add:response];
+    request.responseHandle = ^(Message *message) {
+        [queue add:message];
     };
     
     [session sendRequest:request];
-    PBGeneratedMessage *response = [queue take];
-    return response;
+    Message *response = [queue take];
+    return response.argument;
 }
 
 - (void) asyncRpc:(int32_t)serviceId :(PBGeneratedMessage *)arg :(CallbackBlock)callback {
     Message *request = [[Message alloc] initwithServiceId:serviceId stamp:[self getStamp] stage:STAGE_REQUEST argument:arg];
-    request.callback = callback;
+    request.responseHandle = ^(Message *message) {
+        callback(message.argument);
+    };
     [session sendRequest:request];
 }
 
@@ -506,6 +505,7 @@ static uint32_t STAMP = 0;
     needBytes = PACKAGE_SIZE_FIELD_LENGTH;
     gotBytes = 0;
     messageSize = 0;
+    [buffer clear];
 }
 
 - (size_t) recv:(int) sock :(void *) buf :(size_t) len {
@@ -755,6 +755,9 @@ static uint32_t STAMP = 0;
 }
 
 -(void) clear {
+    serverHost = nil;
+    serverPort = 0;
+    
     if (hostLink > 0) {
         close(hostLink);
         hostLink = -1;
@@ -772,14 +775,26 @@ static uint32_t STAMP = 0;
     
     [sendQueue clear];
     [segment reset];
-    
-    serverHost = nil;
-    serverPort = 0;
+    [buffer clear];
+    [stampsMap removeAllObjects];
+    [operationQueue cancelAllOperations];
+}
+
+- (void) cancelAllWaitingCall {
+    Message *cancelMessage = [[Message alloc] initWithCommand:cancel];
+    NSArray *handles = [stampsMap allValues];
+    for (int i = 0; i < [handles count]; ++i) {
+        ResponseHandle handle = [handles objectAtIndex:i];
+        handle(cancelMessage);
+    }
+    [stampsMap removeAllObjects];
 }
 
 -(void) stop {
     send(localSocketPair[1], &NOTIFY_TO_STOP, sizeof(Byte), 0);
+    
     [threadLock lock]; // 等待网络读写线程完全退出
+    [self cancelAllWaitingCall];
     [self clear];
     [threadLock unlock];
 }
@@ -840,7 +855,7 @@ static uint32_t STAMP = 0;
     // 如果是请求
     if (message.stage == STAGE_REQUEST) {
         int32_t stamp = message.stamp;
-        [stampsMap setObject:message.callback forKey:[NSNumber numberWithInt:stamp]];
+        [stampsMap setObject:message.responseHandle forKey:[NSNumber numberWithInt:stamp]];
     }
 }
 
@@ -864,15 +879,15 @@ static uint32_t STAMP = 0;
         }
     } else { // 收到响应
         NSNumber *key = [NSNumber numberWithInt:stamp];
-        CallbackBlock block = [stampsMap objectForKey:key];
+        ResponseHandle handle = [stampsMap objectForKey:key];
         [stampsMap removeObjectForKey:key];
         
-        if (block == nil) {
+        if (handle == nil) {
             NSString *info =[NSString stringWithFormat:@"Unregistered handle for STAMP:%d", stamp];
             NSLog(@"%@", info);
         } else {
             operation = [NSBlockOperation blockOperationWithBlock:^() {
-                block(message.argument);
+                handle(message);
             }];
         }
     }

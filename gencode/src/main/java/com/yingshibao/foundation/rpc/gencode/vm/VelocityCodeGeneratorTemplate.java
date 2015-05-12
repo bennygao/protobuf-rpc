@@ -47,16 +47,21 @@ public class VelocityCodeGeneratorTemplate {
 		}
 	}
 
-	protected Writer getSourceWriter(String pathname, String encoding)
+	protected Writer getSourceWriter(File file, String encoding)
 			throws Exception {
 		Writer writer;
 		if (encoding != null) {
-			writer = new OutputStreamWriter(new FileOutputStream(pathname),
+			writer = new OutputStreamWriter(new FileOutputStream(file),
 					encoding);
 		} else {
-			writer = new FileWriter(pathname);
+			writer = new FileWriter(file);
 		}
-		
+
 		return new LineEndFilterWriter(writer);
+	}
+
+	protected Writer getSourceWriter(String pathname, String encoding)
+			throws Exception {
+		return getSourceWriter(new File(pathname), encoding);
 	}
 }
