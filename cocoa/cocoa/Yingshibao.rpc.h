@@ -12,22 +12,24 @@
 #import "ProtobufRpc.h"
 #import "Yingshibao.pb.h"
 
-@interface UserManagerService : NSObject
+@protocol UserManagerService <NSObject>
+@required
 - (RegisterResult*) registerNewUser:(UserInfo*) userInfo;
 @end
 
-@interface UserManagerClient : NSObject
+@interface UserManagerClient : ClientStub
+- (UserManagerClient*) initWithRpcSession:(RpcSession*) session;
 - (RegisterResult*) registerNewUser:(UserInfo*) userInfo;
 - (void) registerNewUserAsync:(UserInfo*) userInfo :(CallbackBlock) callback;
 @end
 
-@interface UserManager : RpcServiceRegistry {
+@interface UserManager : NSObject <RpcServiceRegistry> {
 @private
-    UserManagerService *serviceImpl;
+    id<UserManagerService> serviceImpl;
 }
 
 - (UserManager*) init;
-- (UserManager*) initWithServiceImpl:(UserManagerService*) impl;
+- (UserManager*) initWithServiceImpl:(id<UserManagerService>) impl;
 @end
 
 #endif

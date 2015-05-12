@@ -28,7 +28,7 @@ public class UserManagerImpl implements UserManager.Impl {
 			rspBuilder.setSessionId("ABCDEFG0123456789");
 		}
 		
-		push(session);
+//		push(session);
 		
 		return rspBuilder.build();
 	}

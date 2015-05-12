@@ -15,7 +15,7 @@
     return [self initWithServiceImpl:nil];
 }
 
-- (UserManager*) initWithServiceImpl:(UserManagerService *)impl {
+- (UserManager*) initWithServiceImpl:(id<UserManagerService>)impl {
     serviceImpl = impl;
     return self;
 }
@@ -24,13 +24,13 @@
     return [NSArray arrayWithObjects:[NSNumber numberWithInt:-2051187760], nil];
 }
 
-- (PBGeneratedMessage*) invokeService:(int32_t)serviceId :(PBGeneratedMessage *)arg :(RpcSession *)session {
+- (PBGeneratedMessage*) invokeService:(int32_t)serviceId :(PBGeneratedMessage *)arg {
     switch (serviceId) {
         case -2051187760:
             return [serviceImpl registerNewUser:(UserInfo*) arg];
         default:
             @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
-                                           reason:@""
+                                           reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
                                          userInfo:nil];
     }
 }
@@ -40,7 +40,9 @@
         case -2051187760:
             return [UserInfo builder];
         default:
-            return nil;
+            @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
+                                           reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
+                                         userInfo:nil];
     }
 }
 
@@ -49,8 +51,27 @@
         case -2051187760:
             return [RegisterResult builder];
         default:
-            return nil;
+            @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
+                                           reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
+                                         userInfo:nil];
     }
+}
+
+@end
+
+@implementation UserManagerClient
+
+- (UserManagerClient*) initWithRpcSession:(RpcSession *)session {
+    self = [super initWithRpcSession:session];
+    return self;
+}
+
+- (RegisterResult*) registerNewUser:(UserInfo *)userInfo {
+    return (RegisterResult*) [self syncRpc:-2051187760 :userInfo];
+}
+
+- (void) registerNewUserAsync:(UserInfo *)userInfo :(CallbackBlock)callback {
+    [self asyncRpc:-2051187760 :userInfo :callback];
 }
 
 @end

@@ -59,11 +59,12 @@ typedef enum {
 - (void) sendRequest:(Message*) message;
 @end
 
-@interface RpcServiceRegistry <NSObject>
+@protocol RpcServiceRegistry <NSObject>
+@required
 - (NSArray*) getServiceList;
 - (PBGeneratedMessageBuilder*) getBuilderForRequest:(int32_t)serviceId;
 - (PBGeneratedMessageBuilder*) getBuilderForResponse:(int32_t)serviceId;
-- (PBGeneratedMessage*) invokeService:(int32_t)serviceId :(PBGeneratedMessage*)arg :(RpcSession*)session;
+- (PBGeneratedMessage*) invokeService:(int32_t)serviceId :(PBGeneratedMessage*)arg;
 @end
 
 @interface ClientStub : NSObject {
@@ -74,7 +75,7 @@ typedef enum {
 
 - (ClientStub*) initWithRpcSession:(RpcSession*) rs;
 - (uint32_t) getStamp;
-- (PBGeneratedMessage*) syncRpc:(uint32_t) serviceId :(PBGeneratedMessage*) arg;
+- (PBGeneratedMessage*) syncRpc:(int32_t) serviceId :(PBGeneratedMessage*) arg;
 - (void) asyncRpc:(int32_t) serviceId :(PBGeneratedMessage*) arg :(CallbackBlock) callback;
 @end
 
@@ -100,7 +101,31 @@ typedef enum  {
     read_segment_content = 2
 } SEGMENT_PHASE;
 
-@interface BytesOrderUtil : NSObject
+@interface IOBuffer : NSObject {
+    NSMutableData *dataBuffer;
+    NSUInteger limit;
+    NSUInteger current;
+}
+
+@property (readonly) NSMutableData *dataBuffer;
+@property (readwrite) NSUInteger limit;
+@property (readonly) NSUInteger current;
+
+- (IOBuffer *) init;
+- (IOBuffer *) initWithCapacity:(NSUInteger) capacity;
+
+- (void) rewind;
+- (void) flip;
+- (void) clear;
+- (NSUInteger) moveCurrent:(NSInteger) adjust;
+- (NSUInteger) remaining;
+- (Byte*) currentPtr;
+
+- (void) increaseCurrent:(NSUInteger) length;
+- (void) extendBufferToContain:(NSUInteger) length;
+- (NSUInteger) copyData:(void *) dest;
+- (NSUInteger) copyData:(void *) dest :(NSRange) range;
+
 + (void) reverseBytesOrder:(void*) bytes :(int) size;
 
 + (short) n2lShort:(short) v;
@@ -114,6 +139,27 @@ typedef enum  {
 + (long long)l2nLong:(long long) v;
 + (float) l2nFloat:(float) v;
 + (double) l2nDouble:(double) v;
+
+- (void) getBytes:(void*)dest withLength:(NSUInteger)length;
+- (Byte) readByte;
+- (short) readShort;
+- (int32_t) readInt32;
+- (long long) readLong;
+- (float) readFloat;
+- (double) readDouble;
+- (NSString*) readUTF;
+
+- (void) replaceBytes:(const void *) src :(NSRange) range;
+- (void) putBytes:(const void *) src :(NSUInteger) length;
+- (void) putData:(NSData *) data;
+- (void) writeByte:(Byte) v;
+- (void) writeShort:(short) v;
+- (void) writeInt32:(int32_t) v;
+- (void) writeLong:(long long) v;
+- (void) writeFloat:(float) v;
+- (void) writeDouble:(double) v;
+- (void) writeUTF:(NSString*) v;
+
 @end
 
 @interface Segment : NSObject {
@@ -122,16 +168,17 @@ typedef enum  {
     NSUInteger needBytes;
     NSUInteger gotBytes;
     NSUInteger messageSize;
-    NSMutableData *buffer;
+    IOBuffer *buffer;
+    Endpoint *endpoint;
     
     NSUInteger totalRecvBytesNumber;
 }
 
 @property (readonly) NSUInteger totalRecvBytesNumber;
 
-- (Segment *) init;
+- (Segment *) initWithEndpoint:(Endpoint*) ep;
 - (void) reset;
-- (NSUInteger) extendBuffer:(NSUInteger) expectedCapacity;
+- (Message *) action:(int)sock;
 @end
 
 @interface Endpoint : NSObject {
@@ -143,31 +190,35 @@ typedef enum  {
     int localSocketPair[2];
     
     BlockingQueue *sendQueue;
-    BlockingQueue *recvQueue;
     
-    Byte bytes[DEFAULT_BUFFER_CHUNK_SIZE];
+    IOBuffer *buffer;
     NSUInteger totalSendBytesNumber;
     
+    NSMutableDictionary *serviceRegistry;
     Segment *segment;
     NSCondition *threadLock;
+    NSMutableDictionary *stampsMap;
+    NSOperationQueue *operationQueue;
 }
 
 @property (readonly) NSString *serverHost;
 @property (readonly) ushort serverPort;
 
--(Endpoint *) init;
--(NSString *) getServerIpAddress;
+- (Endpoint *) init;
+- (NSString *) getServerIpAddress;
 
--(BOOL) connectToHost:(NSString *)addr withPort:(ushort)port inSeconds:(NSUInteger)timeout;
--(void) start;
--(void) stop;
--(void) run;
+- (BOOL) connectToHost:(NSString *)addr withPort:(ushort)port inSeconds:(NSUInteger)timeout;
+- (void) start;
+- (void) stop;
+- (void) run;
 
--(void) sendMessage:(Message *) bean;
--(Message *) recvMessageBean;
+- (void) registerService:(id<RpcServiceRegistry>) service;
+- (id<RpcServiceRegistry>) getService:(int32_t)serviceId;
 
--(NSUInteger) getTotalRecvBytesNumber;
--(NSUInteger) getTotalSendBytesNumber;
+- (void) sendMessage:(Message *) message;
+
+- (NSUInteger) getTotalRecvBytesNumber;
+- (NSUInteger) getTotalSendBytesNumber;
 @end
 
 

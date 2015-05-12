@@ -47,7 +47,8 @@ public class Client {
 		client.registerNewUser(userInfo, new Endpoint.Callback() {
 			@Override
 			public void onResponse(GeneratedMessage response) {
-				logger.info("ASYNC:注册用户返回:" + TextFormat.printToUnicodeString(response));
+				RegisterResult result = (RegisterResult) response;
+				logger.info("ASYNC:注册用户返回:" + TextFormat.printToUnicodeString(result));
 				counter.decrementAndGet();
 			}
 		});
