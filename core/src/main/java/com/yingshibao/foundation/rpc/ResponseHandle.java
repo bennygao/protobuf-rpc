@@ -17,6 +17,10 @@ public class ResponseHandle implements Runnable {
 		this.response = null;
 	}
 
+	public RpcStrategy getStrategy() {
+		return this.strategy;
+	}
+
 	public ResponseHandle(Callback callback) {
 		this.strategy = RpcStrategy.async;
 		this.callback = callback;

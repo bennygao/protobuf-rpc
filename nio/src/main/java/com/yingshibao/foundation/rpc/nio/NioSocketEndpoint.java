@@ -17,16 +17,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.yingshibao.foundation.rpc.ResponseHandle;
+import com.yingshibao.foundation.rpc.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Parser;
-import com.yingshibao.foundation.rpc.Endpoint;
-import com.yingshibao.foundation.rpc.Message;
-import com.yingshibao.foundation.rpc.ServiceRegistry;
 
 public class NioSocketEndpoint extends Endpoint implements Runnable {
     class IoBufferHolder {
@@ -345,13 +342,22 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             if (registry == null) {
                 logger.error("未注册的serviceId: " + serviceId);
             } else {
-                GeneratedMessage returns = registry.invokeService(serviceId,
-                        message.getArgument(),
-                        new NioSocketSession(this));
-                Message returnsMessage = new Message(serviceId,
-                        message.getStamp(), Message.STAGE_RESPONSE,
-                        returns);
-                sendResponse(returnsMessage);
+                Runnable task = () -> {
+                    try {
+                        RpcSession session = new NioSocketSession(this);
+                        GeneratedMessage returns = registry.invokeService(serviceId,
+                                message.getArgument(),
+                                session);
+                        Message returnsMessage = new Message(serviceId,
+                                message.getStamp(), Message.STAGE_RESPONSE,
+                                returns);
+
+                        NioSocketEndpoint.this.sendResponse(returnsMessage);
+                    } catch (Exception e) {
+                        logger.error("error when handle request for message:" + message);
+                    }
+                };
+                executors.submit(task);
             }
         }
     }
