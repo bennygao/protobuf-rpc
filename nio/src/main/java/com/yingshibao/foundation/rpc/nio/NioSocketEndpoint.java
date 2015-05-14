@@ -16,10 +16,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 import com.yingshibao.foundation.rpc.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -52,7 +51,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
     }
 
     class Sender extends IoBufferHolder {
-        Logger logger = LoggerFactory.getLogger(getClass());
+        Logger logger = Logger.getLogger(getClass().getName());
 
         Sender() {
         }
@@ -124,7 +123,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
                     messageSize = buffer.getInt();
                     if (messageSize < 9) { // stamp(i32/4) + serviceId(i32/4) +
                         // stage(byte/1)
-                        throw new IllegalArgumentException("错误的Message-Size:"
+                        throw new IllegalArgumentException("error Message-Size:"
                                 + messageSize);
                     }
 
@@ -195,7 +194,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         commandBuffer = ByteBuffer.allocate(1);
 
         stampsMap = new HashMap<>();
-        logger = LoggerFactory.getLogger(getClass());
+        logger = Logger.getLogger(getClass().getName());
 
         remoteAddress = null;
         remoteChannel = null;
@@ -291,7 +290,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             } catch (ClosedSelectorException cse) { // Endpoint关闭
                 return;
             } catch (Exception e) {
-                logger.error("Endpoint stopped by exception. ", e);
+                logger.severe("Endpoint stopped by exception: " + e);
                 close();
                 return;
             }
@@ -328,7 +327,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             ResponseHandle handle = stampsMap.remove(message
                     .getStamp());
             if (handle == null) {
-                logger.error("unregistered handle for request: " + message);
+                logger.severe("unregistered handle for response: " + message);
             } else {
                 handle.assignResponse(message);
                 executors.submit(handle);
@@ -336,7 +335,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         } else { // 处理请求
             ServiceRegistry registry = getRegistry(serviceId);
             if (registry == null) {
-                logger.error("未注册的serviceId: " + serviceId);
+                logger.severe("unregistered handle for request: " + serviceId);
             } else {
                 RequestHandle handle = new RequestHandle(message, registry, new NioSocketSession(this));
                 executors.submit(handle);
