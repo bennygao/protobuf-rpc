@@ -21,9 +21,9 @@ public class MinaIoSession implements RpcSession {
     }
 
     @Override
-    public void sendRequest(Message message) {
+    public void sendMessage(Message message) {
         ResponseHandle handle = message.getResponseHandle();
-        if (handle != null) {
+        if (message.getStage() == Message.STAGE_REQUEST && handle != null) {
             if (handle.getStrategy() == Endpoint.RpcStrategy.sync) {
                 throw new UnsupportedOperationException("MINA implementation don't support synchronized call, use asynchronous call to replace it.");
             }

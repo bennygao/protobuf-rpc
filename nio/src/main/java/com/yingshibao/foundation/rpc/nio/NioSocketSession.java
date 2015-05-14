@@ -15,11 +15,11 @@ public class NioSocketSession implements RpcSession {
 	}
 
 	@Override
-	public void sendRequest(Message message) {
+	public void sendMessage(Message message) {
 		try {
-			endpoint.sendRequest(message);
+			endpoint.sendMessage(message);
 		} catch (Exception e) {
-			logger.error("send request error.", e);
+			logger.error("send message error." + message, e);
 		}
 		
 	}

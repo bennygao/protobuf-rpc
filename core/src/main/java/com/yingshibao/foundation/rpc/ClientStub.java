@@ -41,7 +41,7 @@ public class ClientStub {
 		request.setResponseHandle(new ResponseHandle(queue));
 		Message response = null;
 		try {
-			session.sendRequest(request);
+			session.sendMessage(request);
 			response = queue.take();
 		} catch (Exception e) {
 			throw e;
@@ -60,6 +60,6 @@ public class ClientStub {
 			Endpoint.Callback callback) throws Exception {
 		Message request = new Message(serviceId, STAMP.incrementAndGet(), Message.STAGE_REQUEST, arg);
 		request.setResponseHandle(new ResponseHandle(callback));
-		session.sendRequest(request);
+		session.sendMessage(request);
 	}
 }

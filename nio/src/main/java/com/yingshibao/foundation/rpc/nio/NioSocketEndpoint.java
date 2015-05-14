@@ -306,12 +306,8 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         sinkChannel.write(cmdBuffer);
     }
 
-    public void sendRequest(Message request) throws IOException {
-        addToSendQueue(request);
-    }
-
-    public void sendResponse(Message response) throws IOException {
-        addToSendQueue(response);
+    public void sendMessage(Message message) throws IOException {
+        addToSendQueue(message);
     }
 
     private void registerMessage(Message message) {
@@ -332,7 +328,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             ResponseHandle handle = stampsMap.remove(message
                     .getStamp());
             if (handle == null) {
-                logger.error("未注册处理的消息: " + message);
+                logger.error("unregistered handle for request: " + message);
             } else {
                 handle.assignResponse(message);
                 executors.submit(handle);
@@ -342,22 +338,8 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             if (registry == null) {
                 logger.error("未注册的serviceId: " + serviceId);
             } else {
-                Runnable task = () -> {
-                    try {
-                        RpcSession session = new NioSocketSession(this);
-                        GeneratedMessage returns = registry.invokeService(serviceId,
-                                message.getArgument(),
-                                session);
-                        Message returnsMessage = new Message(serviceId,
-                                message.getStamp(), Message.STAGE_RESPONSE,
-                                returns);
-
-                        NioSocketEndpoint.this.sendResponse(returnsMessage);
-                    } catch (Exception e) {
-                        logger.error("error when handle request for message:" + message);
-                    }
-                };
-                executors.submit(task);
+                RequestHandle handle = new RequestHandle(message, registry, new NioSocketSession(this));
+                executors.submit(handle);
             }
         }
     }
