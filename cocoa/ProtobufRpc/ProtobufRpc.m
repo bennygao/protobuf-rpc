@@ -867,8 +867,7 @@ static uint32_t STAMP = 0;
     if (message.stage == STAGE_REQUEST) { // 收到请求
         id<RpcServiceRegistry> registry = [self getService:serviceId];
         if (registry == nil) {
-            NSString *info =[NSString stringWithFormat:@"Unregistered handle for serviceId:%d", serviceId];
-            NSLog(@"%@", info);
+            NSLog(@"%@", [NSString stringWithFormat:@"Unregistered handle for serviceId:%d", serviceId]);
         } else {
             operation = [NSBlockOperation blockOperationWithBlock:^() {
                 int32_t stamp = message.stamp;

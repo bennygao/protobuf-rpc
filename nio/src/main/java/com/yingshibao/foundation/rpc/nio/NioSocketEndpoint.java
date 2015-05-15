@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
 
 import com.yingshibao.foundation.rpc.*;
 
@@ -51,14 +50,12 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
     }
 
     class Sender extends IoBufferHolder {
-        Logger logger = Logger.getLogger(getClass().getName());
-
         Sender() {
         }
 
         void sendMessage(Message message, SocketChannel channel)
                 throws IOException {
-            int messageSize = 9;
+            int messageSize = 9; // int32(stamp) + int32(serviceId) + byte(stage)
             GeneratedMessage arg = message.getArgument();
             if (arg != null) {
                 messageSize += arg.getSerializedSize();
@@ -78,8 +75,6 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             while ((buffer.remaining()) > 0) {
                 channel.write(buffer);
             }
-
-            logger.info("message sent: " + message);
         }
     }
 
@@ -102,7 +97,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         }
 
         Message recvMessage(SocketChannel channel) throws IOException {
-            ByteBuffer buffer = null;
+            ByteBuffer buffer;
 
             if (currentPhase == PHASE_INIT) {
                 buffer = getIoBuffer();
@@ -170,6 +165,8 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
     }
 
 
+    public final static int DEFAULT_EXECUTORS_NUM = 2;
+
     private SocketAddress remoteAddress;
     private Queue<Message> sendQueue;
     private SocketChannel remoteChannel;
@@ -184,17 +181,17 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
     private ExecutorService executors;
     private Map<Integer, ResponseHandle> stampsMap;
     private Thread thread;
-    private Logger logger;
+    private int executorsNum;
 
-    public NioSocketEndpoint() {
+    public NioSocketEndpoint(int executorsNum) {
+        this.executorsNum = executorsNum;
+
         sendQueue = new ConcurrentLinkedQueue<>();
         cmdBuffer = ByteBuffer.allocateDirect(8);
         receiver = new Receiver(this);
         sender = new Sender();
         commandBuffer = ByteBuffer.allocate(1);
-
         stampsMap = new HashMap<>();
-        logger = Logger.getLogger(getClass().getName());
 
         remoteAddress = null;
         remoteChannel = null;
@@ -203,6 +200,10 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         sourceChannel = null;
         selector = null;
         thread = null;
+    }
+
+    public NioSocketEndpoint() {
+        this(DEFAULT_EXECUTORS_NUM);
     }
 
     public boolean connect(String remoteAddr, int port) {
@@ -219,7 +220,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
                 try {
                     remoteChannel.close();
                 } catch (Exception ex) {
-
+                    ex.printStackTrace();
                 } finally {
                     remoteChannel = null;
                 }
@@ -259,7 +260,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         try {
             thread.join();
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
         close();
@@ -290,23 +291,19 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             } catch (ClosedSelectorException cse) { // Endpoint关闭
                 return;
             } catch (Exception e) {
-                logger.severe("Endpoint stopped by exception: " + e);
+                e.printStackTrace();
                 close();
                 return;
             }
         }
     }
 
-    private synchronized void addToSendQueue(Message message) throws IOException {
+    public synchronized void sendMessage(Message message) throws IOException {
         cmdBuffer.clear();
         cmdBuffer.putInt(ControlCommand.send_message.ordinal());
         cmdBuffer.flip();
         sendQueue.add(message);
         sinkChannel.write(cmdBuffer);
-    }
-
-    public void sendMessage(Message message) throws IOException {
-        addToSendQueue(message);
     }
 
     private void registerMessage(Message message) {
@@ -327,7 +324,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             ResponseHandle handle = stampsMap.remove(message
                     .getStamp());
             if (handle == null) {
-                logger.severe("unregistered handle for response: " + message);
+                System.err.println("unregistered handle for response: " + message);
             } else {
                 handle.assignResponse(message);
                 executors.submit(handle);
@@ -335,7 +332,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         } else { // 处理请求
             ServiceRegistry registry = getRegistry(serviceId);
             if (registry == null) {
-                logger.severe("unregistered handle for request: " + serviceId);
+                System.err.println("unregistered handle for request: " + serviceId);
             } else {
                 RequestHandle handle = new RequestHandle(message, registry, new NioSocketSession(this));
                 executors.submit(handle);
@@ -367,7 +364,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
                 if (message == null) { // 网络数据没到全，消息尚未接收完。
                     return true;
                 } else {
-                    logger.info("received message: " + message);
+                    System.out.println("received message: " + message);
                     onReceivedMessage(message);
                 }
 
@@ -382,7 +379,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             try {
                 selector.close();
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
         }
 
@@ -390,7 +387,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             try {
                 sourceChannel.close();
             } catch (Exception e) {
-
+                e.printStackTrace();
             } finally {
                 sourceChannel = null;
             }
@@ -398,7 +395,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             try {
                 sinkChannel.close();
             } catch (Exception e) {
-
+                e.printStackTrace();
             } finally {
                 sinkChannel = null;
             }
@@ -412,7 +409,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
                 remoteChannel.shutdownOutput();
                 remoteChannel.close();
             } catch (Exception e) {
-
+                e.printStackTrace();
             } finally {
                 remoteChannel = null;
             }

@@ -28,13 +28,13 @@ public class UserManagerImpl implements UserManager.Impl {
 			rspBuilder.setSessionId("ABCDEFG0123456789");
 		}
 		
-//		push(session);
+		push(session);
 		
 		return rspBuilder.build();
 	}
 	
 	private void push(RpcSession session) {
-		Barrage barrage = Barrage.newBuilder().setSenderNickname("卡拉拉").setMessage("大家好/花").build();
+		Barrage barrage = Barrage.newBuilder().setSenderNickname("卡拉拉" + userId).setMessage("大家好/花").build();
 		Push.Client client = new Push.Client(session);
 		try {
 			logger.info("Server call Client => push");

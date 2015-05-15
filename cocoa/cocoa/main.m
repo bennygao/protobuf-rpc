@@ -12,6 +12,18 @@
 #import "ProtobufRpc.h"
 #import "Yingshibao.rpc.h"
 
+@interface MyPushService : NSObject <PushService>
+
+@end
+
+@implementation MyPushService
+
+- (None*) pushBarrage:(Barrage*) barrage {
+    NSLog(@"客户端收到主动调用:%@", barrage);
+    return nil;
+}
+
+@end
 
 void test_rpc(Endpoint *endpoint)
 {
@@ -48,19 +60,34 @@ void test_rpc(Endpoint *endpoint)
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
+        // 创建Endpint实例
         Endpoint *endpoint = [[Endpoint alloc] init];
+        
+        // 注册UserManager
         UserManager *um = [[UserManager alloc] init];
         [endpoint registerService:um];
         
-        [endpoint connectToHost:@"localhost" withPort:10000 inSeconds:60];
-        [endpoint start];
-        test_rpc(endpoint);
-        [endpoint stop];
+        // 注册Push
+        Push *push = [[Push alloc] initWithServiceImpl:[[MyPushService alloc] init]];
+        [endpoint registerService:push];
         
-        [endpoint connectToHost:@"localhost" withPort:10000 inSeconds:60];
-        [endpoint start];
-        test_rpc(endpoint);
-        [endpoint stop];
+        // 与服务器建立连接
+        if ([endpoint connectToHost:@"localhost" withPort:10000 inSeconds:60]) {
+            [endpoint start];
+            test_rpc(endpoint);
+            [endpoint stop];
+        } else {
+            NSLog(@"与服务器建立连接失败");
+        }
+        
+        
+        if ([endpoint connectToHost:@"localhost" withPort:10000 inSeconds:60]) {
+            [endpoint start];
+            test_rpc(endpoint);
+            [endpoint stop];
+        } else {
+            NSLog(@"与服务器建立连接失败");
+        }
     }
     
     return 0;
