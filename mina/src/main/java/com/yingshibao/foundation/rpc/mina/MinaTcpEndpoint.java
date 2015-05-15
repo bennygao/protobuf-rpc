@@ -7,6 +7,7 @@ import java.net.SocketAddress;
 import java.util.concurrent.Executors;
 
 import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
+import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.executor.ExecutorFilter;
@@ -23,11 +24,13 @@ public class MinaTcpEndpoint extends Endpoint {
 	private String name;
 	private InetSocketAddress listenAddress;
 	private NioSocketAcceptor acceptor;
+	private IoHandler ioHandler;
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
-	public MinaTcpEndpoint(String name, SocketAddress addr) {
+	public MinaTcpEndpoint(String name, SocketAddress addr, SessionStateMonitor monitor) {
 		this.name = name;
 		this.listenAddress = (InetSocketAddress) addr;
+		this.ioHandler = new ProtobufRpcHandler(this, monitor);
 	}
 
 	public String getName() {
@@ -58,7 +61,7 @@ public class MinaTcpEndpoint extends Endpoint {
 				new ExecutorFilter(Executors.newCachedThreadPool()));
 
 		// 设置session的handler
-		acceptor.setHandler(new ProtobufRpcHandler(this));
+		acceptor.setHandler(ioHandler);
 
 		// 设置read buffer size
 		SocketSessionConfig config = acceptor.getSessionConfig();

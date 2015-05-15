@@ -19,7 +19,7 @@ import com.yingshibao.foundation.rpc.nio.NioSocketSession;
 public class Client {
 	public static void main(String[] args) throws Exception {
 		Client client = new Client("localhost", 10000);
-		for (int i = 0; i < 10000; ++i) {
+		for (int i = 0; i < 1; ++i) {
 			client.runTest();
 		}
 		client.stop();

@@ -24,10 +24,12 @@ public class ProtobufRpcHandler implements IoHandler {
 	private Endpoint endpoint;
 	private Map<Long, Map<Integer, ResponseHandle>> sessionStampsMap;
 	private Lock lock;
+	private SessionStateMonitor stateMonitor;
 	private Message cancelMessage = new Message(Message.Type.cancel);
 
-	public ProtobufRpcHandler(Endpoint endpoint) {
+	public ProtobufRpcHandler(Endpoint endpoint, SessionStateMonitor monitor) {
 		this.endpoint = endpoint;
+		this.stateMonitor = monitor;
 		this.sessionStampsMap = new HashMap<>();
 		this.lock = new ReentrantLock();
 	}
@@ -83,13 +85,13 @@ public class ProtobufRpcHandler implements IoHandler {
 	public void exceptionCaught(IoSession session, Throwable e)
 			throws Exception {
 		logger.warn("transport session caught exception.", e);
-		session.close(false);
+		session.close(true);
 	}
 
 	@Override
 	public void messageReceived(IoSession session, Object arg) throws Exception {
 		Message message = (Message) arg;
-		logger.debug(format(">> ioSession(%d) received message: " + message,
+		logger.debug(format(">> IoSession(%d) received message: " + message,
 				session.getId()));
 		int serviceId = message.getServiceId();
 
@@ -113,19 +115,21 @@ public class ProtobufRpcHandler implements IoHandler {
 	@Override
 	public void messageSent(IoSession arg0, Object obj) throws Exception {
 		Message message = (Message) obj;
-		logger.debug(format("<< ioSession(%d) sent messag: " + message,
+		logger.debug(format("<< IoSession(%d) sent messag: " + message,
 				arg0.getId()));
 		addStampHandle(arg0, message);
 	}
 
 	@Override
-	public void sessionClosed(IoSession ioSession) throws Exception {
-		logger.debug("-- ioSession(%d) closed.", ioSession.getId());
+	public void sessionClosed(IoSession session) throws Exception {
+		logger.debug("-- IoSession(%d) closed.", session.getId());
 		// 删除session上绑定的receiver对象
-		ioSession.removeAttribute(IoBufferMessageReceiver.KEY);
+		session.removeAttribute(IoBufferMessageReceiver.KEY);
 
 		// 清理session上注册的响应事件处理
-		clearStampHandle(ioSession);
+		clearStampHandle(session);
+
+		stateMonitor.sessionClosed(session);
 	}
 
 	@Override
@@ -133,19 +137,23 @@ public class ProtobufRpcHandler implements IoHandler {
 		// 把Receiver对象绑定在session上
 		session.setAttribute(IoBufferMessageReceiver.KEY,
 				new IoBufferMessageReceiver(session, endpoint));
+
+		stateMonitor.sessionCreated(session);
 	}
 
 	@Override
-	public void sessionIdle(IoSession arg0, IdleStatus arg1) throws Exception {
+	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
+		stateMonitor.sessionIdle(session, status);
 	}
 
 	@Override
-	public void sessionOpened(IoSession arg0) throws Exception {
+	public void sessionOpened(IoSession session) throws Exception {
+		stateMonitor.sessionOpened(session);
 	}
 
 	@Override
 	public void inputClosed(IoSession ioSession) throws Exception {
-		logger.debug("## ioSession(%d) inputClosed.", ioSession.getId());
+		logger.debug("## IoSession(%d) inputClosed.", ioSession.getId());
 
 		// IMPORTANT! 客户端TCP链接如果是正常调用shutdown()再close()的话，会产生这个事件。
 		// 如果不调用ioSession.close()则会一直产生这个事件。
