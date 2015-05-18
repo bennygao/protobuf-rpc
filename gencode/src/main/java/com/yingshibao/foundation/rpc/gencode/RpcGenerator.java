@@ -6,7 +6,7 @@ import java.util.List;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileOptions;
-import com.google.protobuf.TextFormat;
+//import com.google.protobuf.TextFormat;
 import com.google.protobuf.compiler.PluginProtos;
 
 public class RpcGenerator {
@@ -18,10 +18,6 @@ public class RpcGenerator {
 			System.err.println("ERROR: environment GENRPC_ARGS not set.");
 			System.exit(1);
 		}
-
-		PrintStream ps = new PrintStream(new FileOutputStream("/tmp/1"));
-		ps.println("GENRPC_ARGS=" + genrpcArgs);
-		ps.close();
 
 		String[] params = genrpcArgs.split(" ");
 		if (params.length != 2) {
@@ -59,11 +55,11 @@ public class RpcGenerator {
 		PluginProtos.CodeGeneratorRequest request = (PluginProtos.CodeGeneratorRequest) parser.parseFrom(input);
 		List<FileDescriptorProto> protoList = request.getProtoFileList();
 
-		PrintWriter pw = new PrintWriter(new FileWriter("genrpc.stub"));
-		String text = TextFormat.printToUnicodeString(request);
-		text.replace("\\n", "\n");
-		pw.print(text);
-		pw.close();
+//		PrintWriter pw = new PrintWriter(new FileWriter("genrpc.stub"));
+//		String text = TextFormat.printToUnicodeString(request);
+//		text.replace("\\n", "\n");
+//		pw.print(text);
+//		pw.close();
 		
 		for (FileDescriptorProto proto : protoList) {
 			FileOptions options = proto.getOptions();
