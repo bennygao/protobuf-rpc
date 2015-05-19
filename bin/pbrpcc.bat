@@ -1,5 +1,6 @@
 @ECHO OFF
 
+SET BINDIR=%~dp0
 SET BATNAME=%0
 SET FLAG=""
 SET TARGET=""
@@ -47,8 +48,12 @@ IF %OUTDIR%=="" (GOTO Usage)
 
 SET GENRPC_ARGS=%TARGET% %OUTDIR%
 ECHO %GENRPC_ARGS%
+IF "%TARGET%"=="java" (
+	%BINDIR%\protoc.exe --java_out=%OUTDIR% --plugin=protoc-gen-rpc=%BINDIR%\protoc-gen-rpc.bat --rpc_out=%OUTDIR% %PROTO%
+) ELSE IF "%TARGET%"=="objc" (
+	ECHO "Don't support generate objective-c source on Windows."
+)
 
-ECHO succ
 GOTO end
 
 :Usage
