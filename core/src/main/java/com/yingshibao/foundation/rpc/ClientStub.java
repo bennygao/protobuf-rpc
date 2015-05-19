@@ -51,6 +51,8 @@ public class ClientStub {
 		
 		if (response.getType() != Message.Type.application) {
 			throw new InterruptedException("synchronized rpc be canceled.");
+		} else if (response.getStage() == Message.STAGE_UNREGISTERED_SERVICE) {
+			throw new NoSuchMethodException("remote endpoint doesn't register invoked service.");
 		} else {
 			return response.getArgument();
 		}

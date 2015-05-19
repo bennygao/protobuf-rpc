@@ -94,21 +94,33 @@ public class ProtobufRpcHandler implements IoHandler {
 		logger.debug(format(">> IoSession(%d) received message: " + message,
 				session.getId()));
 		int serviceId = message.getServiceId();
-
-		if (message.getStage() == Message.STAGE_REQUEST) {
+		byte stage = message.getStage();
+		if (stage == Message.STAGE_REQUEST) {
 			ServiceRegistry registry = endpoint.getRegistry(serviceId);
-			GeneratedMessage returnsValue = registry.invokeService(serviceId,
-					message.getArgument(), new MinaIoSession(session));
-			Message response = new Message(message.getServiceId(),
-					message.getStamp(), Message.STAGE_RESPONSE, returnsValue);
-			session.write(response);
-		} else {
+			if (registry != null) {
+				GeneratedMessage returnsValue = registry.invokeService(serviceId,
+						message.getArgument(), new MinaIoSession(session));
+				Message response = new Message(message.getServiceId(),
+						message.getStamp(), Message.STAGE_RESPONSE, returnsValue);
+				session.write(response);
+			} else { // 请求的服务未注册
+				Message response = new Message(message.getServiceId(), message.getStamp(),
+						Message.STAGE_UNREGISTERED_SERVICE, null);
+				session.write(response);
+			}
+		} else if (stage == Message.STAGE_RESPONSE || stage == Message.STAGE_UNREGISTERED_SERVICE) {
+			if (stage == Message.STAGE_UNREGISTERED_SERVICE) {
+				logger.error("remote endpoint doesn't supply service for serviceId " + message.getServiceId());
+			}
+
 			ResponseHandle handle = getStampHandle(session, message.getStamp());
 			if (handle == null) {
 				logger.warn("response's handle unregistered: " + message);
 			} else {
 				handle.onResponse(message);
 			}
+		} else  {
+			logger.error("received unknown STAGE message:" + message);
 		}
 	}
 

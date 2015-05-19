@@ -319,17 +319,20 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         }
 
         int serviceId = message.getServiceId();
+        byte stage = message.getStage();
+        if (stage == Message.STAGE_RESPONSE || stage == Message.STAGE_UNREGISTERED_SERVICE) { // 处理响应
+            if (stage == Message.STAGE_UNREGISTERED_SERVICE) {
+                System.err.println("remote endpoint does't supply service for serviceId " + message.getServiceId());
+            }
 
-        if (message.getStage() == Message.STAGE_RESPONSE) { // 处理响应
-            ResponseHandle handle = stampsMap.remove(message
-                    .getStamp());
+            ResponseHandle handle = stampsMap.remove(message.getStamp());
             if (handle == null) {
                 System.err.println("unregistered handle for response: " + message);
             } else {
                 handle.assignResponse(message);
                 executors.submit(handle);
             }
-        } else { // 处理请求
+        } else if (stage == Message.STAGE_REQUEST) { // 处理请求
             ServiceRegistry registry = getRegistry(serviceId);
             if (registry == null) {
                 System.err.println("unregistered handle for request: " + serviceId);
@@ -337,6 +340,8 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
                 RequestHandle handle = new RequestHandle(message, registry, new NioSocketSession(this));
                 executors.submit(handle);
             }
+        } else {
+            System.err.println("received unknown STAGE message:" + message);
         }
     }
 

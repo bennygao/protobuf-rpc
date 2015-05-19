@@ -12,6 +12,7 @@ public class Message {
 	public final static byte STAGE_UNKNOWN = -1;
 	public final static byte STAGE_REQUEST = 0;
 	public final static byte STAGE_RESPONSE = 1;
+	public final static byte STAGE_UNREGISTERED_SERVICE = 3;
 
 	private Type type = Type.application;
 	private int serviceId = 0;
