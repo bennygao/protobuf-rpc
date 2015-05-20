@@ -8,8 +8,8 @@ import java.io.InputStream;
  */
 public class TestMain {
     public static void main(String[] args) throws Exception {
-        InputStream istream = new FileInputStream("test/proto.bin");
-        RpcGenerator gen = new RpcGenerator(istream, new ObjcCodeGeneratorFactory(), "test");
+        InputStream istream = new FileInputStream("proto/proto.bin");
+        RpcGenerator gen = new RpcGenerator(istream, new HtmlGeneratorFactory(), "test");
         gen.generate();
 
         istream.close();

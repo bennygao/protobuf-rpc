@@ -6,13 +6,14 @@ import java.util.List;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileOptions;
-//import com.google.protobuf.TextFormat;
+import com.google.protobuf.TextFormat;
 import com.google.protobuf.compiler.PluginProtos;
 
 public class RpcGenerator {
 	private final static String GENRPC_ARGS = "GENRPC_ARGS";
 
 	public static void main(String[] args) throws Exception {
+//		saveBinary();
 		String genrpcArgs = System.getenv(GENRPC_ARGS);
 		if (genrpcArgs == null) {
 			System.err.println("ERROR: environment GENRPC_ARGS not set.");
@@ -30,6 +31,8 @@ public class RpcGenerator {
 			factory = new JavaCodeGeneratorFactory();
 		} else if (params[0].equalsIgnoreCase("objc")) {
 			factory = new ObjcCodeGeneratorFactory();
+		} else if (params[0].equalsIgnoreCase("html")) {
+			factory = new HtmlGeneratorFactory();
 		} else {
 			factory = null;
 		}
@@ -37,6 +40,19 @@ public class RpcGenerator {
 		RpcGenerator gen = new RpcGenerator(System.in, factory, params[1]);
 		gen.generate();
 
+		System.exit(0);
+	}
+
+	private static void saveBinary() throws Exception {
+		int cnt;
+		byte[] buffer = new byte[1024];
+		FileOutputStream fos = new FileOutputStream("proto.bin");
+
+		while ((cnt = System.in.read(buffer)) > 0) {
+			fos.write(buffer, 0, cnt);
+		}
+
+		fos.close();
 		System.exit(0);
 	}
 	

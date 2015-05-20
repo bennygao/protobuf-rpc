@@ -29,8 +29,6 @@ public class JavaCodeGenerator extends VelocityCodeGeneratorTemplate implements 
 		new File(path).mkdirs();
 		
 		Template serviceTemplate = Velocity.getTemplate("vm/java/service.vm");
-		
-		
 		List<ServiceDescriptorProto> services = proto.getServiceList();
 		for (ServiceDescriptorProto service : services) {
 			String serviceName = service.getName();

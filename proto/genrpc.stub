@@ -294,7 +294,7 @@ proto_file {
       span: 0
       span: 11
       span: 1
-      leading_comments: " ÓÃ»§¹ÜÀíÏà¹Ø·şÎñ
+      leading_comments: " ç”¨æˆ·ç®¡ç†ç›¸å…³æœåŠ¡
       "
     }
     location {
@@ -313,7 +313,7 @@ proto_file {
       span: 10
       span: 8
       span: 65
-      leading_comments: " ×¢²áĞÂÓÃ»§
+      leading_comments: " æ³¨å†Œæ–°ç”¨æˆ·
       "
     }
     location {
@@ -353,7 +353,7 @@ proto_file {
       span: 0
       span: 17
       span: 1
-      leading_comments: " ·şÎñÆ÷¶Ëµ÷ÓÃ¿Í»§¶ËµÄ·şÎñ
+      leading_comments: " æœåŠ¡å™¨ç«¯è°ƒç”¨å®¢æˆ·ç«¯çš„æœåŠ¡
       "
     }
     location {
@@ -372,7 +372,7 @@ proto_file {
       span: 16
       span: 8
       span: 50
-      leading_comments: " Í¨Öªµ¯Ä»ÏûÏ¢
+      leading_comments: " é€šçŸ¥å¼¹å¹•æ¶ˆæ¯
       "
     }
     location {
@@ -412,7 +412,7 @@ proto_file {
       span: 0
       span: 36
       span: 1
-      leading_comments: " ÓÃ»§×¢²áÇëÇóĞÅÏ¢
+      leading_comments: " ç”¨æˆ·æ³¨å†Œè¯·æ±‚ä¿¡æ¯
       "
     }
     location {
@@ -431,7 +431,7 @@ proto_file {
       span: 23
       span: 8
       span: 37
-      leading_comments: " êÇ³Æ
+      leading_comments: " æ˜µç§°
       "
     }
     location {
@@ -482,7 +482,7 @@ proto_file {
       span: 26
       span: 8
       span: 39
-      leading_comments: " Ñ§Ğ£Ãû³Æ
+      leading_comments: " å­¦æ ¡åç§°
       "
     }
     location {
@@ -533,7 +533,7 @@ proto_file {
       span: 29
       span: 8
       span: 34
-      leading_comments: " ÊÖ»úºÅÂë
+      leading_comments: " æ‰‹æœºå·ç 
       "
     }
     location {
@@ -584,7 +584,7 @@ proto_file {
       span: 32
       span: 8
       span: 37
-      leading_comments: " ¿¼ÊÔÀàĞÍ 1:ËÄ¼¶Ó¢Óï 2:Áù¼¶Ó¢Óï 3:¿¼ÑĞÓ¢Óï 4:¿¼ÑĞÕşÖÎ 5:¿¼ÑĞÊıÑ§ 6:¸ß¿¼
+      leading_comments: " è€ƒè¯•ç±»å‹ 1:å››çº§è‹±è¯­ 2:å…­çº§è‹±è¯­ 3:è€ƒç ”è‹±è¯­ 4:è€ƒç ”æ”¿æ²» 5:è€ƒç ”æ•°å­¦ 6:é«˜è€ƒ
       "
     }
     location {
@@ -635,7 +635,7 @@ proto_file {
       span: 35
       span: 8
       span: 40
-      leading_comments: " ÓÃ»§À´Ô´ÇşµÀ
+      leading_comments: " ç”¨æˆ·æ¥æºæ¸ é“
       "
     }
     location {
@@ -685,7 +685,7 @@ proto_file {
       span: 0
       span: 48
       span: 1
-      leading_comments: " ÓÃ»§×¢²áÏìÓ¦ĞÅÏ¢
+      leading_comments: " ç”¨æˆ·æ³¨å†Œå“åº”ä¿¡æ¯
       "
     }
     location {
@@ -704,7 +704,7 @@ proto_file {
       span: 41
       span: 8
       span: 41
-      leading_comments: " ´íÎóĞÅÏ¢£¬Èç¹û×¢²á³É¹¦Îªnull£»Èç¹û·¢Éú´íÎó£¬´æ·Åµ¼ÖÂ´íÎóµÄÔ­Òò¡£
+      leading_comments: " é”™è¯¯ä¿¡æ¯ï¼Œå¦‚æœæ³¨å†ŒæˆåŠŸä¸ºnullï¼›å¦‚æœå‘ç”Ÿé”™è¯¯ï¼Œå­˜æ”¾å¯¼è‡´é”™è¯¯çš„åŸå› ã€‚
       "
     }
     location {
@@ -755,7 +755,7 @@ proto_file {
       span: 44
       span: 8
       span: 34
-      leading_comments: " ÓÃ»§ID£¬×¢²á³É¹¦Ê±´æ·Å·şÎñÆ÷Éú³ÉµÄuserId¡£
+      leading_comments: " ç”¨æˆ·IDï¼Œæ³¨å†ŒæˆåŠŸæ—¶å­˜æ”¾æœåŠ¡å™¨ç”Ÿæˆçš„userIdã€‚
       "
     }
     location {
@@ -806,7 +806,7 @@ proto_file {
       span: 47
       span: 8
       span: 38
-      leading_comments: " sessionId£¬×¢²á³É¹¦Ê±×Ô¶¯µÇÂ¼ÁË£¬´æ·Å·şÎñÆ÷Éú³ÉµÄsessionId¡£
+      leading_comments: " sessionIdï¼Œæ³¨å†ŒæˆåŠŸæ—¶è‡ªåŠ¨ç™»å½•äº†ï¼Œå­˜æ”¾æœåŠ¡å™¨ç”Ÿæˆçš„sessionIdã€‚
       "
     }
     location {
@@ -856,7 +856,7 @@ proto_file {
       span: 0
       span: 60
       span: 1
-      leading_comments: " ¿Î³ÌÀàĞÍ
+      leading_comments: " è¯¾ç¨‹ç±»å‹
       "
     }
     location {
@@ -875,7 +875,7 @@ proto_file {
       span: 53
       span: 8
       span: 39
-      leading_comments: " ¿Î³ÌÀàĞÍ 1:ÎÒµÄ¿Î³Ì£¨ÒÑ±¨Ãû¡¢ÒÑ¶©¹º); 2:È«²¿¿Î³Ì
+      leading_comments: " è¯¾ç¨‹ç±»å‹ 1:æˆ‘çš„è¯¾ç¨‹ï¼ˆå·²æŠ¥åã€å·²è®¢è´­); 2:å…¨éƒ¨è¯¾ç¨‹
       "
     }
     location {
@@ -926,7 +926,7 @@ proto_file {
       span: 56
       span: 8
       span: 32
-      leading_comments: " Ö¸¶¨·µ»ØÁĞ±íÖĞ×î´ó¿Î³Ì¸öÊı
+      leading_comments: " æŒ‡å®šè¿”å›åˆ—è¡¨ä¸­æœ€å¤§è¯¾ç¨‹ä¸ªæ•°
       "
     }
     location {
@@ -977,7 +977,7 @@ proto_file {
       span: 59
       span: 8
       span: 36
-      leading_comments: " Ö¸¶¨·µ»ØµÚ¼¸Ò³
+      leading_comments: " æŒ‡å®šè¿”å›ç¬¬å‡ é¡µ
       "
     }
     location {
@@ -1027,7 +1027,7 @@ proto_file {
       span: 0
       span: 78
       span: 1
-      leading_comments: " ¿Î³ÌĞÅÏ¢
+      leading_comments: " è¯¾ç¨‹ä¿¡æ¯
       "
     }
     location {
@@ -1046,7 +1046,7 @@ proto_file {
       span: 65
       span: 8
       span: 30
-      leading_comments: " ¿Î³ÌID
+      leading_comments: " è¯¾ç¨‹ID
       "
     }
     location {
@@ -1097,7 +1097,7 @@ proto_file {
       span: 68
       span: 8
       span: 33
-      leading_comments: " ¿Î³ÌÃû³Æ
+      leading_comments: " è¯¾ç¨‹åç§°
       "
     }
     location {
@@ -1148,7 +1148,7 @@ proto_file {
       span: 71
       span: 8
       span: 40
-      leading_comments: " ÀÏÊ¦ĞÕÃû
+      leading_comments: " è€å¸ˆå§“å
       "
     }
     location {
@@ -1199,7 +1199,7 @@ proto_file {
       span: 74
       span: 8
       span: 33
-      leading_comments: " ¿Î³Ì¼Û¸ñ, 0:Ãâ·Ñ; ÆäËû½ğ¶îÎª¿Î³Ì¼Û¸ñ£¬ÒÔ·ÖÎªµ¥Î»¡£
+      leading_comments: " è¯¾ç¨‹ä»·æ ¼, 0:å…è´¹; å…¶ä»–é‡‘é¢ä¸ºè¯¾ç¨‹ä»·æ ¼ï¼Œä»¥åˆ†ä¸ºå•ä½ã€‚
       "
     }
     location {
@@ -1250,7 +1250,7 @@ proto_file {
       span: 77
       span: 8
       span: 40
-      leading_comments: " ¿Î³Ì¼ò½é
+      leading_comments: " è¯¾ç¨‹ç®€ä»‹
       "
     }
     location {
@@ -1300,7 +1300,7 @@ proto_file {
       span: 0
       span: 87
       span: 1
-      leading_comments: " ¿Î³ÌÁĞ±í
+      leading_comments: " è¯¾ç¨‹åˆ—è¡¨
       "
     }
     location {
@@ -1319,7 +1319,7 @@ proto_file {
       span: 83
       span: 8
       span: 31
-      leading_comments: " ÁĞ±íÊµ¼ÊÌõÊı
+      leading_comments: " åˆ—è¡¨å®é™…æ¡æ•°
       "
     }
     location {
@@ -1370,7 +1370,7 @@ proto_file {
       span: 86
       span: 8
       span: 37
-      leading_comments: " ¿Î³ÌÁĞ±í
+      leading_comments: " è¯¾ç¨‹åˆ—è¡¨
       "
     }
     location {
@@ -1420,7 +1420,7 @@ proto_file {
       span: 0
       span: 96
       span: 1
-      leading_comments: " µ¯Ä»ÏûÏ¢
+      leading_comments: " å¼¹å¹•æ¶ˆæ¯
       "
     }
     location {
@@ -1439,7 +1439,7 @@ proto_file {
       span: 92
       span: 8
       span: 43
-      leading_comments: " ·¢µ¯Ä»ÓÃ»§êÇ³Æ
+      leading_comments: " å‘å¼¹å¹•ç”¨æˆ·æ˜µç§°
       "
     }
     location {
@@ -1490,7 +1490,7 @@ proto_file {
       span: 95
       span: 8
       span: 36
-      leading_comments: " µ¯Ä»ÏûÏ¢
+      leading_comments: " å¼¹å¹•æ¶ˆæ¯
       "
     }
     location {
@@ -1540,7 +1540,7 @@ proto_file {
       span: 0
       span: 100
       span: 1
-      leading_comments: " ¿ÕÏûÏ¢
+      leading_comments: " ç©ºæ¶ˆæ¯
       "
     }
     location {
