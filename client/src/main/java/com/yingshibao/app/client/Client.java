@@ -18,7 +18,7 @@ import com.yingshibao.foundation.rpc.nio.NioSocketSession;
 
 public class Client {
 	public static void main(String[] args) throws Exception {
-		Client client = new Client("test.yingshibao.com", 10000);
+		Client client = new Client("localhost", 10000);
 		for (int i = 0; i < 10; ++i) {
 			client.runTest();
 		}
@@ -46,16 +46,21 @@ public class Client {
 		counter.incrementAndGet();
 		client.registerNewUser(userInfo, new Endpoint.Callback() {
 			@Override
-			public void onResponse(GeneratedMessage response) {
-				RegisterResult result = (RegisterResult) response;
-				logger.info("ASYNC:注册用户返回:" + TextFormat.printToUnicodeString(result));
-				counter.decrementAndGet();
+			public void onResponse(GeneratedMessage response, Endpoint.RpcState state) {
+				if (state == Endpoint.RpcState.success) {
+					RegisterResult result = (RegisterResult) response;
+					logger.info("ASYNC:注册用户返回:" + TextFormat.printToUnicodeString(result));
+					counter.decrementAndGet();
+				} else if (state == Endpoint.RpcState.service_not_exist) {
+					logger.info("ASYNC:对方endpoint不提供registerNewUser服务");
+				} else if (state == Endpoint.RpcState.rpc_canceled) {
+					logger.info("ASYNC:RPC调用被取消");
+				}
 			}
 		});
 		
 		RegisterResult result = client.registerNewUser(userInfo);
 		logger.info("SYNC:注册用户返回:" + TextFormat.printToUnicodeString(result));
-		
 
 	}
 	

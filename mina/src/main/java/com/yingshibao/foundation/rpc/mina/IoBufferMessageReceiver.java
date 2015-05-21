@@ -53,13 +53,13 @@ public class IoBufferMessageReceiver {
 		int serviceId = buffer.getInt();
 		
 		// phase，1个字节，用以标识消息是请求还是响应。
-		byte stage = buffer.get();
+		byte feature = buffer.get();
 		
 		// protobuf格式的参数
 		Parser<? extends GeneratedMessage> parser = null;
 		ServiceRegistry registry = endpoint.getRegistry(serviceId);
 		assert registry != null;
-		if (stage == Message.STAGE_REQUEST) {
+		if (Message.isRequest(feature)) {
 			parser = registry.getParserForRequest(serviceId);
 		} else {
 			parser = registry.getParserForResponse(serviceId);
@@ -79,7 +79,7 @@ public class IoBufferMessageReceiver {
 		}
 
 		buffer.limit(oldLimit);
-		return new Message(serviceId, stamp, stage, protobuf);
+		return Message.createMessage(serviceId, stamp, feature, protobuf);
 	}
 
 	public Message onDataArrived(IoBuffer buffer) throws Exception {

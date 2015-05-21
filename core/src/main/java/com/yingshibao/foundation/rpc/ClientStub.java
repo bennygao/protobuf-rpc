@@ -35,7 +35,7 @@ public class ClientStub {
 
 	protected GeneratedMessage syncRpc(int serviceId, GeneratedMessage arg)
 			throws Exception {
-		Message request = new Message(serviceId, STAMP.incrementAndGet(), Message.STAGE_REQUEST, arg);
+		Message request = new RequestMessage(serviceId, STAMP.incrementAndGet(), arg);
 		LinkedBlockingQueue<Message> queue = borrowQueue();
 		queue.clear();
 		request.setResponseHandle(new ResponseHandle(queue));
@@ -49,9 +49,9 @@ public class ClientStub {
 			returnQueue(queue);
 		}
 		
-		if (response.getType() != Message.Type.application) {
+		if (response.isRpcCanceled()) {
 			throw new InterruptedException("synchronized rpc be canceled.");
-		} else if (response.getStage() == Message.STAGE_UNREGISTERED_SERVICE) {
+		} else if (response.isServiceNotExist()) {
 			throw new NoSuchMethodException("remote endpoint doesn't register invoked service.");
 		} else {
 			return response.getArgument();
@@ -60,7 +60,7 @@ public class ClientStub {
 
 	protected void asyncRpc(int serviceId, GeneratedMessage arg,
 			Endpoint.Callback callback) throws Exception {
-		Message request = new Message(serviceId, STAMP.incrementAndGet(), Message.STAGE_REQUEST, arg);
+		Message request = new RequestMessage(serviceId, STAMP.incrementAndGet(), arg);
 		request.setResponseHandle(new ResponseHandle(callback));
 		session.sendMessage(request);
 	}

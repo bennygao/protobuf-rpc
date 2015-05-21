@@ -15,39 +15,61 @@
 
 #define DEFAULT_BUFFER_CHUNK_SIZE   1024
 
+typedef enum {
+        success,
+        service_not_exist,
+        rpc_canceled
+} RpcState;
+
 @class Message;
 typedef void (^ ResponseHandle)(Message*);
-typedef void (^ CallbackBlock)(PBGeneratedMessage*);
-
-typedef enum {
-    application, // 应用消息
-    cancel // 取消
-} MESSAGE_COMMAND;
+typedef void (^ CallbackBlock)(PBGeneratedMessage*, RpcState);
 
 
 @interface Message : NSObject {
 @private
-    MESSAGE_COMMAND command;
     int32_t serviceId;
     uint32_t stamp;
-    Byte stage;
+    Byte feature;
     PBGeneratedMessage *argument;
     ResponseHandle responseHandle;
 }
 
-@property (readonly) MESSAGE_COMMAND command;
 @property (readonly) int32_t serviceId;
 @property (readonly) uint32_t stamp;
-@property (readonly) Byte stage;
+@property (readwrite) Byte feature;
 @property (readonly, strong) PBGeneratedMessage* argument;
 @property (strong) ResponseHandle responseHandle;
 
-- (Message*) initWithCommand:(MESSAGE_COMMAND)cmd;
-- (Message*) initwithServiceId:(int32_t)sid;
-- (Message*) initwithServiceId:(int32_t)sid stamp:(int32_t)stamp stage:(Byte)stage argument:(PBGeneratedMessage*)arg;
+- (Message*) initwithServiceId:(int32_t)sid stamp:(int32_t)stamp argument:(PBGeneratedMessage*)arg;
 
+- (void) setToRequest;
+- (void) setToResponse;
+- (BOOL) isRequest;
+- (BOOL) isResponse;
+
+- (void) setServiceNotExist;
+- (BOOL) isServiceNotExist;
+
+- (void) setRpcCanceled;
+- (BOOL) isRpcCanceled;
+
++ (BOOL) isRequest:(Byte)feature;
++ (BOOL) isResponse:(Byte)feature;
++ (Message*) createMessageWithServiceId:(int32_t)sid stamp:(int32_t)stamp feature:(Byte)feature argument:(PBGeneratedMessage*)arg;
 @end
 
+@interface RequestMessage : Message
+- (RequestMessage*) initwithServiceId:(int32_t)sid stamp:(int32_t)stamp argument:(PBGeneratedMessage*)arg;
+- (BOOL) isRequest;
+- (BOOL) isResponse;
+@end
+
+@interface ResponseMessage : Message
+- (ResponseMessage*) initwithServiceId:(int32_t)sid stamp:(int32_t)stamp argument:(PBGeneratedMessage*)arg;
+- (BOOL) isRequest;
+- (BOOL) isResponse;
+@end
 
 @class Endpoint;
 

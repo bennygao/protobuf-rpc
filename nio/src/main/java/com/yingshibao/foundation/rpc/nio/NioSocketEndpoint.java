@@ -55,7 +55,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
 
         void sendMessage(Message message, SocketChannel channel)
                 throws IOException {
-            int messageSize = 9; // int32(stamp) + int32(serviceId) + byte(stage)
+            int messageSize = 9; // int32(stamp) + int32(serviceId) + byte(feature)
             GeneratedMessage arg = message.getArgument();
             if (arg != null) {
                 messageSize += arg.getSerializedSize();
@@ -66,7 +66,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             buffer.putInt(messageSize);
             buffer.putInt(message.getStamp());
             buffer.putInt(message.getServiceId());
-            buffer.put(message.getStage());
+            buffer.put(message.getFeature());
             if (arg != null) {
                 arg.writeTo(new ByteBufferOutputStream(buffer));
             }
@@ -149,18 +149,18 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
                 throws InvalidProtocolBufferException {
             int stamp = buffer.getInt();
             int serviceId = buffer.getInt();
-            byte stage = buffer.get();
+            byte feature = buffer.get();
             GeneratedMessage arg = null;
             if (buffer.remaining() > 0) {
                 InputStream is = new ByteBufferInputStream(buffer);
                 ServiceRegistry registry = endpoint.getRegistry(serviceId);
-                Parser<? extends GeneratedMessage> parser = (stage == Message.STAGE_REQUEST) ?
+                Parser<? extends GeneratedMessage> parser = (Message.isRequest(feature)) ?
                         registry.getParserForRequest(serviceId) :
                         registry.getParserForResponse(serviceId);
                 arg = parser.parseFrom(is);
             }
 
-            return new Message(serviceId, stamp, stage, arg);
+            return Message.createMessage(serviceId, stamp, feature, arg);
         }
     }
 
@@ -314,15 +314,10 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
     }
 
     private void onReceivedMessage(Message message) throws Exception {
-        if (message.getType() != Message.Type.application) {
-            return;
-        }
-
         int serviceId = message.getServiceId();
-        byte stage = message.getStage();
-        if (stage == Message.STAGE_RESPONSE || stage == Message.STAGE_UNREGISTERED_SERVICE) { // 处理响应
-            if (stage == Message.STAGE_UNREGISTERED_SERVICE) {
-                System.err.println("remote endpoint does't supply service for serviceId " + message.getServiceId());
+        if (message.isResponse()) { // 处理响应
+            if (message.isServiceNotExist()) {
+                System.err.println("remote endpoint does't supply service for serviceId " + serviceId);
             }
 
             ResponseHandle handle = stampsMap.remove(message.getStamp());
@@ -332,7 +327,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
                 handle.assignResponse(message);
                 executors.submit(handle);
             }
-        } else if (stage == Message.STAGE_REQUEST) { // 处理请求
+        } else { // 处理请求
             ServiceRegistry registry = getRegistry(serviceId);
             if (registry == null) {
                 System.err.println("unregistered handle for request: " + serviceId);
@@ -340,8 +335,6 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
                 RequestHandle handle = new RequestHandle(message, registry, new NioSocketSession(this));
                 executors.submit(handle);
             }
-        } else {
-            System.err.println("received unknown STAGE message:" + message);
         }
     }
 

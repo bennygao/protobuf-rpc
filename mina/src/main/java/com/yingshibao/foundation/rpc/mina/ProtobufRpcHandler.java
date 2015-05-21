@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.yingshibao.foundation.rpc.*;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -14,10 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.GeneratedMessage;
-import com.yingshibao.foundation.rpc.Endpoint;
-import com.yingshibao.foundation.rpc.Message;
-import com.yingshibao.foundation.rpc.ResponseHandle;
-import com.yingshibao.foundation.rpc.ServiceRegistry;
 
 public class ProtobufRpcHandler implements IoHandler {
 	private Logger logger = LoggerFactory.getLogger(getClass());
@@ -25,13 +22,16 @@ public class ProtobufRpcHandler implements IoHandler {
 	private Map<Long, Map<Integer, ResponseHandle>> sessionStampsMap;
 	private Lock lock;
 	private SessionStateMonitor stateMonitor;
-	private Message cancelMessage = new Message(Message.Type.cancel);
+	private Message cancelMessage;
 
 	public ProtobufRpcHandler(Endpoint endpoint, SessionStateMonitor monitor) {
 		this.endpoint = endpoint;
 		this.stateMonitor = monitor;
 		this.sessionStampsMap = new HashMap<>();
 		this.lock = new ReentrantLock();
+
+		cancelMessage = new ResponseMessage(0, 0, null);
+		cancelMessage.setRpcCanceled();
 	}
 
 	private void addStampHandle(IoSession ioSession, Message message) {
@@ -94,33 +94,31 @@ public class ProtobufRpcHandler implements IoHandler {
 		logger.debug(format(">> IoSession(%d) received message: " + message,
 				session.getId()));
 		int serviceId = message.getServiceId();
-		byte stage = message.getStage();
-		if (stage == Message.STAGE_REQUEST) {
+		if (message.isRequest()) {
 			ServiceRegistry registry = endpoint.getRegistry(serviceId);
 			if (registry != null) {
 				GeneratedMessage returnsValue = registry.invokeService(serviceId,
 						message.getArgument(), new MinaIoSession(session));
-				Message response = new Message(message.getServiceId(),
-						message.getStamp(), Message.STAGE_RESPONSE, returnsValue);
+				Message response = new ResponseMessage(message.getServiceId(),
+						message.getStamp(), returnsValue);
 				session.write(response);
 			} else { // 请求的服务未注册
-				Message response = new Message(message.getServiceId(), message.getStamp(),
-						Message.STAGE_UNREGISTERED_SERVICE, null);
+				Message response = new ResponseMessage(message.getServiceId(), message.getStamp(), null);
+				response.setServiceNotExist();
 				session.write(response);
 			}
-		} else if (stage == Message.STAGE_RESPONSE || stage == Message.STAGE_UNREGISTERED_SERVICE) {
-			if (stage == Message.STAGE_UNREGISTERED_SERVICE) {
-				logger.error("remote endpoint doesn't supply service for serviceId " + message.getServiceId());
-			}
+		} else {
+				if (message.isServiceNotExist()) {
+					logger.error("remote endpoint doesn't supply service for serviceId " + message.getServiceId());
+				}
 
-			ResponseHandle handle = getStampHandle(session, message.getStamp());
-			if (handle == null) {
-				logger.warn("response's handle unregistered: " + message);
-			} else {
-				handle.onResponse(message);
-			}
-		} else  {
-			logger.error("received unknown STAGE message:" + message);
+				ResponseHandle handle = getStampHandle(session, message.getStamp());
+				if (handle == null) {
+					logger.warn("response's handle unregistered: " + message);
+				} else {
+					handle.onResponse(message);
+				}
+
 		}
 	}
 

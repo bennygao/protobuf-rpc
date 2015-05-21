@@ -53,7 +53,7 @@ class MessageEncoder implements ProtocolEncoder {
 		buffer.putInt(messageSize);
 		buffer.putInt(message.getStamp());
 		buffer.putInt(message.getServiceId());
-		buffer.put(message.getStage());
+		buffer.put(message.getFeature());
 		if (arg != null) {
 			arg.writeTo(buffer.asOutputStream());
 		}

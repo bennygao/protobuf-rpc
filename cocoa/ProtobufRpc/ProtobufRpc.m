@@ -34,41 +34,113 @@ static NSString* getReason(const char *file, const int line, const char *routine
 ///////////////////////////////////////////////////////////////////////////////
 // Implementation of Message
 ///////////////////////////////////////////////////////////////////////////////
-static const Byte STAGE_UNKNOWN = -1;
-static const Byte STAGE_REQUEST = 0;
-static const Byte STAGE_RESPONSE = 1;
+static const Byte MASK_RESPONSE = 0x01;
+static const Byte MASK_SERVICE_NOT_EXIST = 0x02;
+static const Byte MASK_RPC_CANCELED = 0x04;
 
 @implementation Message
 
-@synthesize command;
 @synthesize serviceId;
 @synthesize stamp;
-@synthesize stage;
+@synthesize feature;
 @synthesize argument;
 @synthesize responseHandle;
 
-- (Message*) initWithCommand:(MESSAGE_COMMAND) cmd {
-    self->command = cmd;
-    self->serviceId = 0;
-    self->stamp = 0;
-    self->stage = STAGE_UNKNOWN;
-    self->argument = nil;
-    self->responseHandle = nil;
+- (Message*) initwithServiceId:(int32_t)sid stamp:(int32_t)aStamp argument:(PBGeneratedMessage *)arg {
+    serviceId = sid;
+    stamp = aStamp;
+    feature = 0;
+    argument = arg;
+    responseHandle = nil;
     return self;
 }
 
-- (Message*) initwithServiceId:(int32_t) sid {
-    return [self initwithServiceId:sid stamp:0 stage:0 argument:nil];
+- (void) setToRequest {
+    feature &= ~MASK_RESPONSE;
 }
 
-- (Message*) initwithServiceId:(int32_t)sid stamp:(int32_t)aStamp stage:(Byte)aStage argument:(PBGeneratedMessage *)arg {
-    self->command = application;
-    self->serviceId = sid;
-    self->stamp = aStamp;
-    self->stage = aStage;
-    self->argument = arg;
-    self->responseHandle = nil;
+- (void) setToResponse {
+    feature |= MASK_RESPONSE;
+}
+
+- (BOOL) isRequest {
+    return false;
+}
+
+- (BOOL) isResponse {
+    return false;
+}
+
+- (void) setServiceNotExist {
+    feature |= MASK_SERVICE_NOT_EXIST;
+}
+
+- (BOOL) isServiceNotExist {
+    return (feature & MASK_SERVICE_NOT_EXIST) > 0;
+}
+
+- (void) setRpcCanceled {
+    feature |= MASK_RPC_CANCELED;
+}
+
+- (BOOL) isRpcCanceled {
+    return (feature & MASK_RPC_CANCELED) > 0;
+}
+
++ (BOOL) isRequest:(Byte)feature {
+    return (feature & MASK_RESPONSE) == 0;
+}
+
++ (BOOL) isResponse:(Byte)feature {
+    return (feature & MASK_RESPONSE) > 0;
+}
+
++ (Message*) createMessageWithServiceId:(int32_t)sid stamp:(int32_t)stamp feature:(Byte)feature argument:(PBGeneratedMessage*)arg {
+    Message *message = nil;
+    if ([Message isRequest:feature]) {
+        message = [[RequestMessage alloc] initwithServiceId:sid stamp:stamp argument:arg];
+    } else {
+        message = [[ResponseMessage alloc] initwithServiceId:sid stamp:stamp argument:arg];
+    }
+    
+    message.feature = feature;
+    return message;
+}
+
+@end
+
+@implementation RequestMessage
+
+- (RequestMessage*) initwithServiceId:(int32_t)sid stamp:(int32_t)stamp argument:(PBGeneratedMessage*)arg {
+    [super initwithServiceId:sid stamp:stamp argument:arg];
+    [self setToRequest];
     return self;
+}
+
+- (BOOL) isRequest {
+    return true;
+}
+
+- (BOOL) isResponse {
+    return false;
+}
+
+@end
+
+@implementation ResponseMessage
+
+- (ResponseMessage*) initwithServiceId:(int32_t)sid stamp:(int32_t)stamp argument:(PBGeneratedMessage*)arg {
+    [super initwithServiceId:sid stamp:stamp argument:arg];
+    [self setToResponse];
+    return self;
+}
+
+- (BOOL) isRequest {
+    return false;
+}
+
+- (BOOL) isResponse {
+    return true;
 }
 
 @end
@@ -195,7 +267,7 @@ static uint32_t STAMP = 0;
 }
 
 - (PBGeneratedMessage*) syncRpc:(int32_t)serviceId :(PBGeneratedMessage *)arg {
-    Message *request = [[Message alloc] initwithServiceId:serviceId stamp:[self getStamp] stage:STAGE_REQUEST argument:arg];
+    Message *request = [[RequestMessage alloc] initwithServiceId:serviceId stamp:[self getStamp] argument:arg];
     BlockingQueue *queue = [[BlockingQueue alloc] initWithCapacity:1];
     request.responseHandle = ^(Message *message) {
         [queue add:message];
@@ -203,13 +275,29 @@ static uint32_t STAMP = 0;
     
     [session sendRequest:request];
     Message *response = [queue take];
-    return response.argument;
+    if (response.isServiceNotExist) {
+        @throw [NSException exceptionWithName:@"UnregisteredService"
+                                       reason:@"remote endpoint doesn't register invoked service."
+                                     userInfo:nil];
+    } else if (response.isRpcCanceled) {
+        @throw [NSException exceptionWithName:@"RpcCanceled"
+                                       reason:@"synchronized rpc be canceled."
+                                     userInfo:nil];
+    } else {
+        return response.argument;
+    }
 }
 
 - (void) asyncRpc:(int32_t)serviceId :(PBGeneratedMessage *)arg :(CallbackBlock)callback {
-    Message *request = [[Message alloc] initwithServiceId:serviceId stamp:[self getStamp] stage:STAGE_REQUEST argument:arg];
+    Message *request = [[RequestMessage alloc] initwithServiceId:serviceId stamp:[self getStamp] argument:arg];
     request.responseHandle = ^(Message *message) {
-        callback(message.argument);
+        if ([message isServiceNotExist]) {
+            callback(nil, service_not_exist);
+        } else if ([message isRpcCanceled]) {
+            callback(nil, rpc_canceled);
+        } else {
+            callback(message.argument, success);
+        }
     };
     [session sendRequest:request];
 }
@@ -555,12 +643,12 @@ static uint32_t STAMP = 0;
             int32_t serviceId = [buffer readInt32];
             
             // stage byte (1 bytes)
-            Byte stage = [buffer readByte];
+            Byte feature = [buffer readByte];
             
             // 反序列化Protobuf
             id<RpcServiceRegistry> service = [endpoint getService:serviceId];
             PBGeneratedMessageBuilder *builder;
-            if (stage == STAGE_REQUEST) {
+            if ([Message isRequest:feature]) {
                 builder = [service getBuilderForRequest:serviceId];
             } else {
                 builder = [service getBuilderForResponse:serviceId];
@@ -575,7 +663,7 @@ static uint32_t STAMP = 0;
             gotBytes = 0;
             [buffer clear];
         
-            return [[Message alloc] initwithServiceId:serviceId stamp:stamp stage:stage argument:pb];
+            return [Message createMessageWithServiceId:serviceId stamp:stamp feature:feature argument:pb];
         } else {
             return nil;
         }
@@ -601,12 +689,9 @@ static uint32_t STAMP = 0;
     
     struct hostent *host = gethostbyname([serverHost UTF8String]);
     if (host == NULL) {
-        @throw [NSException exceptionWithName:@"SocketEngine#getServerIpAddress"
-                                       reason:GET_REASON("gethostbyname()")
-                                     userInfo:nil];
-        
+        return nil;
     }
-    
+
     struct in_addr **list = (struct in_addr **) host->h_addr_list;
     return [NSString stringWithCString:inet_ntoa(*list[0])
                               encoding:NSASCIIStringEncoding];
@@ -632,8 +717,8 @@ static uint32_t STAMP = 0;
         [self setNonBlockSocket:hostLink];
     }
     
-    struct hostent *host = gethostbyname([serverHost UTF8String]);
-    if (host == NULL) {
+    NSString *serverIpAddress = [self getServerIpAddress];
+    if (serverIpAddress == nil) {
         @throw [NSException exceptionWithName:@"SocketEngine#initHostLink"
                                        reason:GET_REASON("gethostbyname()")
                                      userInfo:nil];
@@ -645,7 +730,7 @@ static uint32_t STAMP = 0;
     bzero(&serverAddr, sizeof(struct sockaddr_in));
     
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = inet_addr([[self getServerIpAddress] UTF8String]);
+    serverAddr.sin_addr.s_addr = inet_addr([serverIpAddress UTF8String]);
     serverAddr.sin_port = htons(serverPort);
     
     int err = connect(hostLink, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
@@ -702,7 +787,6 @@ static uint32_t STAMP = 0;
 }
 
 - (Endpoint *) init {
-
     serverHost = nil;
     serverPort = 0;
     
@@ -781,7 +865,9 @@ static uint32_t STAMP = 0;
 }
 
 - (void) cancelAllWaitingCall {
-    Message *cancelMessage = [[Message alloc] initWithCommand:cancel];
+    Message *cancelMessage = [[ResponseMessage alloc] initwithServiceId:0 stamp:0 argument:nil];
+    [cancelMessage setRpcCanceled];
+    
     NSArray *handles = [stampsMap allValues];
     for (int i = 0; i < [handles count]; ++i) {
         ResponseHandle handle = [handles objectAtIndex:i];
@@ -791,6 +877,10 @@ static uint32_t STAMP = 0;
 }
 
 -(void) stop {
+    if (hostLink <= 0) {
+        return;
+    }
+    
     send(localSocketPair[1], &NOTIFY_TO_STOP, sizeof(Byte), 0);
     
     [threadLock lock]; // 等待网络读写线程完全退出
@@ -826,7 +916,7 @@ static uint32_t STAMP = 0;
     [buffer writeInt32:message.serviceId];
     
     // stage, 1byte
-    [buffer writeByte:message.stage];
+    [buffer writeByte:message.feature];
 
     // protobuf
     if (message.argument != nil) {
@@ -853,7 +943,7 @@ static uint32_t STAMP = 0;
     }
     
     // 如果是请求
-    if (message.stage == STAGE_REQUEST) {
+    if ([message isRequest]) {
         int32_t stamp = message.stamp;
         [stampsMap setObject:message.responseHandle forKey:[NSNumber numberWithInt:stamp]];
     }
@@ -864,15 +954,18 @@ static uint32_t STAMP = 0;
     int32_t stamp = message.stamp;
     NSBlockOperation *operation = nil;
     
-    if (message.stage == STAGE_REQUEST) { // 收到请求
+    if ([message isRequest]) { // 收到请求
         id<RpcServiceRegistry> registry = [self getService:serviceId];
         if (registry == nil) {
             NSLog(@"%@", [NSString stringWithFormat:@"Unregistered handle for serviceId:%d", serviceId]);
+            Message *response = [[ResponseMessage alloc] initwithServiceId:serviceId stamp:stamp argument:nil];
+            [response setServiceNotExist];
+            [self sendMessage:response];
         } else {
             operation = [NSBlockOperation blockOperationWithBlock:^() {
                 int32_t stamp = message.stamp;
                 PBGeneratedMessage *result = [registry invokeService:serviceId :message.argument];
-                Message *response = [[Message alloc] initwithServiceId:serviceId stamp:stamp stage:STAGE_RESPONSE argument:result];
+                Message *response = [[ResponseMessage alloc] initwithServiceId:serviceId stamp:stamp argument:result];
                 [self sendMessage:response];
             }];
         }
@@ -920,7 +1013,7 @@ static uint32_t STAMP = 0;
             ioctl(hostLink, FIONREAD, &nread);
             if (nread == 0) { // 服务器端关闭了链接
 #ifdef DEBUG
-                NSLog(@"host link closed by server");
+                NSLog(@"RPC session link closed by remote endpoint.");
 #endif
                 // 结束线程循环，退出线程
                 break;
@@ -945,8 +1038,6 @@ static uint32_t STAMP = 0;
         }
     }
     
-    close(hostLink);
-    hostLink = -1;
     [threadLock unlock];
 }
 

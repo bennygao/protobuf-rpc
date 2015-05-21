@@ -73,7 +73,7 @@ public class MinaTcpEndpoint extends Endpoint {
 		// 绑定地址并开始监听端口
 		acceptor.setReuseAddress(true);
 		acceptor.bind(listenAddress);
-		logger.info(format("Transporter %s listened on %s.", getName(),
+		logger.info(format("Endpoint %s listened on %s.", getName(),
 				listenAddress.toString()));
 	}
 

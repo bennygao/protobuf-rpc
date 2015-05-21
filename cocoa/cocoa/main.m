@@ -39,14 +39,21 @@ void test_rpc(Endpoint *endpoint)
     RpcSession *session = [[RpcSession alloc] initWithEndpoint:endpoint];
     UserManagerClient *client = [[UserManagerClient alloc] initWithRpcSession:session];
     
-    for (int i = 0; i < 5000; ++i) {
+    for (int i = 0; i < 10; ++i) {
         // 同步RPC调用
         RegisterResult *result = [client registerNewUser:userInfo];
         NSLog(@"[%d] 同步RPC调用 - 注册结果:%@", i, result);
         
         // 异步RPC调用
-        CallbackBlock callback = ^(PBGeneratedMessage* response) {
-            NSLog(@"[%d] 异步RPC调用 - 注册结果:%@", i, response);
+        CallbackBlock callback = ^(PBGeneratedMessage* response, RpcState state) {
+            if (state == service_not_exist) {
+                NSLog(@"对方endpoint不提供UserManager服务");
+            } else if (state == rpc_canceled) {
+                NSLog(@"RPC调用被取消");
+            } else {
+                NSLog(@"[%d] 异步RPC调用 - 注册结果:%@", i, response);
+            }
+            
             [condition lock];
             [condition signal];
             [condition unlock];

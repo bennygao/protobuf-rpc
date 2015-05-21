@@ -33,16 +33,22 @@ public class ResponseHandle implements Runnable {
 
 	@Override
 	public void run() {
-		if (strategy == RpcStrategy.sync) {
+		if (strategy == RpcStrategy.sync) { // 同步调用返回
 			try {
 				queue.put(response);
 			} catch (Exception e) {
 
 			}
-		} else if (response.getType() == Message.Type.application
-				&& callback != null) {
-			// callback可能为null，表示调用者忽略响应（一般用于服务器端主动push消息给客户端）
-			callback.onResponse(response.getArgument());
+		} else { // 异步调用返回
+			if (callback != null ) { // callback可能为null，表示调用者忽略响应（一般用于服务器端主动push消息给客户端）
+				if (response.isRpcCanceled()) {
+					callback.onResponse(null, Endpoint.RpcState.rpc_canceled);
+				} else if (response.isServiceNotExist()) {
+					callback.onResponse(null, Endpoint.RpcState.service_not_exist);
+				} else {
+					callback.onResponse(response.getArgument(), Endpoint.RpcState.success);
+				}
+			}
 		}
 	}
 

@@ -18,9 +18,8 @@ public class RequestHandle implements Runnable {
         GeneratedMessage returns = registry.invokeService(request.getServiceId(),
                 request.getArgument(),
                 session);
-        Message response = new Message(request.getServiceId(),
-                request.getStamp(), Message.STAGE_RESPONSE,
-                returns);
+        Message response = new ResponseMessage(request.getServiceId(),
+                request.getStamp(), returns);
 
         session.sendMessage(response);
     }
