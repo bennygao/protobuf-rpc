@@ -2,6 +2,7 @@
 
 #import <ProtocolBuffers/ProtocolBuffers.h>
 
+#import "Module.pb.h"
 // @@protoc_insertion_point(imports)
 
 @class Barrage;
@@ -12,10 +13,20 @@
 @class CourseListBuilder;
 @class CourseType;
 @class CourseTypeBuilder;
+@class ImportMessage;
+@class ImportMessageBuilder;
 @class None;
 @class NoneBuilder;
 @class RegisterResult;
 @class RegisterResultBuilder;
+@class TestAllTypes;
+@class TestAllTypesBuilder;
+@class TestAllTypesNestedMessage;
+@class TestAllTypesNestedMessageBuilder;
+@class TestAllTypesOptionalGroup;
+@class TestAllTypesOptionalGroupBuilder;
+@class TestAllTypesRepeatedGroup;
+@class TestAllTypesRepeatedGroupBuilder;
 @class UserInfo;
 @class UserInfoBuilder;
 
@@ -187,226 +198,6 @@
 - (RegisterResultBuilder*) clearSessionId;
 @end
 
-#define CourseType_courseType @"courseType"
-#define CourseType_num @"num"
-#define CourseType_pageNum @"pageNum"
-@interface CourseType : PBGeneratedMessage<GeneratedMessageProtocol> {
-@private
-  BOOL hasCourseType_:1;
-  BOOL hasNum_:1;
-  BOOL hasPageNum_:1;
-  UInt32 courseType;
-  UInt32 num;
-  UInt32 pageNum;
-}
-- (BOOL) hasCourseType;
-- (BOOL) hasNum;
-- (BOOL) hasPageNum;
-@property (readonly) UInt32 courseType;
-@property (readonly) UInt32 num;
-@property (readonly) UInt32 pageNum;
-
-+ (instancetype) defaultInstance;
-- (instancetype) defaultInstance;
-
-- (BOOL) isInitialized;
-- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
-- (CourseTypeBuilder*) builder;
-+ (CourseTypeBuilder*) builder;
-+ (CourseTypeBuilder*) builderWithPrototype:(CourseType*) prototype;
-- (CourseTypeBuilder*) toBuilder;
-
-+ (CourseType*) parseFromData:(NSData*) data;
-+ (CourseType*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
-+ (CourseType*) parseFromInputStream:(NSInputStream*) input;
-+ (CourseType*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
-+ (CourseType*) parseFromCodedInputStream:(PBCodedInputStream*) input;
-+ (CourseType*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
-@end
-
-@interface CourseTypeBuilder : PBGeneratedMessageBuilder {
-@private
-  CourseType* resultCourseType;
-}
-
-- (CourseType*) defaultInstance;
-
-- (CourseTypeBuilder*) clear;
-- (CourseTypeBuilder*) clone;
-
-- (CourseType*) build;
-- (CourseType*) buildPartial;
-
-- (CourseTypeBuilder*) mergeFrom:(CourseType*) other;
-- (CourseTypeBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
-- (CourseTypeBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
-
-- (BOOL) hasCourseType;
-- (UInt32) courseType;
-- (CourseTypeBuilder*) setCourseType:(UInt32) value;
-- (CourseTypeBuilder*) clearCourseType;
-
-- (BOOL) hasNum;
-- (UInt32) num;
-- (CourseTypeBuilder*) setNum:(UInt32) value;
-- (CourseTypeBuilder*) clearNum;
-
-- (BOOL) hasPageNum;
-- (UInt32) pageNum;
-- (CourseTypeBuilder*) setPageNum:(UInt32) value;
-- (CourseTypeBuilder*) clearPageNum;
-@end
-
-#define CourseInfo_id @"id"
-#define CourseInfo_name @"name"
-#define CourseInfo_teacherName @"teacherName"
-#define CourseInfo_price @"price"
-#define CourseInfo_descritpion @"descritpion"
-@interface CourseInfo : PBGeneratedMessage<GeneratedMessageProtocol> {
-@private
-  BOOL hasId_:1;
-  BOOL hasPrice_:1;
-  BOOL hasName_:1;
-  BOOL hasTeacherName_:1;
-  BOOL hasDescritpion_:1;
-  SInt32 id;
-  SInt32 price;
-  NSString* name;
-  NSString* teacherName;
-  NSString* descritpion;
-}
-- (BOOL) hasId;
-- (BOOL) hasName;
-- (BOOL) hasTeacherName;
-- (BOOL) hasPrice;
-- (BOOL) hasDescritpion;
-@property (readonly) SInt32 id;
-@property (readonly, strong) NSString* name;
-@property (readonly, strong) NSString* teacherName;
-@property (readonly) SInt32 price;
-@property (readonly, strong) NSString* descritpion;
-
-+ (instancetype) defaultInstance;
-- (instancetype) defaultInstance;
-
-- (BOOL) isInitialized;
-- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
-- (CourseInfoBuilder*) builder;
-+ (CourseInfoBuilder*) builder;
-+ (CourseInfoBuilder*) builderWithPrototype:(CourseInfo*) prototype;
-- (CourseInfoBuilder*) toBuilder;
-
-+ (CourseInfo*) parseFromData:(NSData*) data;
-+ (CourseInfo*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
-+ (CourseInfo*) parseFromInputStream:(NSInputStream*) input;
-+ (CourseInfo*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
-+ (CourseInfo*) parseFromCodedInputStream:(PBCodedInputStream*) input;
-+ (CourseInfo*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
-@end
-
-@interface CourseInfoBuilder : PBGeneratedMessageBuilder {
-@private
-  CourseInfo* resultCourseInfo;
-}
-
-- (CourseInfo*) defaultInstance;
-
-- (CourseInfoBuilder*) clear;
-- (CourseInfoBuilder*) clone;
-
-- (CourseInfo*) build;
-- (CourseInfo*) buildPartial;
-
-- (CourseInfoBuilder*) mergeFrom:(CourseInfo*) other;
-- (CourseInfoBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
-- (CourseInfoBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
-
-- (BOOL) hasId;
-- (SInt32) id;
-- (CourseInfoBuilder*) setId:(SInt32) value;
-- (CourseInfoBuilder*) clearId;
-
-- (BOOL) hasName;
-- (NSString*) name;
-- (CourseInfoBuilder*) setName:(NSString*) value;
-- (CourseInfoBuilder*) clearName;
-
-- (BOOL) hasTeacherName;
-- (NSString*) teacherName;
-- (CourseInfoBuilder*) setTeacherName:(NSString*) value;
-- (CourseInfoBuilder*) clearTeacherName;
-
-- (BOOL) hasPrice;
-- (SInt32) price;
-- (CourseInfoBuilder*) setPrice:(SInt32) value;
-- (CourseInfoBuilder*) clearPrice;
-
-- (BOOL) hasDescritpion;
-- (NSString*) descritpion;
-- (CourseInfoBuilder*) setDescritpion:(NSString*) value;
-- (CourseInfoBuilder*) clearDescritpion;
-@end
-
-#define CourseList_num @"num"
-#define CourseList_list @"list"
-@interface CourseList : PBGeneratedMessage<GeneratedMessageProtocol> {
-@private
-  BOOL hasNum_:1;
-  SInt32 num;
-  NSMutableArray * listArray;
-}
-- (BOOL) hasNum;
-@property (readonly) SInt32 num;
-@property (readonly, strong) NSArray * list;
-- (CourseInfo*)listAtIndex:(NSUInteger)index;
-
-+ (instancetype) defaultInstance;
-- (instancetype) defaultInstance;
-
-- (BOOL) isInitialized;
-- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
-- (CourseListBuilder*) builder;
-+ (CourseListBuilder*) builder;
-+ (CourseListBuilder*) builderWithPrototype:(CourseList*) prototype;
-- (CourseListBuilder*) toBuilder;
-
-+ (CourseList*) parseFromData:(NSData*) data;
-+ (CourseList*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
-+ (CourseList*) parseFromInputStream:(NSInputStream*) input;
-+ (CourseList*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
-+ (CourseList*) parseFromCodedInputStream:(PBCodedInputStream*) input;
-+ (CourseList*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
-@end
-
-@interface CourseListBuilder : PBGeneratedMessageBuilder {
-@private
-  CourseList* resultCourseList;
-}
-
-- (CourseList*) defaultInstance;
-
-- (CourseListBuilder*) clear;
-- (CourseListBuilder*) clone;
-
-- (CourseList*) build;
-- (CourseList*) buildPartial;
-
-- (CourseListBuilder*) mergeFrom:(CourseList*) other;
-- (CourseListBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
-- (CourseListBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
-
-- (BOOL) hasNum;
-- (SInt32) num;
-- (CourseListBuilder*) setNum:(SInt32) value;
-- (CourseListBuilder*) clearNum;
-
-- (NSMutableArray *)list;
-- (CourseInfo*)listAtIndex:(NSUInteger)index;
-- (CourseListBuilder *)addList:(CourseInfo*)value;
-- (CourseListBuilder *)setListArray:(NSArray *)array;
-- (CourseListBuilder *)clearList;
-@end
-
 #define Barrage_senderNickname @"senderNickname"
 #define Barrage_message @"message"
 @interface Barrage : PBGeneratedMessage<GeneratedMessageProtocol> {
@@ -505,6 +296,70 @@
 - (NoneBuilder*) mergeFrom:(None*) other;
 - (NoneBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
 - (NoneBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+#define ImportMessage_courseInfo @"courseInfo"
+#define ImportMessage_courseList @"courseList"
+@interface ImportMessage : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasCourseInfo_:1;
+  BOOL hasCourseList_:1;
+  CourseInfo* courseInfo;
+  CourseList* courseList;
+}
+- (BOOL) hasCourseInfo;
+- (BOOL) hasCourseList;
+@property (readonly, strong) CourseInfo* courseInfo;
+@property (readonly, strong) CourseList* courseList;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (ImportMessageBuilder*) builder;
++ (ImportMessageBuilder*) builder;
++ (ImportMessageBuilder*) builderWithPrototype:(ImportMessage*) prototype;
+- (ImportMessageBuilder*) toBuilder;
+
++ (ImportMessage*) parseFromData:(NSData*) data;
++ (ImportMessage*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (ImportMessage*) parseFromInputStream:(NSInputStream*) input;
++ (ImportMessage*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (ImportMessage*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (ImportMessage*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface ImportMessageBuilder : PBGeneratedMessageBuilder {
+@private
+  ImportMessage* resultImportMessage;
+}
+
+- (ImportMessage*) defaultInstance;
+
+- (ImportMessageBuilder*) clear;
+- (ImportMessageBuilder*) clone;
+
+- (ImportMessage*) build;
+- (ImportMessage*) buildPartial;
+
+- (ImportMessageBuilder*) mergeFrom:(ImportMessage*) other;
+- (ImportMessageBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (ImportMessageBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasCourseInfo;
+- (CourseInfo*) courseInfo;
+- (ImportMessageBuilder*) setCourseInfo:(CourseInfo*) value;
+- (ImportMessageBuilder*) setCourseInfoBuilder:(CourseInfoBuilder*) builderForValue;
+- (ImportMessageBuilder*) mergeCourseInfo:(CourseInfo*) value;
+- (ImportMessageBuilder*) clearCourseInfo;
+
+- (BOOL) hasCourseList;
+- (CourseList*) courseList;
+- (ImportMessageBuilder*) setCourseList:(CourseList*) value;
+- (ImportMessageBuilder*) setCourseListBuilder:(CourseListBuilder*) builderForValue;
+- (ImportMessageBuilder*) mergeCourseList:(CourseList*) value;
+- (ImportMessageBuilder*) clearCourseList;
 @end
 
 

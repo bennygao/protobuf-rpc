@@ -19,21 +19,6 @@ public final class Yingshibao {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_yingshibao_RegisterResult_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_yingshibao_CourseType_descriptor;
-  static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_yingshibao_CourseType_fieldAccessorTable;
-  static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_yingshibao_CourseInfo_descriptor;
-  static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_yingshibao_CourseInfo_fieldAccessorTable;
-  static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_yingshibao_CourseList_descriptor;
-  static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_yingshibao_CourseList_fieldAccessorTable;
-  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_yingshibao_Barrage_descriptor;
   static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -43,6 +28,11 @@ public final class Yingshibao {
   static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_yingshibao_None_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yingshibao_ImportMessage_descriptor;
+  static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_yingshibao_ImportMessage_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -52,23 +42,23 @@ public final class Yingshibao {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\020yingshibao.proto\022\nyingshibao\"f\n\010UserIn" +
-      "fo\022\020\n\010nickName\030\001 \002(\t\022\022\n\nschoolName\030\002 \001(\t" +
-      "\022\r\n\005phone\030\003 \002(\t\022\020\n\010examType\030\004 \002(\r\022\023\n\013cha" +
-      "nnelName\030\005 \002(\t\"I\n\016RegisterResult\022\024\n\014erro" +
-      "rMessage\030\001 \002(\t\022\016\n\006userId\030\002 \001(\005\022\021\n\tsessio" +
-      "nId\030\003 \001(\t\">\n\nCourseType\022\022\n\ncourseType\030\001 " +
-      "\002(\r\022\013\n\003num\030\002 \002(\r\022\017\n\007pageNum\030\003 \002(\r\"_\n\nCou" +
-      "rseInfo\022\n\n\002id\030\001 \002(\005\022\014\n\004name\030\002 \002(\t\022\023\n\013tea" +
-      "cherName\030\003 \002(\t\022\r\n\005price\030\004 \002(\005\022\023\n\013descrit" +
-      "pion\030\005 \002(\t\"?\n\nCourseList\022\013\n\003num\030\001 \002(\005\022$\n",
-      "\004list\030\002 \003(\0132\026.yingshibao.CourseInfo\"2\n\007B" +
-      "arrage\022\026\n\016senderNickname\030\001 \002(\t\022\017\n\007messag" +
-      "e\030\002 \002(\t\"\006\n\004None2T\n\013UserManager\022E\n\017regist" +
-      "erNewUser\022\024.yingshibao.UserInfo\032\032.yingsh" +
-      "ibao.RegisterResult\"\0002>\n\004Push\0226\n\013pushBar" +
-      "rage\022\023.yingshibao.Barrage\032\020.yingshibao.N" +
-      "one\"\000B\032\n\026com.yingshibao.app.idlP\001"
+      "\n\020yingshibao.proto\022\nyingshibao\032\014module.p" +
+      "roto\"f\n\010UserInfo\022\020\n\010nickName\030\001 \002(\t\022\022\n\nsc" +
+      "hoolName\030\002 \001(\t\022\r\n\005phone\030\003 \002(\t\022\020\n\010examTyp" +
+      "e\030\004 \002(\r\022\023\n\013channelName\030\005 \002(\t\"I\n\016Register" +
+      "Result\022\024\n\014errorMessage\030\001 \002(\t\022\016\n\006userId\030\002" +
+      " \001(\005\022\021\n\tsessionId\030\003 \001(\t\"2\n\007Barrage\022\026\n\016se" +
+      "nderNickname\030\001 \002(\t\022\017\n\007message\030\002 \002(\t\"\006\n\004N" +
+      "one\"g\n\rImportMessage\022*\n\ncourseInfo\030\001 \001(\013" +
+      "2\026.yingshibao.CourseInfo\022*\n\ncourseList\030\002" +
+      " \001(\0132\026.yingshibao.CourseList2T\n\013UserMana",
+      "ger\022E\n\017registerNewUser\022\024.yingshibao.User" +
+      "Info\032\032.yingshibao.RegisterResult\"\0002>\n\004Pu" +
+      "sh\0226\n\013pushBarrage\022\023.yingshibao.Barrage\032\020" +
+      ".yingshibao.None\"\0002R\n\rCourseManager\022A\n\rg" +
+      "etCourseList\022\026.yingshibao.CourseType\032\026.y" +
+      "ingshibao.CourseList\"\000B\032\n\026com.yingshibao" +
+      ".app.idlP\001P\000"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -81,6 +71,7 @@ public final class Yingshibao {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          com.yingshibao.app.idl.Module.getDescriptor(),
         }, assigner);
     internal_static_yingshibao_UserInfo_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -94,36 +85,25 @@ public final class Yingshibao {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_yingshibao_RegisterResult_descriptor,
         new java.lang.String[] { "ErrorMessage", "UserId", "SessionId", });
-    internal_static_yingshibao_CourseType_descriptor =
-      getDescriptor().getMessageTypes().get(2);
-    internal_static_yingshibao_CourseType_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_yingshibao_CourseType_descriptor,
-        new java.lang.String[] { "CourseType", "Num", "PageNum", });
-    internal_static_yingshibao_CourseInfo_descriptor =
-      getDescriptor().getMessageTypes().get(3);
-    internal_static_yingshibao_CourseInfo_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_yingshibao_CourseInfo_descriptor,
-        new java.lang.String[] { "Id", "Name", "TeacherName", "Price", "Descritpion", });
-    internal_static_yingshibao_CourseList_descriptor =
-      getDescriptor().getMessageTypes().get(4);
-    internal_static_yingshibao_CourseList_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_yingshibao_CourseList_descriptor,
-        new java.lang.String[] { "Num", "List", });
     internal_static_yingshibao_Barrage_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(2);
     internal_static_yingshibao_Barrage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_yingshibao_Barrage_descriptor,
         new java.lang.String[] { "SenderNickname", "Message", });
     internal_static_yingshibao_None_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+      getDescriptor().getMessageTypes().get(3);
     internal_static_yingshibao_None_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_yingshibao_None_descriptor,
         new java.lang.String[] { });
+    internal_static_yingshibao_ImportMessage_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_yingshibao_ImportMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_yingshibao_ImportMessage_descriptor,
+        new java.lang.String[] { "CourseInfo", "CourseList", });
+    com.yingshibao.app.idl.Module.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

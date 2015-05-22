@@ -16,7 +16,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
+import com.google.protobuf.TextFormat;
 import com.yingshibao.foundation.rpc.*;
 
 import com.google.protobuf.GeneratedMessage;
@@ -151,16 +153,27 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             int serviceId = buffer.getInt();
             byte feature = buffer.get();
             GeneratedMessage arg = null;
+            Message message = null;
             if (buffer.remaining() > 0) {
                 InputStream is = new ByteBufferInputStream(buffer);
                 ServiceRegistry registry = endpoint.getRegistry(serviceId);
-                Parser<? extends GeneratedMessage> parser = (Message.isRequest(feature)) ?
-                        registry.getParserForRequest(serviceId) :
-                        registry.getParserForResponse(serviceId);
-                arg = parser.parseFrom(is);
+                if (registry == null) {
+                    message = Message.createMessage(serviceId, stamp, feature, null);
+                    message.setServiceNotExist();
+                    // 略去protobuf的数据
+                    buffer.position(buffer.position() + buffer.remaining());
+                } else {
+                    Parser<? extends GeneratedMessage> parser = (Message.isRequest(feature)) ?
+                            registry.getParserForRequest(serviceId) :
+                            registry.getParserForResponse(serviceId);
+                    arg = parser.parseFrom(is);
+                    message = Message.createMessage(serviceId, stamp, feature, arg);
+                }
+            } else {
+                message = Message.createMessage(serviceId, stamp, feature, null);
             }
 
-            return Message.createMessage(serviceId, stamp, feature, arg);
+            return message;
         }
     }
 
@@ -232,7 +245,8 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
 
     public void start() throws IOException {
         try {
-            executors = Executors.newFixedThreadPool(2);
+            executors = Executors.newFixedThreadPool(executorsNum);
+
             pipe = Pipe.open();
             sinkChannel = pipe.sink();
             sourceChannel = pipe.source();
@@ -316,10 +330,6 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
     private void onReceivedMessage(Message message) throws Exception {
         int serviceId = message.getServiceId();
         if (message.isResponse()) { // 处理响应
-            if (message.isServiceNotExist()) {
-                System.err.println("remote endpoint does't supply service for serviceId " + serviceId);
-            }
-
             ResponseHandle handle = stampsMap.remove(message.getStamp());
             if (handle == null) {
                 System.err.println("unregistered handle for response: " + message);
@@ -329,8 +339,10 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
             }
         } else { // 处理请求
             ServiceRegistry registry = getRegistry(serviceId);
-            if (registry == null) {
-                System.err.println("unregistered handle for request: " + serviceId);
+            if (registry == null) { // 请求调用的服务未注册
+                Message response = new ResponseMessage(serviceId, message.getStamp(), null);
+                response.setServiceNotExist();
+                sendMessage(response);
             } else {
                 RequestHandle handle = new RequestHandle(message, registry, new NioSocketSession(this));
                 executors.submit(handle);

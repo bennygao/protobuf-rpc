@@ -5,27 +5,25 @@ script_dir=$(cd "$(dirname "$0")"; pwd)
 show_usage()
 {
         echo "`printf %-16s "Usage: genrpc"` -h"
-        echo "`printf %-16s ` -g <java | objc> -o <src_dir> -p <proto_file>"
+        echo "`printf %-16s ` -g <java | objc> -o <src_dir> proto_files..."
 }
 
-while getopts "hg:o:p:" arg
+while getopts "hg:o:" arg
 do
 	case $arg in
 		h)
-			show_usage ;
-			exit 1 ;;
+			show_usage ;;
 		g)
 			target=$OPTARG ;;
 		o)
 			outdir=$OPTARG ;;
-		p)
-			proto=$OPTARG ;;
 		?)
 			show_usage ;
 			exit 1 ;;
 	esac
 done
 
+shift $(($OPTIND - 1))
 #echo "target=$target"
 #echo "outdir=$outdir"
 #echo "proto=$proto"
@@ -46,15 +44,9 @@ if [ ! -n "$outdir" ]; then
 	exit 2
 fi
 
-if [ ! -n "$proto" ]; then
-	echo "ERROR: -p <proto_file> must be specified."
-	show_usage
-	exit 2
-fi
-
 #set -x
 if [ "$target" == "java" ]; then
-	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir --java_out=$outdir $proto
+	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir --java_out=$outdir $*
 elif [ "$target" == "objc" ]; then
-	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-objc=$script_dir/protoc-gen-objc --objc_out=$outdir --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir $proto
+	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-objc=$script_dir/protoc-gen-objc --objc_out=$outdir --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir $*
 fi

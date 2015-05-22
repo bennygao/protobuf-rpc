@@ -10,7 +10,8 @@ public class PushImpl implements Push.Impl {
 	@Override
 	public None pushBarrage(Barrage barrage, RpcSession session) {
 		System.out.println("#### 弹幕消息：" + TextFormat.printToUnicodeString(barrage));
-		return null;
+		throw new RuntimeException();
+//		return null;
 	}
 
 }

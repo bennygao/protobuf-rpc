@@ -91,22 +91,27 @@ public class ProtobufRpcHandler implements IoHandler {
 	@Override
 	public void messageReceived(IoSession session, Object arg) throws Exception {
 		Message message = (Message) arg;
-		logger.debug(format(">> IoSession(%d) received message: " + message,
-				session.getId()));
+		logger.debug(format(">> IoSession(%d) received message: " + message, session.getId()));
 		int serviceId = message.getServiceId();
+		int stamp = message.getStamp();
+		GeneratedMessage argument = message.getArgument();
 		if (message.isRequest()) {
+			Message response = null;
 			ServiceRegistry registry = endpoint.getRegistry(serviceId);
-			if (registry != null) {
-				GeneratedMessage returnsValue = registry.invokeService(serviceId,
-						message.getArgument(), new MinaIoSession(session));
-				Message response = new ResponseMessage(message.getServiceId(),
-						message.getStamp(), returnsValue);
-				session.write(response);
+			if (registry != null && registry.hasImplementation()) {
+				try {
+					GeneratedMessage returnsValue = registry.invokeService(serviceId, argument, new MinaIoSession(session));
+					response = new ResponseMessage(serviceId, stamp, returnsValue);
+				} catch (Throwable t) {
+					response = new ResponseMessage(message.getServiceId(), message.getStamp(), null);
+					response.setServiceException();
+				}
 			} else { // 请求的服务未注册
-				Message response = new ResponseMessage(message.getServiceId(), message.getStamp(), null);
+				response = new ResponseMessage(message.getServiceId(), message.getStamp(), null);
 				response.setServiceNotExist();
-				session.write(response);
+
 			}
+			session.write(response);
 		} else {
 				if (message.isServiceNotExist()) {
 					logger.error("remote endpoint doesn't supply service for serviceId " + message.getServiceId());

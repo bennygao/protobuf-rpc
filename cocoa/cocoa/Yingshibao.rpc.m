@@ -1,6 +1,6 @@
 // Yingshibao.rpc.m
 // Created by protobuf-rpc-gencode.
-// Tue May 12 20:31:56 CST 2015
+// Fri May 22 13:08:58 CST 2015
 // DO NOT EDIT!
 
 #import <Foundation/Foundation.h>
@@ -133,6 +133,71 @@
 
 - (void) pushBarrageAsync:(Barrage*)barrage :(CallbackBlock)callback {
     [self asyncRpc:1816601235 :barrage :callback];
+}
+@end
+
+@implementation CourseManager
+- (CourseManager*) init {
+    return [self initWithServiceImpl:nil];
+}
+
+- (CourseManager*) initWithServiceImpl:(id<CourseManagerService>)impl {
+    serviceImpl = impl;
+    return self;
+}
+
+- (NSArray*) getServiceList {
+    return [NSArray arrayWithObjects:
+            [NSNumber numberWithInt:-1712929388],
+            nil];
+}
+
+- (PBGeneratedMessage*) invokeService:(int32_t)serviceId :(PBGeneratedMessage *)arg {
+    switch (serviceId) {
+        case -1712929388:
+            return [serviceImpl getCourseList:(CourseType*) arg];
+        default:
+            @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
+                                           reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
+                                         userInfo:nil];
+    }
+}
+
+- (PBGeneratedMessageBuilder*) getBuilderForRequest:(int32_t)serviceId {
+    switch (serviceId) {
+        case -1712929388:
+            return [CourseType builder];
+        default:
+            @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
+                                           reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
+                                         userInfo:nil];
+    }
+}
+
+- (PBGeneratedMessageBuilder*) getBuilderForResponse:(int32_t)serviceId {
+    switch (serviceId) {
+        case -1712929388:
+            return [CourseList builder];
+        default:
+            @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
+                                           reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
+                                         userInfo:nil];
+    }
+}
+@end
+
+@implementation CourseManagerClient
+- (CourseManagerClient*) initWithRpcSession:(RpcSession*)session {
+    self = [super initWithRpcSession:session];
+    return self;
+}
+
+- (CourseList*) getCourseList:(CourseType*)courseType {
+    return (CourseList*) [self syncRpc:-1712929388 :courseType];
+}
+
+- (void) getCourseListAsync:(CourseType*)courseType :(CallbackBlock)callback {
+    [self asyncRpc:-1712929388 :courseType :callback];
 }
 @end
 

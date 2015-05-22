@@ -13,14 +13,28 @@ public class RequestHandle implements Runnable {
         this.session = session;
     }
 
+    public RpcSession getSession() {
+        return session;
+    }
+
+    public Message getRequest() {
+        return request;
+    }
+
     @Override
     public void run() {
-        GeneratedMessage returns = registry.invokeService(request.getServiceId(),
-                request.getArgument(),
-                session);
-        Message response = new ResponseMessage(request.getServiceId(),
-                request.getStamp(), returns);
-
-        session.sendMessage(response);
+        try {
+            GeneratedMessage returns = registry.invokeService(request.getServiceId(),
+                    request.getArgument(),
+                    session);
+            Message response = new ResponseMessage(request.getServiceId(),
+                    request.getStamp(), returns);
+            session.sendMessage(response);
+        } catch (Throwable t) {
+            Message response = new ResponseMessage(request.getServiceId(),
+                    request.getStamp(), null);
+            response.setServiceException();
+            session.sendMessage(response);
+        }
     }
 }

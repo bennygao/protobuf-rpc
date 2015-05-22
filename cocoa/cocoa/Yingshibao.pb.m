@@ -13,6 +13,7 @@ static PBExtensionRegistry* extensionRegistry = nil;
   if (self == [YingshibaoRoot class]) {
     PBMutableExtensionRegistry* registry = [PBMutableExtensionRegistry registry];
     [self registerAllExtensions:registry];
+    [ModuleRoot registerAllExtensions:registry];
     extensionRegistry = registry;
   }
 }
@@ -741,1017 +742,6 @@ static RegisterResult* defaultRegisterResultInstance = nil;
 }
 @end
 
-@interface CourseType ()
-@property UInt32 courseType;
-@property UInt32 num;
-@property UInt32 pageNum;
-@end
-
-@implementation CourseType
-
-- (BOOL) hasCourseType {
-  return !!hasCourseType_;
-}
-- (void) setHasCourseType:(BOOL) _value_ {
-  hasCourseType_ = !!_value_;
-}
-@synthesize courseType;
-- (BOOL) hasNum {
-  return !!hasNum_;
-}
-- (void) setHasNum:(BOOL) _value_ {
-  hasNum_ = !!_value_;
-}
-@synthesize num;
-- (BOOL) hasPageNum {
-  return !!hasPageNum_;
-}
-- (void) setHasPageNum:(BOOL) _value_ {
-  hasPageNum_ = !!_value_;
-}
-@synthesize pageNum;
-- (instancetype) init {
-  if ((self = [super init])) {
-    self.courseType = 0;
-    self.num = 0;
-    self.pageNum = 0;
-  }
-  return self;
-}
-static CourseType* defaultCourseTypeInstance = nil;
-+ (void) initialize {
-  if (self == [CourseType class]) {
-    defaultCourseTypeInstance = [[CourseType alloc] init];
-  }
-}
-+ (instancetype) defaultInstance {
-  return defaultCourseTypeInstance;
-}
-- (instancetype) defaultInstance {
-  return defaultCourseTypeInstance;
-}
-- (BOOL) isInitialized {
-  if (!self.hasCourseType) {
-    return NO;
-  }
-  if (!self.hasNum) {
-    return NO;
-  }
-  if (!self.hasPageNum) {
-    return NO;
-  }
-  return YES;
-}
-- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
-  if (self.hasCourseType) {
-    [output writeUInt32:1 value:self.courseType];
-  }
-  if (self.hasNum) {
-    [output writeUInt32:2 value:self.num];
-  }
-  if (self.hasPageNum) {
-    [output writeUInt32:3 value:self.pageNum];
-  }
-  [self.unknownFields writeToCodedOutputStream:output];
-}
-- (SInt32) serializedSize {
-  __block SInt32 size_ = memoizedSerializedSize;
-  if (size_ != -1) {
-    return size_;
-  }
-
-  size_ = 0;
-  if (self.hasCourseType) {
-    size_ += computeUInt32Size(1, self.courseType);
-  }
-  if (self.hasNum) {
-    size_ += computeUInt32Size(2, self.num);
-  }
-  if (self.hasPageNum) {
-    size_ += computeUInt32Size(3, self.pageNum);
-  }
-  size_ += self.unknownFields.serializedSize;
-  memoizedSerializedSize = size_;
-  return size_;
-}
-+ (CourseType*) parseFromData:(NSData*) data {
-  return (CourseType*)[[[CourseType builder] mergeFromData:data] build];
-}
-+ (CourseType*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
-  return (CourseType*)[[[CourseType builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
-}
-+ (CourseType*) parseFromInputStream:(NSInputStream*) input {
-  return (CourseType*)[[[CourseType builder] mergeFromInputStream:input] build];
-}
-+ (CourseType*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
-  return (CourseType*)[[[CourseType builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
-}
-+ (CourseType*) parseFromCodedInputStream:(PBCodedInputStream*) input {
-  return (CourseType*)[[[CourseType builder] mergeFromCodedInputStream:input] build];
-}
-+ (CourseType*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
-  return (CourseType*)[[[CourseType builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
-}
-+ (CourseTypeBuilder*) builder {
-  return [[CourseTypeBuilder alloc] init];
-}
-+ (CourseTypeBuilder*) builderWithPrototype:(CourseType*) prototype {
-  return [[CourseType builder] mergeFrom:prototype];
-}
-- (CourseTypeBuilder*) builder {
-  return [CourseType builder];
-}
-- (CourseTypeBuilder*) toBuilder {
-  return [CourseType builderWithPrototype:self];
-}
-- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
-  if (self.hasCourseType) {
-    [output appendFormat:@"%@%@: %@\n", indent, @"courseType", [NSNumber numberWithInteger:self.courseType]];
-  }
-  if (self.hasNum) {
-    [output appendFormat:@"%@%@: %@\n", indent, @"num", [NSNumber numberWithInteger:self.num]];
-  }
-  if (self.hasPageNum) {
-    [output appendFormat:@"%@%@: %@\n", indent, @"pageNum", [NSNumber numberWithInteger:self.pageNum]];
-  }
-  [self.unknownFields writeDescriptionTo:output withIndent:indent];
-}
-- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
-  if (self.hasCourseType) {
-    [dictionary setObject: [NSNumber numberWithInteger:self.courseType] forKey: @"courseType"];
-  }
-  if (self.hasNum) {
-    [dictionary setObject: [NSNumber numberWithInteger:self.num] forKey: @"num"];
-  }
-  if (self.hasPageNum) {
-    [dictionary setObject: [NSNumber numberWithInteger:self.pageNum] forKey: @"pageNum"];
-  }
-  [self.unknownFields storeInDictionary:dictionary];
-}
-- (BOOL) isEqual:(id)other {
-  if (other == self) {
-    return YES;
-  }
-  if (![other isKindOfClass:[CourseType class]]) {
-    return NO;
-  }
-  CourseType *otherMessage = other;
-  return
-      self.hasCourseType == otherMessage.hasCourseType &&
-      (!self.hasCourseType || self.courseType == otherMessage.courseType) &&
-      self.hasNum == otherMessage.hasNum &&
-      (!self.hasNum || self.num == otherMessage.num) &&
-      self.hasPageNum == otherMessage.hasPageNum &&
-      (!self.hasPageNum || self.pageNum == otherMessage.pageNum) &&
-      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
-}
-- (NSUInteger) hash {
-  __block NSUInteger hashCode = 7;
-  if (self.hasCourseType) {
-    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.courseType] hash];
-  }
-  if (self.hasNum) {
-    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.num] hash];
-  }
-  if (self.hasPageNum) {
-    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.pageNum] hash];
-  }
-  hashCode = hashCode * 31 + [self.unknownFields hash];
-  return hashCode;
-}
-@end
-
-@interface CourseTypeBuilder()
-@property (strong) CourseType* resultCourseType;
-@end
-
-@implementation CourseTypeBuilder
-@synthesize resultCourseType;
-- (instancetype) init {
-  if ((self = [super init])) {
-    self.resultCourseType = [[CourseType alloc] init];
-  }
-  return self;
-}
-- (PBGeneratedMessage*) internalGetResult {
-  return resultCourseType;
-}
-- (CourseTypeBuilder*) clear {
-  self.resultCourseType = [[CourseType alloc] init];
-  return self;
-}
-- (CourseTypeBuilder*) clone {
-  return [CourseType builderWithPrototype:resultCourseType];
-}
-- (CourseType*) defaultInstance {
-  return [CourseType defaultInstance];
-}
-- (CourseType*) build {
-  [self checkInitialized];
-  return [self buildPartial];
-}
-- (CourseType*) buildPartial {
-  CourseType* returnMe = resultCourseType;
-  self.resultCourseType = nil;
-  return returnMe;
-}
-- (CourseTypeBuilder*) mergeFrom:(CourseType*) other {
-  if (other == [CourseType defaultInstance]) {
-    return self;
-  }
-  if (other.hasCourseType) {
-    [self setCourseType:other.courseType];
-  }
-  if (other.hasNum) {
-    [self setNum:other.num];
-  }
-  if (other.hasPageNum) {
-    [self setPageNum:other.pageNum];
-  }
-  [self mergeUnknownFields:other.unknownFields];
-  return self;
-}
-- (CourseTypeBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
-  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
-}
-- (CourseTypeBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
-  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
-  while (YES) {
-    SInt32 tag = [input readTag];
-    switch (tag) {
-      case 0:
-        [self setUnknownFields:[unknownFields build]];
-        return self;
-      default: {
-        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
-          [self setUnknownFields:[unknownFields build]];
-          return self;
-        }
-        break;
-      }
-      case 8: {
-        [self setCourseType:[input readUInt32]];
-        break;
-      }
-      case 16: {
-        [self setNum:[input readUInt32]];
-        break;
-      }
-      case 24: {
-        [self setPageNum:[input readUInt32]];
-        break;
-      }
-    }
-  }
-}
-- (BOOL) hasCourseType {
-  return resultCourseType.hasCourseType;
-}
-- (UInt32) courseType {
-  return resultCourseType.courseType;
-}
-- (CourseTypeBuilder*) setCourseType:(UInt32) value {
-  resultCourseType.hasCourseType = YES;
-  resultCourseType.courseType = value;
-  return self;
-}
-- (CourseTypeBuilder*) clearCourseType {
-  resultCourseType.hasCourseType = NO;
-  resultCourseType.courseType = 0;
-  return self;
-}
-- (BOOL) hasNum {
-  return resultCourseType.hasNum;
-}
-- (UInt32) num {
-  return resultCourseType.num;
-}
-- (CourseTypeBuilder*) setNum:(UInt32) value {
-  resultCourseType.hasNum = YES;
-  resultCourseType.num = value;
-  return self;
-}
-- (CourseTypeBuilder*) clearNum {
-  resultCourseType.hasNum = NO;
-  resultCourseType.num = 0;
-  return self;
-}
-- (BOOL) hasPageNum {
-  return resultCourseType.hasPageNum;
-}
-- (UInt32) pageNum {
-  return resultCourseType.pageNum;
-}
-- (CourseTypeBuilder*) setPageNum:(UInt32) value {
-  resultCourseType.hasPageNum = YES;
-  resultCourseType.pageNum = value;
-  return self;
-}
-- (CourseTypeBuilder*) clearPageNum {
-  resultCourseType.hasPageNum = NO;
-  resultCourseType.pageNum = 0;
-  return self;
-}
-@end
-
-@interface CourseInfo ()
-@property SInt32 id;
-@property (strong) NSString* name;
-@property (strong) NSString* teacherName;
-@property SInt32 price;
-@property (strong) NSString* descritpion;
-@end
-
-@implementation CourseInfo
-
-- (BOOL) hasId {
-  return !!hasId_;
-}
-- (void) setHasId:(BOOL) _value_ {
-  hasId_ = !!_value_;
-}
-@synthesize id;
-- (BOOL) hasName {
-  return !!hasName_;
-}
-- (void) setHasName:(BOOL) _value_ {
-  hasName_ = !!_value_;
-}
-@synthesize name;
-- (BOOL) hasTeacherName {
-  return !!hasTeacherName_;
-}
-- (void) setHasTeacherName:(BOOL) _value_ {
-  hasTeacherName_ = !!_value_;
-}
-@synthesize teacherName;
-- (BOOL) hasPrice {
-  return !!hasPrice_;
-}
-- (void) setHasPrice:(BOOL) _value_ {
-  hasPrice_ = !!_value_;
-}
-@synthesize price;
-- (BOOL) hasDescritpion {
-  return !!hasDescritpion_;
-}
-- (void) setHasDescritpion:(BOOL) _value_ {
-  hasDescritpion_ = !!_value_;
-}
-@synthesize descritpion;
-- (instancetype) init {
-  if ((self = [super init])) {
-    self.id = 0;
-    self.name = @"";
-    self.teacherName = @"";
-    self.price = 0;
-    self.descritpion = @"";
-  }
-  return self;
-}
-static CourseInfo* defaultCourseInfoInstance = nil;
-+ (void) initialize {
-  if (self == [CourseInfo class]) {
-    defaultCourseInfoInstance = [[CourseInfo alloc] init];
-  }
-}
-+ (instancetype) defaultInstance {
-  return defaultCourseInfoInstance;
-}
-- (instancetype) defaultInstance {
-  return defaultCourseInfoInstance;
-}
-- (BOOL) isInitialized {
-  if (!self.hasId) {
-    return NO;
-  }
-  if (!self.hasName) {
-    return NO;
-  }
-  if (!self.hasTeacherName) {
-    return NO;
-  }
-  if (!self.hasPrice) {
-    return NO;
-  }
-  if (!self.hasDescritpion) {
-    return NO;
-  }
-  return YES;
-}
-- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
-  if (self.hasId) {
-    [output writeInt32:1 value:self.id];
-  }
-  if (self.hasName) {
-    [output writeString:2 value:self.name];
-  }
-  if (self.hasTeacherName) {
-    [output writeString:3 value:self.teacherName];
-  }
-  if (self.hasPrice) {
-    [output writeInt32:4 value:self.price];
-  }
-  if (self.hasDescritpion) {
-    [output writeString:5 value:self.descritpion];
-  }
-  [self.unknownFields writeToCodedOutputStream:output];
-}
-- (SInt32) serializedSize {
-  __block SInt32 size_ = memoizedSerializedSize;
-  if (size_ != -1) {
-    return size_;
-  }
-
-  size_ = 0;
-  if (self.hasId) {
-    size_ += computeInt32Size(1, self.id);
-  }
-  if (self.hasName) {
-    size_ += computeStringSize(2, self.name);
-  }
-  if (self.hasTeacherName) {
-    size_ += computeStringSize(3, self.teacherName);
-  }
-  if (self.hasPrice) {
-    size_ += computeInt32Size(4, self.price);
-  }
-  if (self.hasDescritpion) {
-    size_ += computeStringSize(5, self.descritpion);
-  }
-  size_ += self.unknownFields.serializedSize;
-  memoizedSerializedSize = size_;
-  return size_;
-}
-+ (CourseInfo*) parseFromData:(NSData*) data {
-  return (CourseInfo*)[[[CourseInfo builder] mergeFromData:data] build];
-}
-+ (CourseInfo*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
-  return (CourseInfo*)[[[CourseInfo builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
-}
-+ (CourseInfo*) parseFromInputStream:(NSInputStream*) input {
-  return (CourseInfo*)[[[CourseInfo builder] mergeFromInputStream:input] build];
-}
-+ (CourseInfo*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
-  return (CourseInfo*)[[[CourseInfo builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
-}
-+ (CourseInfo*) parseFromCodedInputStream:(PBCodedInputStream*) input {
-  return (CourseInfo*)[[[CourseInfo builder] mergeFromCodedInputStream:input] build];
-}
-+ (CourseInfo*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
-  return (CourseInfo*)[[[CourseInfo builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
-}
-+ (CourseInfoBuilder*) builder {
-  return [[CourseInfoBuilder alloc] init];
-}
-+ (CourseInfoBuilder*) builderWithPrototype:(CourseInfo*) prototype {
-  return [[CourseInfo builder] mergeFrom:prototype];
-}
-- (CourseInfoBuilder*) builder {
-  return [CourseInfo builder];
-}
-- (CourseInfoBuilder*) toBuilder {
-  return [CourseInfo builderWithPrototype:self];
-}
-- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
-  if (self.hasId) {
-    [output appendFormat:@"%@%@: %@\n", indent, @"id", [NSNumber numberWithInteger:self.id]];
-  }
-  if (self.hasName) {
-    [output appendFormat:@"%@%@: %@\n", indent, @"name", self.name];
-  }
-  if (self.hasTeacherName) {
-    [output appendFormat:@"%@%@: %@\n", indent, @"teacherName", self.teacherName];
-  }
-  if (self.hasPrice) {
-    [output appendFormat:@"%@%@: %@\n", indent, @"price", [NSNumber numberWithInteger:self.price]];
-  }
-  if (self.hasDescritpion) {
-    [output appendFormat:@"%@%@: %@\n", indent, @"descritpion", self.descritpion];
-  }
-  [self.unknownFields writeDescriptionTo:output withIndent:indent];
-}
-- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
-  if (self.hasId) {
-    [dictionary setObject: [NSNumber numberWithInteger:self.id] forKey: @"id"];
-  }
-  if (self.hasName) {
-    [dictionary setObject: self.name forKey: @"name"];
-  }
-  if (self.hasTeacherName) {
-    [dictionary setObject: self.teacherName forKey: @"teacherName"];
-  }
-  if (self.hasPrice) {
-    [dictionary setObject: [NSNumber numberWithInteger:self.price] forKey: @"price"];
-  }
-  if (self.hasDescritpion) {
-    [dictionary setObject: self.descritpion forKey: @"descritpion"];
-  }
-  [self.unknownFields storeInDictionary:dictionary];
-}
-- (BOOL) isEqual:(id)other {
-  if (other == self) {
-    return YES;
-  }
-  if (![other isKindOfClass:[CourseInfo class]]) {
-    return NO;
-  }
-  CourseInfo *otherMessage = other;
-  return
-      self.hasId == otherMessage.hasId &&
-      (!self.hasId || self.id == otherMessage.id) &&
-      self.hasName == otherMessage.hasName &&
-      (!self.hasName || [self.name isEqual:otherMessage.name]) &&
-      self.hasTeacherName == otherMessage.hasTeacherName &&
-      (!self.hasTeacherName || [self.teacherName isEqual:otherMessage.teacherName]) &&
-      self.hasPrice == otherMessage.hasPrice &&
-      (!self.hasPrice || self.price == otherMessage.price) &&
-      self.hasDescritpion == otherMessage.hasDescritpion &&
-      (!self.hasDescritpion || [self.descritpion isEqual:otherMessage.descritpion]) &&
-      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
-}
-- (NSUInteger) hash {
-  __block NSUInteger hashCode = 7;
-  if (self.hasId) {
-    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.id] hash];
-  }
-  if (self.hasName) {
-    hashCode = hashCode * 31 + [self.name hash];
-  }
-  if (self.hasTeacherName) {
-    hashCode = hashCode * 31 + [self.teacherName hash];
-  }
-  if (self.hasPrice) {
-    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.price] hash];
-  }
-  if (self.hasDescritpion) {
-    hashCode = hashCode * 31 + [self.descritpion hash];
-  }
-  hashCode = hashCode * 31 + [self.unknownFields hash];
-  return hashCode;
-}
-@end
-
-@interface CourseInfoBuilder()
-@property (strong) CourseInfo* resultCourseInfo;
-@end
-
-@implementation CourseInfoBuilder
-@synthesize resultCourseInfo;
-- (instancetype) init {
-  if ((self = [super init])) {
-    self.resultCourseInfo = [[CourseInfo alloc] init];
-  }
-  return self;
-}
-- (PBGeneratedMessage*) internalGetResult {
-  return resultCourseInfo;
-}
-- (CourseInfoBuilder*) clear {
-  self.resultCourseInfo = [[CourseInfo alloc] init];
-  return self;
-}
-- (CourseInfoBuilder*) clone {
-  return [CourseInfo builderWithPrototype:resultCourseInfo];
-}
-- (CourseInfo*) defaultInstance {
-  return [CourseInfo defaultInstance];
-}
-- (CourseInfo*) build {
-  [self checkInitialized];
-  return [self buildPartial];
-}
-- (CourseInfo*) buildPartial {
-  CourseInfo* returnMe = resultCourseInfo;
-  self.resultCourseInfo = nil;
-  return returnMe;
-}
-- (CourseInfoBuilder*) mergeFrom:(CourseInfo*) other {
-  if (other == [CourseInfo defaultInstance]) {
-    return self;
-  }
-  if (other.hasId) {
-    [self setId:other.id];
-  }
-  if (other.hasName) {
-    [self setName:other.name];
-  }
-  if (other.hasTeacherName) {
-    [self setTeacherName:other.teacherName];
-  }
-  if (other.hasPrice) {
-    [self setPrice:other.price];
-  }
-  if (other.hasDescritpion) {
-    [self setDescritpion:other.descritpion];
-  }
-  [self mergeUnknownFields:other.unknownFields];
-  return self;
-}
-- (CourseInfoBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
-  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
-}
-- (CourseInfoBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
-  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
-  while (YES) {
-    SInt32 tag = [input readTag];
-    switch (tag) {
-      case 0:
-        [self setUnknownFields:[unknownFields build]];
-        return self;
-      default: {
-        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
-          [self setUnknownFields:[unknownFields build]];
-          return self;
-        }
-        break;
-      }
-      case 8: {
-        [self setId:[input readInt32]];
-        break;
-      }
-      case 18: {
-        [self setName:[input readString]];
-        break;
-      }
-      case 26: {
-        [self setTeacherName:[input readString]];
-        break;
-      }
-      case 32: {
-        [self setPrice:[input readInt32]];
-        break;
-      }
-      case 42: {
-        [self setDescritpion:[input readString]];
-        break;
-      }
-    }
-  }
-}
-- (BOOL) hasId {
-  return resultCourseInfo.hasId;
-}
-- (SInt32) id {
-  return resultCourseInfo.id;
-}
-- (CourseInfoBuilder*) setId:(SInt32) value {
-  resultCourseInfo.hasId = YES;
-  resultCourseInfo.id = value;
-  return self;
-}
-- (CourseInfoBuilder*) clearId {
-  resultCourseInfo.hasId = NO;
-  resultCourseInfo.id = 0;
-  return self;
-}
-- (BOOL) hasName {
-  return resultCourseInfo.hasName;
-}
-- (NSString*) name {
-  return resultCourseInfo.name;
-}
-- (CourseInfoBuilder*) setName:(NSString*) value {
-  resultCourseInfo.hasName = YES;
-  resultCourseInfo.name = value;
-  return self;
-}
-- (CourseInfoBuilder*) clearName {
-  resultCourseInfo.hasName = NO;
-  resultCourseInfo.name = @"";
-  return self;
-}
-- (BOOL) hasTeacherName {
-  return resultCourseInfo.hasTeacherName;
-}
-- (NSString*) teacherName {
-  return resultCourseInfo.teacherName;
-}
-- (CourseInfoBuilder*) setTeacherName:(NSString*) value {
-  resultCourseInfo.hasTeacherName = YES;
-  resultCourseInfo.teacherName = value;
-  return self;
-}
-- (CourseInfoBuilder*) clearTeacherName {
-  resultCourseInfo.hasTeacherName = NO;
-  resultCourseInfo.teacherName = @"";
-  return self;
-}
-- (BOOL) hasPrice {
-  return resultCourseInfo.hasPrice;
-}
-- (SInt32) price {
-  return resultCourseInfo.price;
-}
-- (CourseInfoBuilder*) setPrice:(SInt32) value {
-  resultCourseInfo.hasPrice = YES;
-  resultCourseInfo.price = value;
-  return self;
-}
-- (CourseInfoBuilder*) clearPrice {
-  resultCourseInfo.hasPrice = NO;
-  resultCourseInfo.price = 0;
-  return self;
-}
-- (BOOL) hasDescritpion {
-  return resultCourseInfo.hasDescritpion;
-}
-- (NSString*) descritpion {
-  return resultCourseInfo.descritpion;
-}
-- (CourseInfoBuilder*) setDescritpion:(NSString*) value {
-  resultCourseInfo.hasDescritpion = YES;
-  resultCourseInfo.descritpion = value;
-  return self;
-}
-- (CourseInfoBuilder*) clearDescritpion {
-  resultCourseInfo.hasDescritpion = NO;
-  resultCourseInfo.descritpion = @"";
-  return self;
-}
-@end
-
-@interface CourseList ()
-@property SInt32 num;
-@property (strong) NSMutableArray * listArray;
-@end
-
-@implementation CourseList
-
-- (BOOL) hasNum {
-  return !!hasNum_;
-}
-- (void) setHasNum:(BOOL) _value_ {
-  hasNum_ = !!_value_;
-}
-@synthesize num;
-@synthesize listArray;
-@dynamic list;
-- (instancetype) init {
-  if ((self = [super init])) {
-    self.num = 0;
-  }
-  return self;
-}
-static CourseList* defaultCourseListInstance = nil;
-+ (void) initialize {
-  if (self == [CourseList class]) {
-    defaultCourseListInstance = [[CourseList alloc] init];
-  }
-}
-+ (instancetype) defaultInstance {
-  return defaultCourseListInstance;
-}
-- (instancetype) defaultInstance {
-  return defaultCourseListInstance;
-}
-- (NSArray *)list {
-  return listArray;
-}
-- (CourseInfo*)listAtIndex:(NSUInteger)index {
-  return [listArray objectAtIndex:index];
-}
-- (BOOL) isInitialized {
-  if (!self.hasNum) {
-    return NO;
-  }
-  __block BOOL isInitlist = YES;
-   [self.list enumerateObjectsUsingBlock:^(CourseInfo *element, NSUInteger idx, BOOL *stop) {
-    if (!element.isInitialized) {
-      isInitlist = NO;
-      *stop = YES;
-    }
-  }];
-  if (!isInitlist) return isInitlist;
-  return YES;
-}
-- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
-  if (self.hasNum) {
-    [output writeInt32:1 value:self.num];
-  }
-  [self.listArray enumerateObjectsUsingBlock:^(CourseInfo *element, NSUInteger idx, BOOL *stop) {
-    [output writeMessage:2 value:element];
-  }];
-  [self.unknownFields writeToCodedOutputStream:output];
-}
-- (SInt32) serializedSize {
-  __block SInt32 size_ = memoizedSerializedSize;
-  if (size_ != -1) {
-    return size_;
-  }
-
-  size_ = 0;
-  if (self.hasNum) {
-    size_ += computeInt32Size(1, self.num);
-  }
-  [self.listArray enumerateObjectsUsingBlock:^(CourseInfo *element, NSUInteger idx, BOOL *stop) {
-    size_ += computeMessageSize(2, element);
-  }];
-  size_ += self.unknownFields.serializedSize;
-  memoizedSerializedSize = size_;
-  return size_;
-}
-+ (CourseList*) parseFromData:(NSData*) data {
-  return (CourseList*)[[[CourseList builder] mergeFromData:data] build];
-}
-+ (CourseList*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
-  return (CourseList*)[[[CourseList builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
-}
-+ (CourseList*) parseFromInputStream:(NSInputStream*) input {
-  return (CourseList*)[[[CourseList builder] mergeFromInputStream:input] build];
-}
-+ (CourseList*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
-  return (CourseList*)[[[CourseList builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
-}
-+ (CourseList*) parseFromCodedInputStream:(PBCodedInputStream*) input {
-  return (CourseList*)[[[CourseList builder] mergeFromCodedInputStream:input] build];
-}
-+ (CourseList*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
-  return (CourseList*)[[[CourseList builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
-}
-+ (CourseListBuilder*) builder {
-  return [[CourseListBuilder alloc] init];
-}
-+ (CourseListBuilder*) builderWithPrototype:(CourseList*) prototype {
-  return [[CourseList builder] mergeFrom:prototype];
-}
-- (CourseListBuilder*) builder {
-  return [CourseList builder];
-}
-- (CourseListBuilder*) toBuilder {
-  return [CourseList builderWithPrototype:self];
-}
-- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
-  if (self.hasNum) {
-    [output appendFormat:@"%@%@: %@\n", indent, @"num", [NSNumber numberWithInteger:self.num]];
-  }
-  [self.listArray enumerateObjectsUsingBlock:^(CourseInfo *element, NSUInteger idx, BOOL *stop) {
-    [output appendFormat:@"%@%@ {\n", indent, @"list"];
-    [element writeDescriptionTo:output
-                     withIndent:[NSString stringWithFormat:@"%@  ", indent]];
-    [output appendFormat:@"%@}\n", indent];
-  }];
-  [self.unknownFields writeDescriptionTo:output withIndent:indent];
-}
-- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
-  if (self.hasNum) {
-    [dictionary setObject: [NSNumber numberWithInteger:self.num] forKey: @"num"];
-  }
-  for (CourseInfo* element in self.listArray) {
-    NSMutableDictionary *elementDictionary = [NSMutableDictionary dictionary];
-    [element storeInDictionary:elementDictionary];
-    [dictionary setObject:[NSDictionary dictionaryWithDictionary:elementDictionary] forKey:@"list"];
-  }
-  [self.unknownFields storeInDictionary:dictionary];
-}
-- (BOOL) isEqual:(id)other {
-  if (other == self) {
-    return YES;
-  }
-  if (![other isKindOfClass:[CourseList class]]) {
-    return NO;
-  }
-  CourseList *otherMessage = other;
-  return
-      self.hasNum == otherMessage.hasNum &&
-      (!self.hasNum || self.num == otherMessage.num) &&
-      [self.listArray isEqualToArray:otherMessage.listArray] &&
-      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
-}
-- (NSUInteger) hash {
-  __block NSUInteger hashCode = 7;
-  if (self.hasNum) {
-    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.num] hash];
-  }
-  [self.listArray enumerateObjectsUsingBlock:^(CourseInfo *element, NSUInteger idx, BOOL *stop) {
-    hashCode = hashCode * 31 + [element hash];
-  }];
-  hashCode = hashCode * 31 + [self.unknownFields hash];
-  return hashCode;
-}
-@end
-
-@interface CourseListBuilder()
-@property (strong) CourseList* resultCourseList;
-@end
-
-@implementation CourseListBuilder
-@synthesize resultCourseList;
-- (instancetype) init {
-  if ((self = [super init])) {
-    self.resultCourseList = [[CourseList alloc] init];
-  }
-  return self;
-}
-- (PBGeneratedMessage*) internalGetResult {
-  return resultCourseList;
-}
-- (CourseListBuilder*) clear {
-  self.resultCourseList = [[CourseList alloc] init];
-  return self;
-}
-- (CourseListBuilder*) clone {
-  return [CourseList builderWithPrototype:resultCourseList];
-}
-- (CourseList*) defaultInstance {
-  return [CourseList defaultInstance];
-}
-- (CourseList*) build {
-  [self checkInitialized];
-  return [self buildPartial];
-}
-- (CourseList*) buildPartial {
-  CourseList* returnMe = resultCourseList;
-  self.resultCourseList = nil;
-  return returnMe;
-}
-- (CourseListBuilder*) mergeFrom:(CourseList*) other {
-  if (other == [CourseList defaultInstance]) {
-    return self;
-  }
-  if (other.hasNum) {
-    [self setNum:other.num];
-  }
-  if (other.listArray.count > 0) {
-    if (resultCourseList.listArray == nil) {
-      resultCourseList.listArray = [[NSMutableArray alloc] initWithArray:other.listArray];
-    } else {
-      [resultCourseList.listArray addObjectsFromArray:other.listArray];
-    }
-  }
-  [self mergeUnknownFields:other.unknownFields];
-  return self;
-}
-- (CourseListBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
-  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
-}
-- (CourseListBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
-  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
-  while (YES) {
-    SInt32 tag = [input readTag];
-    switch (tag) {
-      case 0:
-        [self setUnknownFields:[unknownFields build]];
-        return self;
-      default: {
-        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
-          [self setUnknownFields:[unknownFields build]];
-          return self;
-        }
-        break;
-      }
-      case 8: {
-        [self setNum:[input readInt32]];
-        break;
-      }
-      case 18: {
-        CourseInfoBuilder* subBuilder = [CourseInfo builder];
-        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
-        [self addList:[subBuilder buildPartial]];
-        break;
-      }
-    }
-  }
-}
-- (BOOL) hasNum {
-  return resultCourseList.hasNum;
-}
-- (SInt32) num {
-  return resultCourseList.num;
-}
-- (CourseListBuilder*) setNum:(SInt32) value {
-  resultCourseList.hasNum = YES;
-  resultCourseList.num = value;
-  return self;
-}
-- (CourseListBuilder*) clearNum {
-  resultCourseList.hasNum = NO;
-  resultCourseList.num = 0;
-  return self;
-}
-- (NSMutableArray *)list {
-  return resultCourseList.listArray;
-}
-- (CourseInfo*)listAtIndex:(NSUInteger)index {
-  return [resultCourseList listAtIndex:index];
-}
-- (CourseListBuilder *)addList:(CourseInfo*)value {
-  if (resultCourseList.listArray == nil) {
-    resultCourseList.listArray = [[NSMutableArray alloc]init];
-  }
-  [resultCourseList.listArray addObject:value];
-  return self;
-}
-- (CourseListBuilder *)setListArray:(NSArray *)array {
-  resultCourseList.listArray = [[NSMutableArray alloc]initWithArray:array];
-  return self;
-}
-- (CourseListBuilder *)clearList {
-  resultCourseList.listArray = nil;
-  return self;
-}
-@end
-
 @interface Barrage ()
 @property (strong) NSString* senderNickname;
 @property (strong) NSString* message;
@@ -2167,6 +1157,319 @@ static None* defaultNoneInstance = nil;
       }
     }
   }
+}
+@end
+
+@interface ImportMessage ()
+@property (strong) CourseInfo* courseInfo;
+@property (strong) CourseList* courseList;
+@end
+
+@implementation ImportMessage
+
+- (BOOL) hasCourseInfo {
+  return !!hasCourseInfo_;
+}
+- (void) setHasCourseInfo:(BOOL) _value_ {
+  hasCourseInfo_ = !!_value_;
+}
+@synthesize courseInfo;
+- (BOOL) hasCourseList {
+  return !!hasCourseList_;
+}
+- (void) setHasCourseList:(BOOL) _value_ {
+  hasCourseList_ = !!_value_;
+}
+@synthesize courseList;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.courseInfo = [CourseInfo defaultInstance];
+    self.courseList = [CourseList defaultInstance];
+  }
+  return self;
+}
+static ImportMessage* defaultImportMessageInstance = nil;
++ (void) initialize {
+  if (self == [ImportMessage class]) {
+    defaultImportMessageInstance = [[ImportMessage alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultImportMessageInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultImportMessageInstance;
+}
+- (BOOL) isInitialized {
+  if (self.hasCourseInfo) {
+    if (!self.courseInfo.isInitialized) {
+      return NO;
+    }
+  }
+  if (self.hasCourseList) {
+    if (!self.courseList.isInitialized) {
+      return NO;
+    }
+  }
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasCourseInfo) {
+    [output writeMessage:1 value:self.courseInfo];
+  }
+  if (self.hasCourseList) {
+    [output writeMessage:2 value:self.courseList];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasCourseInfo) {
+    size_ += computeMessageSize(1, self.courseInfo);
+  }
+  if (self.hasCourseList) {
+    size_ += computeMessageSize(2, self.courseList);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (ImportMessage*) parseFromData:(NSData*) data {
+  return (ImportMessage*)[[[ImportMessage builder] mergeFromData:data] build];
+}
++ (ImportMessage*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (ImportMessage*)[[[ImportMessage builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (ImportMessage*) parseFromInputStream:(NSInputStream*) input {
+  return (ImportMessage*)[[[ImportMessage builder] mergeFromInputStream:input] build];
+}
++ (ImportMessage*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (ImportMessage*)[[[ImportMessage builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (ImportMessage*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (ImportMessage*)[[[ImportMessage builder] mergeFromCodedInputStream:input] build];
+}
++ (ImportMessage*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (ImportMessage*)[[[ImportMessage builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (ImportMessageBuilder*) builder {
+  return [[ImportMessageBuilder alloc] init];
+}
++ (ImportMessageBuilder*) builderWithPrototype:(ImportMessage*) prototype {
+  return [[ImportMessage builder] mergeFrom:prototype];
+}
+- (ImportMessageBuilder*) builder {
+  return [ImportMessage builder];
+}
+- (ImportMessageBuilder*) toBuilder {
+  return [ImportMessage builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasCourseInfo) {
+    [output appendFormat:@"%@%@ {\n", indent, @"courseInfo"];
+    [self.courseInfo writeDescriptionTo:output
+                         withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }
+  if (self.hasCourseList) {
+    [output appendFormat:@"%@%@ {\n", indent, @"courseList"];
+    [self.courseList writeDescriptionTo:output
+                         withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasCourseInfo) {
+   NSMutableDictionary *messageDictionary = [NSMutableDictionary dictionary]; 
+   [self.courseInfo storeInDictionary:messageDictionary];
+   [dictionary setObject:[NSDictionary dictionaryWithDictionary:messageDictionary] forKey:@"courseInfo"];
+  }
+  if (self.hasCourseList) {
+   NSMutableDictionary *messageDictionary = [NSMutableDictionary dictionary]; 
+   [self.courseList storeInDictionary:messageDictionary];
+   [dictionary setObject:[NSDictionary dictionaryWithDictionary:messageDictionary] forKey:@"courseList"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[ImportMessage class]]) {
+    return NO;
+  }
+  ImportMessage *otherMessage = other;
+  return
+      self.hasCourseInfo == otherMessage.hasCourseInfo &&
+      (!self.hasCourseInfo || [self.courseInfo isEqual:otherMessage.courseInfo]) &&
+      self.hasCourseList == otherMessage.hasCourseList &&
+      (!self.hasCourseList || [self.courseList isEqual:otherMessage.courseList]) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasCourseInfo) {
+    hashCode = hashCode * 31 + [self.courseInfo hash];
+  }
+  if (self.hasCourseList) {
+    hashCode = hashCode * 31 + [self.courseList hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface ImportMessageBuilder()
+@property (strong) ImportMessage* resultImportMessage;
+@end
+
+@implementation ImportMessageBuilder
+@synthesize resultImportMessage;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultImportMessage = [[ImportMessage alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultImportMessage;
+}
+- (ImportMessageBuilder*) clear {
+  self.resultImportMessage = [[ImportMessage alloc] init];
+  return self;
+}
+- (ImportMessageBuilder*) clone {
+  return [ImportMessage builderWithPrototype:resultImportMessage];
+}
+- (ImportMessage*) defaultInstance {
+  return [ImportMessage defaultInstance];
+}
+- (ImportMessage*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (ImportMessage*) buildPartial {
+  ImportMessage* returnMe = resultImportMessage;
+  self.resultImportMessage = nil;
+  return returnMe;
+}
+- (ImportMessageBuilder*) mergeFrom:(ImportMessage*) other {
+  if (other == [ImportMessage defaultInstance]) {
+    return self;
+  }
+  if (other.hasCourseInfo) {
+    [self mergeCourseInfo:other.courseInfo];
+  }
+  if (other.hasCourseList) {
+    [self mergeCourseList:other.courseList];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (ImportMessageBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (ImportMessageBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 10: {
+        CourseInfoBuilder* subBuilder = [CourseInfo builder];
+        if (self.hasCourseInfo) {
+          [subBuilder mergeFrom:self.courseInfo];
+        }
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self setCourseInfo:[subBuilder buildPartial]];
+        break;
+      }
+      case 18: {
+        CourseListBuilder* subBuilder = [CourseList builder];
+        if (self.hasCourseList) {
+          [subBuilder mergeFrom:self.courseList];
+        }
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self setCourseList:[subBuilder buildPartial]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasCourseInfo {
+  return resultImportMessage.hasCourseInfo;
+}
+- (CourseInfo*) courseInfo {
+  return resultImportMessage.courseInfo;
+}
+- (ImportMessageBuilder*) setCourseInfo:(CourseInfo*) value {
+  resultImportMessage.hasCourseInfo = YES;
+  resultImportMessage.courseInfo = value;
+  return self;
+}
+- (ImportMessageBuilder*) setCourseInfoBuilder:(CourseInfoBuilder*) builderForValue {
+  return [self setCourseInfo:[builderForValue build]];
+}
+- (ImportMessageBuilder*) mergeCourseInfo:(CourseInfo*) value {
+  if (resultImportMessage.hasCourseInfo &&
+      resultImportMessage.courseInfo != [CourseInfo defaultInstance]) {
+    resultImportMessage.courseInfo =
+      [[[CourseInfo builderWithPrototype:resultImportMessage.courseInfo] mergeFrom:value] buildPartial];
+  } else {
+    resultImportMessage.courseInfo = value;
+  }
+  resultImportMessage.hasCourseInfo = YES;
+  return self;
+}
+- (ImportMessageBuilder*) clearCourseInfo {
+  resultImportMessage.hasCourseInfo = NO;
+  resultImportMessage.courseInfo = [CourseInfo defaultInstance];
+  return self;
+}
+- (BOOL) hasCourseList {
+  return resultImportMessage.hasCourseList;
+}
+- (CourseList*) courseList {
+  return resultImportMessage.courseList;
+}
+- (ImportMessageBuilder*) setCourseList:(CourseList*) value {
+  resultImportMessage.hasCourseList = YES;
+  resultImportMessage.courseList = value;
+  return self;
+}
+- (ImportMessageBuilder*) setCourseListBuilder:(CourseListBuilder*) builderForValue {
+  return [self setCourseList:[builderForValue build]];
+}
+- (ImportMessageBuilder*) mergeCourseList:(CourseList*) value {
+  if (resultImportMessage.hasCourseList &&
+      resultImportMessage.courseList != [CourseList defaultInstance]) {
+    resultImportMessage.courseList =
+      [[[CourseList builderWithPrototype:resultImportMessage.courseList] mergeFrom:value] buildPartial];
+  } else {
+    resultImportMessage.courseList = value;
+  }
+  resultImportMessage.hasCourseList = YES;
+  return self;
+}
+- (ImportMessageBuilder*) clearCourseList {
+  resultImportMessage.hasCourseList = NO;
+  resultImportMessage.courseList = [CourseList defaultInstance];
+  return self;
 }
 @end
 

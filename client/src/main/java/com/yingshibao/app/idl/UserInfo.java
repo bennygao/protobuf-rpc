@@ -134,6 +134,7 @@ public final class UserInfo extends
    * <code>required string nickName = 1;</code>
    *
    * <pre>
+   * 
    * 昵称
    * </pre>
    */
@@ -144,6 +145,7 @@ public final class UserInfo extends
    * <code>required string nickName = 1;</code>
    *
    * <pre>
+   * 
    * 昵称
    * </pre>
    */
@@ -165,6 +167,7 @@ public final class UserInfo extends
    * <code>required string nickName = 1;</code>
    *
    * <pre>
+   * 
    * 昵称
    * </pre>
    */
@@ -296,7 +299,7 @@ public final class UserInfo extends
    * <code>required uint32 examType = 4;</code>
    *
    * <pre>
-   * 考试类型 1:四级英语 2:六级英语 3:考研英语 4:考研政治 5:考研数学 6:高考
+   * 考试类型 
    * </pre>
    */
   public boolean hasExamType() {
@@ -306,7 +309,7 @@ public final class UserInfo extends
    * <code>required uint32 examType = 4;</code>
    *
    * <pre>
-   * 考试类型 1:四级英语 2:六级英语 3:考研英语 4:考研政治 5:考研数学 6:高考
+   * 考试类型 
    * </pre>
    */
   public int getExamType() {
@@ -713,6 +716,7 @@ public final class UserInfo extends
      * <code>required string nickName = 1;</code>
      *
      * <pre>
+     * 
      * 昵称
      * </pre>
      */
@@ -723,6 +727,7 @@ public final class UserInfo extends
      * <code>required string nickName = 1;</code>
      *
      * <pre>
+     * 
      * 昵称
      * </pre>
      */
@@ -744,6 +749,7 @@ public final class UserInfo extends
      * <code>required string nickName = 1;</code>
      *
      * <pre>
+     * 
      * 昵称
      * </pre>
      */
@@ -764,6 +770,7 @@ public final class UserInfo extends
      * <code>required string nickName = 1;</code>
      *
      * <pre>
+     * 
      * 昵称
      * </pre>
      */
@@ -781,6 +788,7 @@ public final class UserInfo extends
      * <code>required string nickName = 1;</code>
      *
      * <pre>
+     * 
      * 昵称
      * </pre>
      */
@@ -794,6 +802,7 @@ public final class UserInfo extends
      * <code>required string nickName = 1;</code>
      *
      * <pre>
+     * 
      * 昵称
      * </pre>
      */
@@ -1013,7 +1022,7 @@ public final class UserInfo extends
      * <code>required uint32 examType = 4;</code>
      *
      * <pre>
-     * 考试类型 1:四级英语 2:六级英语 3:考研英语 4:考研政治 5:考研数学 6:高考
+     * 考试类型 
      * </pre>
      */
     public boolean hasExamType() {
@@ -1023,7 +1032,7 @@ public final class UserInfo extends
      * <code>required uint32 examType = 4;</code>
      *
      * <pre>
-     * 考试类型 1:四级英语 2:六级英语 3:考研英语 4:考研政治 5:考研数学 6:高考
+     * 考试类型 
      * </pre>
      */
     public int getExamType() {
@@ -1033,7 +1042,7 @@ public final class UserInfo extends
      * <code>required uint32 examType = 4;</code>
      *
      * <pre>
-     * 考试类型 1:四级英语 2:六级英语 3:考研英语 4:考研政治 5:考研数学 6:高考
+     * 考试类型 
      * </pre>
      */
     public Builder setExamType(int value) {
@@ -1046,7 +1055,7 @@ public final class UserInfo extends
      * <code>required uint32 examType = 4;</code>
      *
      * <pre>
-     * 考试类型 1:四级英语 2:六级英语 3:考研英语 4:考研政治 5:考研数学 6:高考
+     * 考试类型 
      * </pre>
      */
     public Builder clearExamType() {

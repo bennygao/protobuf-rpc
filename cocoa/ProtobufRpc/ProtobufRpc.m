@@ -37,6 +37,7 @@ static NSString* getReason(const char *file, const int line, const char *routine
 static const Byte MASK_RESPONSE = 0x01;
 static const Byte MASK_SERVICE_NOT_EXIST = 0x02;
 static const Byte MASK_RPC_CANCELED = 0x04;
+static const Byte MASK_SERVICE_EXCEPTION = 0x08;
 
 @implementation Message
 
@@ -76,7 +77,7 @@ static const Byte MASK_RPC_CANCELED = 0x04;
 }
 
 - (BOOL) isServiceNotExist {
-    return (feature & MASK_SERVICE_NOT_EXIST) > 0;
+    return (feature & MASK_SERVICE_NOT_EXIST) != 0;
 }
 
 - (void) setRpcCanceled {
@@ -84,7 +85,15 @@ static const Byte MASK_RPC_CANCELED = 0x04;
 }
 
 - (BOOL) isRpcCanceled {
-    return (feature & MASK_RPC_CANCELED) > 0;
+    return (feature & MASK_RPC_CANCELED) != 0;
+}
+
+- (void) setServiceException {
+    feature |= MASK_SERVICE_EXCEPTION;
+}
+
+- (BOOL) isServiceException {
+    return (feature & MASK_SERVICE_EXCEPTION) != 0;
 }
 
 + (BOOL) isRequest:(Byte)feature {
@@ -92,7 +101,7 @@ static const Byte MASK_RPC_CANCELED = 0x04;
 }
 
 + (BOOL) isResponse:(Byte)feature {
-    return (feature & MASK_RESPONSE) > 0;
+    return (feature & MASK_RESPONSE) != 0;
 }
 
 + (Message*) createMessageWithServiceId:(int32_t)sid stamp:(int32_t)stamp feature:(Byte)feature argument:(PBGeneratedMessage*)arg {
@@ -275,13 +284,17 @@ static uint32_t STAMP = 0;
     
     [session sendRequest:request];
     Message *response = [queue take];
-    if (response.isServiceNotExist) {
+    if ([response isServiceNotExist]) {
         @throw [NSException exceptionWithName:@"UnregisteredService"
                                        reason:@"remote endpoint doesn't register invoked service."
                                      userInfo:nil];
-    } else if (response.isRpcCanceled) {
+    } else if ([response isRpcCanceled]) {
         @throw [NSException exceptionWithName:@"RpcCanceled"
                                        reason:@"synchronized rpc be canceled."
+                                     userInfo:nil];
+    } else if ([response isServiceException]) {
+        @throw [NSException exceptionWithName:@"ServiceProcessException"
+                                       reason:@"remote endpoint process service occured exception."
                                      userInfo:nil];
     } else {
         return response.argument;
@@ -295,7 +308,9 @@ static uint32_t STAMP = 0;
             callback(nil, service_not_exist);
         } else if ([message isRpcCanceled]) {
             callback(nil, rpc_canceled);
-        } else {
+        } else if ([message isServiceException]) {
+            callback(nil, service_exception);
+        }else {
             callback(message.argument, success);
         }
     };
@@ -631,6 +646,7 @@ static uint32_t STAMP = 0;
         cnt = [self recv:sock  :ptr + gotBytes :needBytes];
         needBytes -= cnt;
         gotBytes += cnt;
+        Message *message = nil;
         
         if (needBytes == 0) {
             [buffer moveCurrent:messageSize];
@@ -647,15 +663,23 @@ static uint32_t STAMP = 0;
             
             // 反序列化Protobuf
             id<RpcServiceRegistry> service = [endpoint getService:serviceId];
-            PBGeneratedMessageBuilder *builder;
-            if ([Message isRequest:feature]) {
-                builder = [service getBuilderForRequest:serviceId];
-            } else {
-                builder = [service getBuilderForResponse:serviceId];
-            }
+            PBGeneratedMessage *protobuf = nil;
             
-            NSData *idata = [NSData dataWithBytes:[buffer currentPtr] length:messageSize - 9];
-            PBGeneratedMessage *pb = [[builder mergeFromData:idata] build];
+            if (service == nil) { // service不存在
+                message = [Message createMessageWithServiceId:serviceId stamp:stamp feature:feature argument:nil];
+                [message setServiceNotExist];
+            } else {
+                PBGeneratedMessageBuilder *builder;
+                if ([Message isRequest:feature]) {
+                    builder = [service getBuilderForRequest:serviceId];
+                } else {
+                    builder = [service getBuilderForResponse:serviceId];
+                }
+                
+                NSData *idata = [NSData dataWithBytes:[buffer currentPtr] length:messageSize - 9];
+                protobuf = [[builder mergeFromData:idata] build];
+                message = [Message createMessageWithServiceId:serviceId stamp:stamp feature:feature argument:protobuf];
+            }
             
             // 调整reading的阶段和buffer状态
             phase = read_segment_size;
@@ -663,11 +687,10 @@ static uint32_t STAMP = 0;
             gotBytes = 0;
             [buffer clear];
         
-            return [Message createMessageWithServiceId:serviceId stamp:stamp feature:feature argument:pb];
-        } else {
-            return nil;
+            
         }
-
+        
+        return message;
     }
 }
 
@@ -812,6 +835,13 @@ static uint32_t STAMP = 0;
     NSArray *sidList = [service getServiceList];
     for (int i = 0; i < [sidList count]; ++i) {
         [serviceRegistry setObject:service forKey:[sidList objectAtIndex:i]];
+    }
+}
+
+- (void) unregisterService:(id<RpcServiceRegistry>)service {
+    NSArray *sidList = [service getServiceList];
+    for (int i = 0; i < [sidList count]; ++i) {
+        [serviceRegistry removeObjectForKey:[sidList objectAtIndex:i]];
     }
 }
 

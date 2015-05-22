@@ -9,7 +9,6 @@ import org.apache.velocity.app.Velocity;
 import java.io.File;
 import java.io.Writer;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by gaobo on 15/5/12.

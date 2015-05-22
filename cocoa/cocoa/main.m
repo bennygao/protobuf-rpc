@@ -25,7 +25,29 @@
 
 @end
 
-void test_rpc(Endpoint *endpoint)
+void test_unregistered_service(Endpoint *endpoint)
+{
+    NSCondition *condition = [[NSCondition alloc] init];
+    CourseTypeBuilder *builder = [CourseType builder];
+    builder.num = 10;
+    builder.pageNum = 1;
+    builder.courseType = 1;
+    CourseType *courseType = [builder build];
+    
+    RpcSession *session = [[RpcSession alloc] initWithEndpoint:endpoint];
+    CourseManagerClient *client = [[CourseManagerClient alloc] initWithRpcSession:session];
+    
+    // 同步调用
+    @try {
+        CourseList *courseList = [client getCourseList:courseType];
+        NSLog(@"CourseManager#getCourseList 同步RPC调用 - 课程列表:%@", courseList);
+    }  @catch (NSException *exception) {
+        NSLog(@"CourseManager#getCourseList 同步RPC调用异常:%@", exception);
+    }
+    
+}
+
+void test_registered_service(Endpoint *endpoint)
 {
     NSCondition *condition = [[NSCondition alloc] init];
     UserInfoBuilder* builder = [UserInfo builder];
@@ -50,6 +72,8 @@ void test_rpc(Endpoint *endpoint)
                 NSLog(@"对方endpoint不提供UserManager服务");
             } else if (state == rpc_canceled) {
                 NSLog(@"RPC调用被取消");
+            } else if (state == service_exception) {
+                NSLog(@"对方endpoint处理请求时异常");
             } else {
                 NSLog(@"[%d] 异步RPC调用 - 注册结果:%@", i, response);
             }
@@ -81,20 +105,23 @@ int main(int argc, const char * argv[]) {
         // 与服务器建立连接
         if ([endpoint connectToHost:@"localhost" withPort:10000 inSeconds:60]) {
             [endpoint start];
-            test_rpc(endpoint);
+            test_unregistered_service(endpoint);
             [endpoint stop];
         } else {
             NSLog(@"与服务器建立连接失败");
         }
         
-        
+        // 与服务器建立连接
         if ([endpoint connectToHost:@"localhost" withPort:10000 inSeconds:60]) {
             [endpoint start];
-            test_rpc(endpoint);
+            test_registered_service(endpoint);
             [endpoint stop];
         } else {
             NSLog(@"与服务器建立连接失败");
         }
+        
+        
+
     }
     
     return 0;

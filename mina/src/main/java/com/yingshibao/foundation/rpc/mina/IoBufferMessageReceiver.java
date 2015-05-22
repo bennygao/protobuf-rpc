@@ -54,17 +54,7 @@ public class IoBufferMessageReceiver {
 		
 		// phase，1个字节，用以标识消息是请求还是响应。
 		byte feature = buffer.get();
-		
-		// protobuf格式的参数
-		Parser<? extends GeneratedMessage> parser = null;
-		ServiceRegistry registry = endpoint.getRegistry(serviceId);
-		assert registry != null;
-		if (Message.isRequest(feature)) {
-			parser = registry.getParserForRequest(serviceId);
-		} else {
-			parser = registry.getParserForResponse(serviceId);
-		}
-		assert parser != null;
+
 		
 		int oldLimit = buffer.limit();
 		int need = messageSize - 9;
@@ -72,14 +62,34 @@ public class IoBufferMessageReceiver {
 			int limit = buffer.position() + need;
 			buffer.limit(limit);
 		}
-		
+
+		// protobuf格式的参数
 		GeneratedMessage protobuf = null;
-		if (need > 0) {
-			protobuf = parser.parseFrom(buffer.asInputStream());
+		Message message = null;
+		Parser<? extends GeneratedMessage> parser = null;
+		ServiceRegistry registry = endpoint.getRegistry(serviceId);
+		if (registry == null) { // 请求的服务未注册
+			message = Message.createMessage(serviceId, stamp, feature, null);
+			message.setServiceNotExist();
+
+			// 略去protobuf数据
+			buffer.position(buffer.position() + need);
+		} else {
+			if (Message.isRequest(feature)) {
+				parser = registry.getParserForRequest(serviceId);
+			} else {
+				parser = registry.getParserForResponse(serviceId);
+			}
+
+			if (need > 0) {
+				protobuf = parser.parseFrom(buffer.asInputStream());
+			}
+
+			message = Message.createMessage(serviceId, stamp, feature, protobuf);
 		}
 
 		buffer.limit(oldLimit);
-		return Message.createMessage(serviceId, stamp, feature, protobuf);
+		return message;
 	}
 
 	public Message onDataArrived(IoBuffer buffer) throws Exception {

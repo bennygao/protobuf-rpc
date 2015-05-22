@@ -1,6 +1,6 @@
 // Yingshibao.rpc.h
 // Created by protobuf-rpc-gencode.
-// Tue May 12 20:31:56 CST 2015
+// Fri May 22 13:08:58 CST 2015
 // DO NOT EDIT!
 
 #ifndef __Yingshibao_rpc_H__
@@ -47,6 +47,26 @@
 
 - (Push*) init;
 - (Push*) initWithServiceImpl:(id<PushService>) impl;
+@end
+
+@protocol CourseManagerService <NSObject>
+@required
+- (CourseList*) getCourseList:(CourseType*) courseType;
+@end
+
+@interface CourseManagerClient: ClientStub
+- (CourseManagerClient*) initWithRpcSession:(RpcSession*) session;
+- (CourseList*) getCourseList:(CourseType*) courseType;
+- (void) getCourseListAsync:(CourseType*) courseType :(CallbackBlock) callback;
+@end
+
+@interface CourseManager : NSObject <RpcServiceRegistry> {
+@private
+    id<CourseManagerService> serviceImpl;
+}
+
+- (CourseManager*) init;
+- (CourseManager*) initWithServiceImpl:(id<CourseManagerService>) impl;
 @end
 
 #endif

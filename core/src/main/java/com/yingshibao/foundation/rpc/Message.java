@@ -4,9 +4,10 @@ import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.TextFormat;
 
 public abstract class Message {
-	public final static byte MASK_RESPONSE = (byte) 0X01;
-	public final static byte MASK_SERVICE_NOT_EXIST = (byte) 0x02;
-	public final static byte MASK_RPC_CANCELED = 0x04;
+	public final static byte MASK_RESPONSE = 0x01; // 最低位，0表示请求，1表示响应
+	public final static byte MASK_SERVICE_NOT_EXIST = 0x02; // 调用的服务未注册
+	public final static byte MASK_RPC_CANCELED = 0x04; // 调用被取消（网络连接中断）
+	public final static byte MASK_SERVICE_EXCEPTION = 0x08; // 远端处理服务时发生异常
 
 	private int serviceId = 0;
 	private int stamp = 0;
@@ -68,6 +69,14 @@ public abstract class Message {
 		return (feature & MASK_RPC_CANCELED) > 0;
 	}
 
+	public void setServiceException() {
+		feature |= MASK_SERVICE_EXCEPTION;
+	}
+
+	public boolean isServiceException() {
+		return (feature & MASK_SERVICE_EXCEPTION) > 0;
+	}
+
 	void setToRequest() {
 		feature &= ~MASK_RESPONSE;
 	}
@@ -103,7 +112,7 @@ public abstract class Message {
 	}
 
 	private String binaryString(byte abyte) {
-		byte mask = (byte) 0x80;
+		int mask = 0x0080;
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < 8; ++i) {
 			if ((abyte & mask) > 0) {
@@ -111,6 +120,8 @@ public abstract class Message {
 			} else {
 				sb.append('0');
 			}
+
+			mask >>>= 1;
 		}
 
 		return sb.toString();

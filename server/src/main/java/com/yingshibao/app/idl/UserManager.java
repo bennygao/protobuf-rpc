@@ -52,6 +52,11 @@ public class UserManager implements ServiceRegistry {
 	}
 
 	@Override
+	public boolean hasImplementation() {
+		return this.serviceImpl != null;
+	}
+
+	@Override
 	public GeneratedMessage invokeService(int serviceId, GeneratedMessage arg, RpcSession session) {
 		switch (serviceId) {
 		case -2051187760:

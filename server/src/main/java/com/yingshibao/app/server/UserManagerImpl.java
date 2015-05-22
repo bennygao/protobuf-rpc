@@ -40,7 +40,7 @@ public class UserManagerImpl implements UserManager.Impl {
 			logger.info("Server call Client => push");
 			client.pushBarrage(barrage, null);
 		} catch (Exception e) {
-			logger.error("服务器端主动调用客户端失败。", e);;
+			logger.error("服务器端主动调用客户端失败。", e);
 		}
 	}
 }

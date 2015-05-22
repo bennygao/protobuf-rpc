@@ -53,6 +53,8 @@ public class ClientStub {
 			throw new InterruptedException("synchronized rpc be canceled.");
 		} else if (response.isServiceNotExist()) {
 			throw new NoSuchMethodException("remote endpoint doesn't register invoked service.");
+		} else if (response.isServiceException()) {
+			throw new RuntimeException("remote endpoint service process occured exception.");
 		} else {
 			return response.getArgument();
 		}

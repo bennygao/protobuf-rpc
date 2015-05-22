@@ -2,6 +2,7 @@ package com.yingshibao.app.server;
 
 import java.net.InetSocketAddress;
 
+import com.yingshibao.app.idl.CourseManager;
 import com.yingshibao.foundation.rpc.mina.SessionStateMonitor;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -42,6 +43,7 @@ public class Server {
 
 		endpoint.registerService(new UserManager(new UserManagerImpl()));
 		endpoint.registerService(new Push());
+		endpoint.registerService(new CourseManager());
 		
 		endpoint.start();
 		logger.info("Server started.");

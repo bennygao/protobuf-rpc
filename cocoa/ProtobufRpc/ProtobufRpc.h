@@ -16,9 +16,10 @@
 #define DEFAULT_BUFFER_CHUNK_SIZE   1024
 
 typedef enum {
-        success,
-        service_not_exist,
-        rpc_canceled
+    success,
+    service_not_exist,
+    rpc_canceled,
+    service_exception
 } RpcState;
 
 @class Message;
@@ -53,6 +54,9 @@ typedef void (^ CallbackBlock)(PBGeneratedMessage*, RpcState);
 
 - (void) setRpcCanceled;
 - (BOOL) isRpcCanceled;
+
+- (void) setServiceException;
+- (BOOL) isServiceException;
 
 + (BOOL) isRequest:(Byte)feature;
 + (BOOL) isResponse:(Byte)feature;
@@ -236,7 +240,8 @@ typedef enum  {
 - (void) stop;
 - (void) run;
 
-- (void) registerService:(id<RpcServiceRegistry>) service;
+- (void) registerService:(id<RpcServiceRegistry>)service;
+- (void) unregisterService:(id<RpcServiceRegistry>)service;
 - (id<RpcServiceRegistry>) getService:(int32_t)serviceId;
 
 - (void) sendMessage:(Message *) message;

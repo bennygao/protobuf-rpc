@@ -2,15 +2,12 @@ package com.yingshibao.app.client;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.yingshibao.app.idl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.TextFormat;
-import com.yingshibao.app.idl.Push;
-import com.yingshibao.app.idl.RegisterResult;
-import com.yingshibao.app.idl.UserInfo;
-import com.yingshibao.app.idl.UserManager;
 import com.yingshibao.foundation.rpc.Endpoint;
 import com.yingshibao.foundation.rpc.nio.NioSocketEndpoint;
 import com.yingshibao.foundation.rpc.nio.NioSocketSession;
@@ -19,8 +16,10 @@ import com.yingshibao.foundation.rpc.nio.NioSocketSession;
 public class Client {
 	public static void main(String[] args) throws Exception {
 		Client client = new Client("localhost", 10000);
-		for (int i = 0; i < 10; ++i) {
-			client.runTest();
+		for (int i = 0; i < 1; ++i) {
+			client.testUnregisteredService();
+			client.testRegisteredService();
+
 		}
 		client.stop();
 	}
@@ -37,7 +36,7 @@ public class Client {
 		endpoint.start();
 	}
 
-	public void runTest() throws Exception {
+	public void testRegisteredService() throws Exception {
 		UserManager.Client client = new UserManager.Client(new NioSocketSession(endpoint));
 		UserInfo userInfo = UserInfo.newBuilder().setChannelName("360应用商店")
 				.setPhone("13810773316").setExamType(1).setNickName("Johnn")
@@ -46,21 +45,75 @@ public class Client {
 		counter.incrementAndGet();
 		client.registerNewUser(userInfo, new Endpoint.Callback() {
 			@Override
-			public void onResponse(GeneratedMessage response, Endpoint.RpcState state) {
-				if (state == Endpoint.RpcState.success) {
-					RegisterResult result = (RegisterResult) response;
-					logger.info("ASYNC:注册用户返回:" + TextFormat.printToUnicodeString(result));
-					counter.decrementAndGet();
-				} else if (state == Endpoint.RpcState.service_not_exist) {
-					logger.info("ASYNC:对方endpoint不提供registerNewUser服务");
-				} else if (state == Endpoint.RpcState.rpc_canceled) {
-					logger.info("ASYNC:RPC调用被取消");
-				}
+			public void onResponse(GeneratedMessage response) {
+				RegisterResult result = (RegisterResult) response;
+				logger.info("ASYNC:注册用户返回:" + TextFormat.printToUnicodeString(result));
+				counter.decrementAndGet();
+			}
+
+			@Override
+			public void rpcBeCanceled() {
+				logger.info("ASYNC:RPC调用被取消");
+				counter.decrementAndGet();
+			}
+
+			@Override
+			public void serviceNotExist() {
+				logger.info("ASYNC:对方endpoint不提供registerNewUser服务");
+				counter.decrementAndGet();
+			}
+
+			@Override
+			public void serviceProcessException() {
+				logger.info("ASNYC:对方服务处理异常");
+				counter.decrementAndGet();
 			}
 		});
 		
 		RegisterResult result = client.registerNewUser(userInfo);
 		logger.info("SYNC:注册用户返回:" + TextFormat.printToUnicodeString(result));
+
+	}
+
+	public void testUnregisteredService() throws Exception {
+		try {
+			CourseType courseType = CourseType.newBuilder().setNum(10).setPageNum(1).setCourseType(1).build();
+			CourseManager.Client client = new CourseManager.Client(new NioSocketSession(endpoint));
+			CourseList courseList = client.getCourseList(courseType);
+			logger.info("SYNC:注册用户返回:" + TextFormat.printToUnicodeString(courseList));
+		} catch (Exception e) {
+			logger.error("SYNC: 获取课程列表出错。", e);
+		}
+
+		CourseType courseType = CourseType.newBuilder().setNum(10).setPageNum(1).setCourseType(1).build();
+		CourseManager.Client client = new CourseManager.Client(new NioSocketSession(endpoint));
+
+		counter.incrementAndGet();
+		client.getCourseList(courseType, new Endpoint.Callback() {
+			@Override
+			public void onResponse(GeneratedMessage response) {
+				CourseList courseList = (CourseList) response;
+				logger.error("SYNC:注册用户返回:" + TextFormat.printToUnicodeString(courseList));
+			}
+
+			@Override
+			public void rpcBeCanceled() {
+				logger.error("ASYNC:RPC调用被取消");
+				counter.decrementAndGet();
+			}
+
+			@Override
+			public void serviceNotExist() {
+				logger.error("ASYNC:对方endpoint不提供getCourseList服务");
+				counter.decrementAndGet();
+			}
+
+			@Override
+			public void serviceProcessException() {
+				logger.error("ASNYC:对方服务处理异常");
+				counter.decrementAndGet();
+			}
+		});
 
 	}
 	
