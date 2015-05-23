@@ -3,6 +3,8 @@ package com.yingshibao.foundation.rpc.nio;
 import com.yingshibao.foundation.rpc.Message;
 import com.yingshibao.foundation.rpc.RpcSession;
 
+import java.io.IOException;
+
 public class NioSocketSession implements RpcSession {
 	private NioSocketEndpoint endpoint;
 	
@@ -14,9 +16,9 @@ public class NioSocketSession implements RpcSession {
 	public void sendMessage(Message message) {
 		try {
 			endpoint.sendMessage(message);
-		} catch (Exception e) {
+		} catch (IOException ioe) {
 			System.err.println("send message error." + message);
-			e.printStackTrace();
+			ioe.printStackTrace();
 		}
 		
 	}

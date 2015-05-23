@@ -72,8 +72,6 @@ public class Endpoint {
 	
 	public interface Callback {
 		public void onResponse(GeneratedMessage response); // 正常响应
-		public void rpcBeCanceled(); // 调用被取消
-		public void serviceNotExist(); // 调用的服务不存在
-		public void serviceProcessException(); // 服务处理发生异常
+		public void onError(RpcState state); // RPC发生错误
 	}
 }

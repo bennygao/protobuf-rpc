@@ -16,7 +16,7 @@ import com.yingshibao.foundation.rpc.nio.NioSocketSession;
 public class Client {
 	public static void main(String[] args) throws Exception {
 		Client client = new Client("localhost", 10000);
-		for (int i = 0; i < 1; ++i) {
+		for (int i = 0; i < 100; ++i) {
 			client.testUnregisteredService();
 			client.testRegisteredService();
 
@@ -52,21 +52,17 @@ public class Client {
 			}
 
 			@Override
-			public void rpcBeCanceled() {
-				logger.info("ASYNC:RPC调用被取消");
-				counter.decrementAndGet();
-			}
-
-			@Override
-			public void serviceNotExist() {
-				logger.info("ASYNC:对方endpoint不提供registerNewUser服务");
-				counter.decrementAndGet();
-			}
-
-			@Override
-			public void serviceProcessException() {
-				logger.info("ASNYC:对方服务处理异常");
-				counter.decrementAndGet();
+			public void onError(Endpoint.RpcState state) {
+                counter.decrementAndGet();
+                if (state == Endpoint.RpcState.rpc_canceled) {
+                    logger.error("ASYNC:RPC调用被取消");
+                } else if (state == Endpoint.RpcState.service_not_exist) {
+                    logger.error("ASYNC:对方endpoint不提供getCourseList服务");
+                } else if (state == Endpoint.RpcState.service_exception) {
+                    logger.error("ASNYC:对方服务处理异常");
+                } else {
+                    logger.error("ASNYC:未知错误");
+                }
 			}
 		});
 		
@@ -97,21 +93,17 @@ public class Client {
 			}
 
 			@Override
-			public void rpcBeCanceled() {
-				logger.error("ASYNC:RPC调用被取消");
+			public void onError(Endpoint.RpcState state) {
 				counter.decrementAndGet();
-			}
-
-			@Override
-			public void serviceNotExist() {
-				logger.error("ASYNC:对方endpoint不提供getCourseList服务");
-				counter.decrementAndGet();
-			}
-
-			@Override
-			public void serviceProcessException() {
-				logger.error("ASNYC:对方服务处理异常");
-				counter.decrementAndGet();
+				if (state == Endpoint.RpcState.rpc_canceled) {
+					logger.error("ASYNC:RPC调用被取消");
+				} else if (state == Endpoint.RpcState.service_not_exist) {
+					logger.error("ASYNC:对方endpoint不提供getCourseList服务");
+				} else if (state == Endpoint.RpcState.service_exception) {
+					logger.error("ASNYC:对方服务处理异常");
+				} else {
+					logger.error("ASNYC:未知错误");
+				}
 			}
 		});
 

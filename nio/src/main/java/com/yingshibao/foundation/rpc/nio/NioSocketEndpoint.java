@@ -313,6 +313,10 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
     }
 
     public synchronized void sendMessage(Message message) throws IOException {
+        if (thread == null) {
+            throw new IllegalStateException("endpoint hasn't started.");
+        }
+
         cmdBuffer.clear();
         cmdBuffer.putInt(ControlCommand.send_message.ordinal());
         cmdBuffer.flip();
@@ -384,7 +388,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         return true;
     }
 
-    private void close() {
+    private synchronized void close() {
         if (selector != null) {
             try {
                 selector.close();

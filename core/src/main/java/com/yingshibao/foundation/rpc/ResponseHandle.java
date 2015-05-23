@@ -42,11 +42,11 @@ public class ResponseHandle implements Runnable {
 		} else { // 异步调用返回
 			if (callback != null ) { // callback可能为null，表示调用者忽略响应（一般用于服务器端主动push消息给客户端）
 				if (response.isRpcCanceled()) {
-                    callback.rpcBeCanceled();
+                    callback.onError(Endpoint.RpcState.rpc_canceled);
 				} else if (response.isServiceNotExist()) {
-                    callback.serviceNotExist();
+                    callback.onError(Endpoint.RpcState.service_not_exist);
 				} else if (response.isServiceException()) {
-                    callback.serviceProcessException();
+                    callback.onError(Endpoint.RpcState.service_exception);
 				} else {
 					callback.onResponse(response.getArgument());
 				}
