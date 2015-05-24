@@ -18,13 +18,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import cc.devfun.pbrpc.*;
-import com.yingshibao.foundation.rpc.*;
 
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Parser;
 
-public class NioSocketEndpoint extends Endpoint implements Runnable {
+public class NioClientEndpoint extends Endpoint implements Runnable {
     class IoBufferHolder {
         private final static int DEFAULT_BUFFER_SIZE = 1024;
         private ByteBuffer ioBuffer = ByteBuffer
@@ -195,7 +194,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
     private Thread thread;
     private int executorsNum;
 
-    public NioSocketEndpoint(int executorsNum) {
+    public NioClientEndpoint(int executorsNum) {
         this.executorsNum = executorsNum;
 
         sendQueue = new ConcurrentLinkedQueue<>();
@@ -214,7 +213,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         thread = null;
     }
 
-    public NioSocketEndpoint() {
+    public NioClientEndpoint() {
         this(DEFAULT_EXECUTORS_NUM);
     }
 
@@ -242,6 +241,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         return succ;
     }
 
+    @Override
     public void start() throws IOException {
         try {
             executors = Executors.newFixedThreadPool(executorsNum);
@@ -260,6 +260,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
         }
     }
 
+    @Override
     public void stop() throws IOException {
         if (thread == null) {
             return;
@@ -347,7 +348,7 @@ public class NioSocketEndpoint extends Endpoint implements Runnable {
                 response.setServiceNotExist();
                 sendMessage(response);
             } else {
-                RequestHandle handle = new RequestHandle(message, registry, new NioSocketSession(this));
+                RequestHandle handle = new RequestHandle(message, registry, new NioClientSession(this));
                 executors.submit(handle);
             }
         }

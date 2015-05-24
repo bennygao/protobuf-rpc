@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.yingshibao.app.idl.Push;
 import com.yingshibao.app.idl.UserManager;
-import cc.devfun.pbrpc.mina.MinaTcpEndpoint;
+import cc.devfun.pbrpc.mina.MinaServerEndpoint;
 
 public class Server {
 	static class ServerSessionMonitor implements SessionStateMonitor {
@@ -39,7 +39,7 @@ public class Server {
 
 	public static void main(String[] args) throws Exception {
 		Logger logger = LoggerFactory.getLogger(Server.class);
-		MinaTcpEndpoint endpoint = new MinaTcpEndpoint("MinaTcp", new InetSocketAddress(10000), new ServerSessionMonitor());
+		MinaServerEndpoint endpoint = new MinaServerEndpoint("MinaTcp", new InetSocketAddress(10000), new ServerSessionMonitor());
 
 		endpoint.registerService(new UserManager(new UserManagerImpl()));
 		endpoint.registerService(new Push());

@@ -9,10 +9,10 @@ import org.apache.mina.core.session.IoSession;
 
 import cc.devfun.pbrpc.RpcSession;
 
-public class MinaIoSession implements RpcSession {
+public class MinaServerSession implements RpcSession {
     private IoSession ioSession;
 
-    public MinaIoSession(IoSession ioSession) {
+    public MinaServerSession(IoSession ioSession) {
         this.ioSession = ioSession;
     }
 

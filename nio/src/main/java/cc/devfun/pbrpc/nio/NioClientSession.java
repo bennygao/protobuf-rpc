@@ -5,10 +5,10 @@ import cc.devfun.pbrpc.RpcSession;
 
 import java.io.IOException;
 
-public class NioSocketSession implements RpcSession {
-	private NioSocketEndpoint endpoint;
+public class NioClientSession implements RpcSession {
+	private NioClientEndpoint endpoint;
 	
-	public NioSocketSession(NioSocketEndpoint endpoint) {
+	public NioClientSession(NioClientEndpoint endpoint) {
 		this.endpoint = endpoint;
 	}
 

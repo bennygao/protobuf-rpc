@@ -8,7 +8,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import cc.devfun.pbrpc.*;
-import com.yingshibao.foundation.rpc.*;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -101,7 +100,7 @@ public class ProtobufRpcHandler implements IoHandler {
 			ServiceRegistry registry = endpoint.getRegistry(serviceId);
 			if (registry != null && registry.hasImplementation()) {
 				try {
-					GeneratedMessage returnsValue = registry.invokeService(serviceId, argument, new MinaIoSession(session));
+					GeneratedMessage returnsValue = registry.invokeService(serviceId, argument, new MinaServerSession(session));
 					response = new ResponseMessage(serviceId, stamp, returnsValue);
 				} catch (Throwable t) {
 					response = new ResponseMessage(message.getServiceId(), message.getStamp(), null);

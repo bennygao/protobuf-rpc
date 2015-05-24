@@ -91,6 +91,7 @@ class CommentedDescriptor {
 
 
 public class HtmlGenerator extends VelocityCodeGeneratorTemplate implements CodeGenerator {
+    // background: linear-gradient(rgba(70,91,116,1.0),rgba(37,45,56,1.0))
     public HtmlGenerator() throws Exception {
         super();
     }

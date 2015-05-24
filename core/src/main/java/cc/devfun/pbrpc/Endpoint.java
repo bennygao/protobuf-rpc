@@ -7,7 +7,30 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.protobuf.GeneratedMessage;
 
-public class Endpoint {
+public abstract class Endpoint {
+	public enum RpcStrategy {
+		sync,
+		async
+	}
+
+	public enum ControlCommand {
+		send_message,
+		stop
+	}
+
+	public enum RpcState {
+		success,
+		service_not_exist,
+		rpc_canceled,
+		service_exception
+	}
+
+	public interface Callback {
+		public void onResponse(GeneratedMessage response); // 正常响应
+		public void onError(RpcState state); // RPC发生错误
+	}
+
+
 	private Lock readLock;
 	private Lock writeLock;
 	private Map<Integer, ServiceRegistry> registryMap = new HashMap<>();
@@ -52,26 +75,7 @@ public class Endpoint {
 			readLock.unlock();
 		}
 	}
-	
-	public enum RpcStrategy {
-		sync,
-		async
-	}
-	
-	public enum ControlCommand {
-		send_message,
-		stop
-	}
 
-	public enum RpcState {
-		success,
-		service_not_exist,
-		rpc_canceled,
-		service_exception
-	}
-	
-	public interface Callback {
-		public void onResponse(GeneratedMessage response); // 正常响应
-		public void onError(RpcState state); // RPC发生错误
-	}
+	public abstract void start() throws Exception;
+	public abstract void stop() throws Exception;
 }

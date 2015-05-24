@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.TextFormat;
 import cc.devfun.pbrpc.Endpoint;
-import cc.devfun.pbrpc.nio.NioSocketEndpoint;
-import cc.devfun.pbrpc.nio.NioSocketSession;
+import cc.devfun.pbrpc.nio.NioClientEndpoint;
+import cc.devfun.pbrpc.nio.NioClientSession;
 
 
 public class Client {
@@ -24,12 +24,12 @@ public class Client {
 		client.stop();
 	}
 
-	private NioSocketEndpoint endpoint;
+	private NioClientEndpoint endpoint;
 	private Logger logger = LoggerFactory.getLogger(getClass());
 	private AtomicInteger counter = new AtomicInteger(0);
 
 	public Client(String addr, int port) throws Exception {
-		endpoint = new NioSocketEndpoint();
+		endpoint = new NioClientEndpoint();
 		endpoint.registerService(new Push(new PushImpl()));
 		endpoint.registerService(new UserManager());
 		endpoint.connect(addr, port);
@@ -37,7 +37,7 @@ public class Client {
 	}
 
 	public void testRegisteredService() throws Exception {
-		UserManager.Client client = new UserManager.Client(new NioSocketSession(endpoint));
+		UserManager.Client client = new UserManager.Client(new NioClientSession(endpoint));
 		UserInfo userInfo = UserInfo.newBuilder().setChannelName("360应用商店")
 				.setPhone("13810773316").setExamType(1).setNickName("Johnn")
 				.build();
@@ -74,7 +74,7 @@ public class Client {
 	public void testUnregisteredService() throws Exception {
 		try {
 			CourseType courseType = CourseType.newBuilder().setNum(10).setPageNum(1).setCourseType(1).build();
-			CourseManager.Client client = new CourseManager.Client(new NioSocketSession(endpoint));
+			CourseManager.Client client = new CourseManager.Client(new NioClientSession(endpoint));
 			CourseList courseList = client.getCourseList(courseType);
 			logger.info("SYNC:注册用户返回:" + TextFormat.printToUnicodeString(courseList));
 		} catch (Exception e) {
@@ -82,7 +82,7 @@ public class Client {
 		}
 
 		CourseType courseType = CourseType.newBuilder().setNum(10).setPageNum(1).setCourseType(1).build();
-		CourseManager.Client client = new CourseManager.Client(new NioSocketSession(endpoint));
+		CourseManager.Client client = new CourseManager.Client(new NioClientSession(endpoint));
 
 		counter.incrementAndGet();
 		client.getCourseList(courseType, new Endpoint.Callback() {

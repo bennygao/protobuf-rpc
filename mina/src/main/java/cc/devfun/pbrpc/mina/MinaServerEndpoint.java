@@ -2,6 +2,7 @@ package cc.devfun.pbrpc.mina;
 
 import static java.lang.String.*;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.Executors;
@@ -19,14 +20,14 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MinaTcpEndpoint extends Endpoint {
+public class MinaServerEndpoint extends Endpoint {
 	private String name;
 	private InetSocketAddress listenAddress;
 	private NioSocketAcceptor acceptor;
 	private IoHandler ioHandler;
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
-	public MinaTcpEndpoint(String name, SocketAddress addr, SessionStateMonitor monitor) {
+	public MinaServerEndpoint(String name, SocketAddress addr, SessionStateMonitor monitor) {
 		this.name = name;
 		this.listenAddress = (InetSocketAddress) addr;
 		this.ioHandler = new ProtobufRpcHandler(this, monitor);
@@ -36,7 +37,8 @@ public class MinaTcpEndpoint extends Endpoint {
 		return name;
 	}
 
-	public void start() throws Exception {
+	@Override
+	public void start() throws IOException {
 		acceptor = new NioSocketAcceptor(Runtime.getRuntime()
 				.availableProcessors() + 1);
 		DefaultIoFilterChainBuilder chain = acceptor.getFilterChain();
@@ -76,7 +78,8 @@ public class MinaTcpEndpoint extends Endpoint {
 				listenAddress.toString()));
 	}
 
-	public void shutdown() {
+	@Override
+	public void stop() throws Exception {
 		acceptor.unbind();
 		for (IoSession session : acceptor.getManagedSessions().values()) {
 			session.close(true);
