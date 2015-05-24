@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=${charset}" />
+<title>Commands List</title>
+<style type="text/css">
+<!--
+body {
+	font-family: Consolas, monospace;
+	font-size: 14px;
+}
+-->
+</style>
+</head>
+
+#macro (commandStyle $cmd)
+#if ($cmd.input.messageBean && $cmd.output.messageBean)
+font-weight: bold; color: black;##
+#elseif ($cmd.input.messageBean)
+font-weight: bold; color: blue;##
+#else
+font-weight: bold; color: green;##
+#end
+#end
+
+<body>
+<h1>Commands List</h1>
+#foreach ($cmd in $commands)
+<p>
+<table width="98%" border="1" cellpadding="3" cellspacing="0">
+  <tr bgcolor="#CCCCFF">
+  	<td colspan="3" style="text-align: left">
+#if ($cmd.hasDoc())
+#foreach ($line in $cmd.doc)
+	${line}<br/>
+#end
+#else
+	&nbsp;
+#end
+	</td>
+  </tr>
+  <tr>
+    <td width="10%" style="text-align: right;"><span style="#commandStyle($cmd)">${cmd.id}</span></td>
+    <td width="45%" style="text-align: left;">
+#if ($cmd.input.messageBean)
+#if ($cmd.input.messageBean.null)
+		<strong>null</strong>
+#else
+    	<a href="Message.html#${cmd.input.messageBean.clazzName}" target="messageFrame">${cmd.input.messageBean.clazzName}</a>
+#if ($cmd.input.compressed)
+	(<span style="font-weight: bold; color: red;">C</span>)
+#end
+#end
+#else
+	<strong>void</strong>
+#end
+	</td>
+	<td width="45%" style="text-align: left;">
+#if ($cmd.output.messageBean)
+#if ($cmd.output.messageBean.null)
+		<strong>null</strong>
+#else
+    	<a href="Message.html#${cmd.output.messageBean.clazzName}" target="messageFrame">${cmd.output.messageBean.clazzName}</a>
+#if ($cmd.output.compressed)
+		(<span style="font-weight: bold; color: red;">C</span>)
+#end
+#end
+#else
+	<strong>void</strong>
+#end
+	</td>
+  </tr>
+</table>
+</p>
+#end
+</p>
+<p>
+<h1>All Messages</h1>
+#set ($currentCatalog = "0")
+#foreach ($messageBean in $allMessageBeans)
+#set ($catalog = ${messageBean.name.substring(0, 1).toUpperCase()})
+#if ($currentCatalog != $catalog)
+<h2>${catalog}</h2>
+#set ($currentCatalog = $catalog)
+#end
+<a href="Message.html#${messageBean.clazzName}" target="messageFrame">${messageBean.clazzName}</a><br />
+#end
+</p>
+</body>
+</html>

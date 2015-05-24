@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=${charset}" />
+<title>Commands List</title>
+<style type="text/css">
+<!--
+body {
+	font-family:"Courier New", Courier, monospace;
+}
+-->
+</style>
+</head>
+
+<body>
+#foreach ($pcm in $pairedMapping)
+<hr />
+#if ($pcm.positiveBean)
+#set($bean = $pcm.positiveBean)
+<a name="P${pcm.commandId}"></a>
+<h1>${pcm.commandId}</h1>
+#set($doc = $commandDoc.get(${pcm.commandId}))
+#if ($doc)
+<p>
+#foreach ($line in $doc)
+${line}<br/>
+#end
+</p>
+#end
+<p>
+#if ($bean.typeName != "NULL")
+<a href="Message.html#${bean.typeName}">${bean.typeName}</a>&nbsp;
+#else
+NULL&nbsp;
+#end
+#if ($bean.commMode == 0 || $bean.commMode == 3)
+CSB&nbsp;
+#elseif ($bean.commMode == 1)
+C2S&nbsp;
+#else
+S2C&nbsp;
+#end
+#if ($bean.isZipped())
+压缩&nbsp;
+#else
+不压缩&nbsp;
+#end
+</p>
+#end
+
+#if ($pcm.negativeBean)
+#set($bean = $pcm.negativeBean)
+<a name="N${pcm.commandId}"></a>
+<h1>-${pcm.commandId}</h1>
+#set($nc = 0 - $pcm.commandId)
+#set($doc = $commandDoc.get(${nc}))
+#if ($doc)
+<p>
+#foreach ($line in $doc)
+${line}<br/>
+#end
+</p>
+#end
+#if ($bean.typeName != "NULL")
+<a href="Message.html#${bean.typeName}">${bean.typeName}</a>&nbsp;
+#else
+NULL&nbsp;
+#end
+#if ($bean.commMode == 0 || $bean.commMode == 3)
+CSB&nbsp;
+#elseif ($bean.commMode == 1)
+C2S&nbsp;
+#else
+S2C&nbsp;
+#end
+#if ($bean.isZipped())
+压缩&nbsp;
+#else
+不压缩&nbsp;
+#end
+</p>
+#end
+
+#end
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=${charset}">
+  <title>Messages Definition</title>
+</head>
+
+<!-- Body -->
+<frameset rows="*" cols="450,*" bordercolor="#A7A6AA">
+  <frame id="navigator" name="nav" src="Navigation.html" scrolling="auto" title="Commands List">
+  <frame name="messageFrame" src="Message.html" scrolling="auto" title="Contents">
+</frameset>
+<noframes></noframes>
+
+<!-- Standard Footer -->
+</html>
