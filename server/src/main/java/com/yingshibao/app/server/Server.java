@@ -3,7 +3,7 @@ package com.yingshibao.app.server;
 import java.net.InetSocketAddress;
 
 import com.yingshibao.app.idl.CourseManager;
-import com.yingshibao.foundation.rpc.mina.SessionStateMonitor;
+import cc.devfun.pbrpc.mina.SessionStateMonitor;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.slf4j.Logger;
@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.yingshibao.app.idl.Push;
 import com.yingshibao.app.idl.UserManager;
-import com.yingshibao.foundation.rpc.mina.MinaTcpEndpoint;
+import cc.devfun.pbrpc.mina.MinaTcpEndpoint;
 
 public class Server {
 	static class ServerSessionMonitor implements SessionStateMonitor {

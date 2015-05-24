@@ -15,7 +15,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'com.yingshibao.foundation.rpc.gencode.RpcGenerator'
+        attributes 'Main-Class': 'RpcGenerator'
         attributes 'Class-Path': new File(libsPath).list().findAll {
             it.endsWith('.jar') }.collect { "$libsPath/$it" }.join(' ')
     }

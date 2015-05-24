@@ -9,7 +9,7 @@ import com.yingshibao.app.idl.Push;
 import com.yingshibao.app.idl.RegisterResult;
 import com.yingshibao.app.idl.UserInfo;
 import com.yingshibao.app.idl.UserManager;
-import com.yingshibao.foundation.rpc.RpcSession;
+import cc.devfun.pbrpc.RpcSession;
 
 public class UserManagerImpl implements UserManager.Impl {
 	private static int userId = 1;

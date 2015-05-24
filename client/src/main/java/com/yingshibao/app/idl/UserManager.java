@@ -3,10 +3,10 @@ package com.yingshibao.app.idl;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Parser;
 
-import com.yingshibao.foundation.rpc.ClientStub;
-import com.yingshibao.foundation.rpc.Endpoint;
-import com.yingshibao.foundation.rpc.RpcSession;
-import com.yingshibao.foundation.rpc.ServiceRegistry;
+import cc.devfun.pbrpc.ClientStub;
+import cc.devfun.pbrpc.Endpoint;
+import cc.devfun.pbrpc.RpcSession;
+import cc.devfun.pbrpc.ServiceRegistry;
 
 public class UserManager implements ServiceRegistry {
 	public interface Impl {

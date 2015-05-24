@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.TextFormat;
-import com.yingshibao.foundation.rpc.Endpoint;
-import com.yingshibao.foundation.rpc.nio.NioSocketEndpoint;
-import com.yingshibao.foundation.rpc.nio.NioSocketSession;
+import cc.devfun.pbrpc.Endpoint;
+import cc.devfun.pbrpc.nio.NioSocketEndpoint;
+import cc.devfun.pbrpc.nio.NioSocketSession;
 
 
 public class Client {
