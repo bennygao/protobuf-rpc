@@ -52,13 +52,13 @@ public class Client {
 			}
 
 			@Override
-			public void onError(Endpoint.RpcState state) {
+			public void onError(Endpoint.RpcError error) {
                 counter.decrementAndGet();
-                if (state == Endpoint.RpcState.rpc_canceled) {
+                if (error == Endpoint.RpcError.rpc_canceled) {
                     logger.error("ASYNC:RPC调用被取消");
-                } else if (state == Endpoint.RpcState.service_not_exist) {
+                } else if (error == Endpoint.RpcError.service_not_exist) {
                     logger.error("ASYNC:对方endpoint不提供getCourseList服务");
-                } else if (state == Endpoint.RpcState.service_exception) {
+                } else if (error == Endpoint.RpcError.service_exception) {
                     logger.error("ASNYC:对方服务处理异常");
                 } else {
                     logger.error("ASNYC:未知错误");
@@ -93,13 +93,13 @@ public class Client {
 			}
 
 			@Override
-			public void onError(Endpoint.RpcState state) {
+			public void onError(Endpoint.RpcError error) {
 				counter.decrementAndGet();
-				if (state == Endpoint.RpcState.rpc_canceled) {
+				if (error == Endpoint.RpcError.rpc_canceled) {
 					logger.error("ASYNC:RPC调用被取消");
-				} else if (state == Endpoint.RpcState.service_not_exist) {
+				} else if (error == Endpoint.RpcError.service_not_exist) {
 					logger.error("ASYNC:对方endpoint不提供getCourseList服务");
-				} else if (state == Endpoint.RpcState.service_exception) {
+				} else if (error == Endpoint.RpcError.service_exception) {
 					logger.error("ASNYC:对方服务处理异常");
 				} else {
 					logger.error("ASNYC:未知错误");

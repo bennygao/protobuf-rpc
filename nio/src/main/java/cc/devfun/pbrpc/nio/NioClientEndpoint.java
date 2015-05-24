@@ -24,6 +24,11 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Parser;
 
 public class NioClientEndpoint extends Endpoint implements Runnable {
+    enum ControlCommand {
+        send_message,
+        stop
+    }
+
     class IoBufferHolder {
         private final static int DEFAULT_BUFFER_SIZE = 1024;
         private ByteBuffer ioBuffer = ByteBuffer

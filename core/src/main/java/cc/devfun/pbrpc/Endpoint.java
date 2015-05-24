@@ -8,18 +8,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import com.google.protobuf.GeneratedMessage;
 
 public abstract class Endpoint {
-	public enum RpcStrategy {
-		sync,
-		async
-	}
 
-	public enum ControlCommand {
-		send_message,
-		stop
-	}
-
-	public enum RpcState {
-		success,
+	public enum RpcError {
 		service_not_exist,
 		rpc_canceled,
 		service_exception
@@ -27,7 +17,7 @@ public abstract class Endpoint {
 
 	public interface Callback {
 		public void onResponse(GeneratedMessage response); // 正常响应
-		public void onError(RpcState state); // RPC发生错误
+		public void onError(RpcError state); // RPC发生错误
 	}
 
 

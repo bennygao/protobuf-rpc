@@ -24,7 +24,7 @@ public class MinaServerSession implements RpcSession {
     public void sendMessage(Message message) {
         ResponseHandle handle = message.getResponseHandle();
         if (message.isRequest() && handle != null) {
-            if (handle.getStrategy() == Endpoint.RpcStrategy.sync) {
+            if (handle.isSynchronizedRpc()) {
                 throw new UnsupportedOperationException("MINA implementation don't support synchronized call, use asynchronous call to replace it.");
             }
         }
