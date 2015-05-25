@@ -9,6 +9,7 @@ import org.apache.velocity.app.Velocity;
 import java.io.File;
 import java.io.Writer;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by gaobo on 15/5/12.
@@ -20,11 +21,12 @@ public class ObjcCodeGenerator extends VelocityCodeGeneratorTemplate implements 
 
     @Override
     public void generate(String srcDir, String srcPackage,
-                         String outputEncoding, DescriptorProtos.FileDescriptorProto proto) throws Exception {
-        Utils util = new Utils();
+                         String outputEncoding, DescriptorProtos.FileDescriptorProto proto,
+                         List<CommentedDescriptor>allServices, List<CommentedDescriptor> allMessages) throws Exception {
+        Utils utils = Utils.getInstance();
         VelocityContext vc = new VelocityContext();
         vc.put("package", srcPackage);
-        vc.put("util", util);
+        vc.put("util", utils);
         vc.put("createTime", new Date());
 
         File outDir = new File(srcDir);
@@ -33,7 +35,7 @@ public class ObjcCodeGenerator extends VelocityCodeGeneratorTemplate implements 
         }
 
         Template headerTemplate = Velocity.getTemplate("vm/objc/header.vm");
-        String protoName = util.firstLetterUpperCase(proto.getPackage());
+        String protoName = utils.firstLetterUpperCase(proto.getPackage());
         String fileName =  protoName + ".rpc.h";
         File headerFile = new File(outDir, fileName);
         Writer writer = getSourceWriter(headerFile, outputEncoding);

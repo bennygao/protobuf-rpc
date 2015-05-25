@@ -13,33 +13,33 @@ import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import cc.devfun.pbrpc.gencode.CodeGenerator;
 
 public class JavaCodeGenerator extends VelocityCodeGeneratorTemplate implements CodeGenerator {
-	public JavaCodeGenerator() throws Exception {
-		super();
-	}
-	
-	@Override
-	public void generate(String srcDir, String srcPackage,
-			String outputEncoding, FileDescriptorProto proto) throws Exception {
-		Utils util = new Utils();
-		VelocityContext vc = new VelocityContext();
-		vc.put("package", srcPackage);
-		vc.put("util", util);
-		
-		String path = getSourcePath(srcDir, srcPackage);
-		new File(path).mkdirs();
-		
-		Template serviceTemplate = Velocity.getTemplate("vm/java/service.vm");
-		List<ServiceDescriptorProto> services = proto.getServiceList();
-		for (ServiceDescriptorProto service : services) {
-			String serviceName = service.getName();
-			String javaFile = path + File.separatorChar + serviceName + ".java";
-			Writer writer = getSourceWriter(javaFile, outputEncoding);
-			vc.put("serviceName", serviceName);
-			vc.put("methods", service.getMethodList());
-			serviceTemplate.merge(vc, writer);
-			writer.close();
-		}
-		
-	}
+    public JavaCodeGenerator() throws Exception {
+        super();
+    }
+
+    @Override
+    public void generate(String srcDir, String srcPackage,
+                         String outputEncoding, FileDescriptorProto proto,
+                         List<CommentedDescriptor> allServices, List<CommentedDescriptor> allMessages) throws Exception {
+        VelocityContext vc = new VelocityContext();
+        vc.put("package", srcPackage);
+        vc.put("util", Utils.getInstance());
+
+        String path = getSourcePath(srcDir, srcPackage);
+        new File(path).mkdirs();
+
+        Template serviceTemplate = Velocity.getTemplate("vm/java/service.vm");
+        List<ServiceDescriptorProto> services = proto.getServiceList();
+        for (ServiceDescriptorProto service : services) {
+            String serviceName = service.getName();
+            String javaFile = path + File.separatorChar + serviceName + ".java";
+            Writer writer = getSourceWriter(javaFile, outputEncoding);
+            vc.put("serviceName", serviceName);
+            vc.put("methods", service.getMethodList());
+            serviceTemplate.merge(vc, writer);
+            writer.close();
+        }
+
+    }
 
 }

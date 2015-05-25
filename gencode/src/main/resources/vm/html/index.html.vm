@@ -1,16 +1,21 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
-<html>
+<!-- NewPage -->
+<html lang="zh">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=${charset}">
-  <title>Messages Definition</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
-
-<!-- Body -->
-<frameset rows="*" cols="450,*" bordercolor="#A7A6AA">
-  <frame id="navigator" name="nav" src="Navigation.html" scrolling="auto" title="Commands List">
-  <frame name="messageFrame" src="Message.html" scrolling="auto" title="Contents">
+<frameset cols="30%,70%" title="Documentation frame">
+    <frameset rows="36%,64%" title="Left frames">
+        <frame src="services-index.html" name="packageListFrame" title="All Packages">
+        <frame src="messages-index.html" name="packageFrame" title="All classes and interfaces (except non-static nested types)">
+    </frameset>
+    <frame src="services-description.html" name="contentsFrame" title="Package, class and interface descriptions" scrolling="yes">
+    <noframes>
+        <noscript>
+            <div>JavaScript is disabled on your browser.</div>
+        </noscript>
+        <h2>Frame Alert</h2>
+        <p>This document is designed to be viewed using the frames feature. If you see this message, you are using a non-frame-capable web client. Link to <a href="overview-summary.html">Non-frame version</a>.</p>
+    </noframes>
 </frameset>
-<noframes></noframes>
-
-<!-- Standard Footer -->
 </html>
