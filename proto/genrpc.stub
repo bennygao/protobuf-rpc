@@ -1,4 +1,5 @@
 file_to_generate: "yingshibao.proto"
+file_to_generate: "module.proto"
 proto_file {
   name: "module.proto"
   package: "yingshibao"

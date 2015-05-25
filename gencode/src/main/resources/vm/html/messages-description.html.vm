@@ -1,8 +1,8 @@
 #macro (rowColor $rowNum)
 #if ($rowNum % 2 == 0)
-altColor##
-#else
 rowColor##
+#else
+altColor##
 #end
 #end
 ##
