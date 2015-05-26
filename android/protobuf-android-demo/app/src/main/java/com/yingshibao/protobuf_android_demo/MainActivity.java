@@ -21,6 +21,7 @@ import com.yingshibao.app.idl.RegisterResult;
 import com.yingshibao.app.idl.UserInfo;
 import com.yingshibao.app.idl.UserManager;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
@@ -31,6 +32,25 @@ import cc.devfun.pbrpc.nio.NioClientSession;
 
 
 public class MainActivity extends ActionBarActivity {
+    static class MyHandler extends Handler {
+        WeakReference<TextView> tv;
+
+        MyHandler(TextView textView) {
+            tv = new WeakReference<TextView>(textView);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            TextView textView = tv.get();
+            if (textView != null) {
+                GeneratedMessage response = (GeneratedMessage) msg.obj;
+                textView.append("\n--------\n");
+                textView.append(TextFormat.printToUnicodeString(response));
+            }
+            super.handleMessage(msg);
+        }
+    }
+
     Button btnTestSync, btnTestAsync;
     TextView txtContents;
     LinkedBlockingQueue<Integer> commandQueue;
@@ -46,25 +66,18 @@ public class MainActivity extends ActionBarActivity {
 
         txtContents = (TextView) findViewById(R.id.txt_contents);
         txtContents.setMovementMethod(ScrollingMovementMethod.getInstance());
+        handler = new MyHandler(txtContents);
         commandQueue = new LinkedBlockingQueue<>();
 
-        handler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                GeneratedMessage response = (GeneratedMessage) msg.obj;
-                txtContents.append("\n--------\n");
-                txtContents.append(TextFormat.printToUnicodeString(response));
-
-                super.handleMessage(msg);
-            }
-        };
-
+        // 创建并启动网络线程
         new Thread(new Runnable() {
             @Override
             public void run() {
+                // 创建Endpoint
                 NioClientEndpoint endpoint = new NioClientEndpoint();
+                // 注册服务
                 endpoint.registerService(new UserManager());
-                endpoint.registerService(new Push(new Push.Impl() {
+                endpoint.registerService(new Push(new Push.Impl() { // 客户端提供给服务器调用的服务
                     @Override
                     public None pushBarrage(Barrage barrage, RpcSession session) {
                         Message msg = new Message();
@@ -74,14 +87,17 @@ public class MainActivity extends ActionBarActivity {
                         return null;
                     }
                 }));
+                // 连接服务器
                 endpoint.connect("test.yingshibao.com", 10000);
                 try {
+                    // 启动Endpoint
                     endpoint.start();
                 } catch (Throwable t) {
                     Log.e("protobuf-rpc", "start endpoint exception.", t);
                     return;
                 }
 
+                // 创建UserManager#registerNewUser的调用参数UserInfo
                 UserManager.Client client = new UserManager.Client(new NioClientSession(endpoint));
                 UserInfo userInfo = UserInfo.newBuilder().setChannelName("360应用商店")
                         .setPhone("13810773316").setExamType(1).setNickName("Johnn")
@@ -89,16 +105,16 @@ public class MainActivity extends ActionBarActivity {
                 while (true) {
                     try {
                         Integer command = commandQueue.take();
-                        if (command == TEST_SYNC) {
+                        if (command == TEST_SYNC) { // 同步调用
                             RegisterResult result = client.registerNewUser(userInfo);
                             Message msg = new Message();
                             msg.what = 0;
                             msg.obj = result;
                             handler.sendMessage(msg);
-                        } else {
+                        } else { // 异步调用
                             client.registerNewUser(userInfo, new Endpoint.Callback() {
                                 @Override
-                                public void onResponse(GeneratedMessage generatedMessage) {
+                                public void onResponse(GeneratedMessage generatedMessage) { // 异步调用成功
                                     Message msg = new Message();
                                     msg.what = 0;
                                     msg.obj = generatedMessage;
@@ -106,7 +122,7 @@ public class MainActivity extends ActionBarActivity {
                                 }
 
                                 @Override
-                                public void onError(Endpoint.RpcError rpcError) {
+                                public void onError(Endpoint.RpcError rpcError) { // 异步调用出错
                                     Log.e("protobuf-rpc", "rpc error: " + rpcError);
                                 }
                             });
