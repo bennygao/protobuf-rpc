@@ -77,11 +77,11 @@ public class RpcGenerator {
 		PluginProtos.CodeGeneratorRequest request = (PluginProtos.CodeGeneratorRequest) parser.parseFrom(input);
 		List<FileDescriptorProto> protoList = request.getProtoFileList();
 
-		PrintWriter pw = new PrintWriter(new FileWriter("genrpc.stub"));
-		String text = TextFormat.printToUnicodeString(request);
-		text.replace("\\n", "\n");
-		pw.print(text);
-		pw.close();
+//		PrintWriter pw = new PrintWriter(new FileWriter("genrpc.stub"));
+//		String text = TextFormat.printToUnicodeString(request);
+//		text.replace("\\n", "\n");
+//		pw.print(text);
+//		pw.close();
 
 		List<CommentedDescriptor> allServices = new ArrayList<>();
 		List<CommentedDescriptor> allMessages = new ArrayList<>();
