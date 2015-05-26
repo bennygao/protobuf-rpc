@@ -1,3 +1,13 @@
+# What is protobuf-rpc？
+protobuf-rpc是一个基于[google ProtocolBuffer](https://developers.google.com/protocol-buffers/?hl=zh-cn)的远程方法调用(RPC)）实现，服务器端当前仅支持Java(JDK 1.7及以上)，客户端支持Objective-C(cocoa/iOS)和Java(J2SE/Android)。
+# Why protobuf-rpc？
+对于纯的基于Windows或者Linux的服务器来说，RPC的解决方案很多，WebService、Zero-ICE、Caucho Hessian等等，但是对于需要同时支持iOS、Android的移动App开发来说，可选的解决方案一下子变得很少。
+
+**protobuf-rpc是一个特定面向移动App开发，提供iOS、Android和服务器端实现的RPC实现。**
+
+当前面向移动App开发的RPC框架也逐渐出现，例如大牌的google GRPC和facebook Thrift，protobuf-rpc与之相比有何不同？还有没有存在的意义？
+## google GRPC
+
 # 依赖
 需要JDK1.7或以上版本的java运行环境
 

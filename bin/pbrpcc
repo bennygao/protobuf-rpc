@@ -45,10 +45,10 @@ if [ ! -n "$outdir" ]; then
 fi
 
 #set -x
-if [ "$target" == "java" ]; then
+if [ "$target" = "java" ]; then
 	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir --java_out=$outdir $*
-elif [ "$target" == "objc" ]; then
+elif [ "$target" = "objc" ]; then
 	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-objc=$script_dir/protoc-gen-objc --objc_out=$outdir --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir $*
-elif [ "$target" == "html" ]; then
+elif [ "$target" = "html" ]; then
 	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir $*
 fi

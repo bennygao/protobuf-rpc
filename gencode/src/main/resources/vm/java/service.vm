@@ -3,10 +3,10 @@ package ${package};
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Parser;
 
-import ClientStub;
-import Endpoint;
-import RpcSession;
-import ServiceRegistry;
+import cc.devfun.pbrpc.ClientStub;
+import cc.devfun.pbrpc.Endpoint;
+import cc.devfun.pbrpc.RpcSession;
+import cc.devfun.pbrpc.ServiceRegistry;
 
 public class ${serviceName} implements ServiceRegistry {
 	public interface Impl {
