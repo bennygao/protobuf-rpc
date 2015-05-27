@@ -1,6 +1,8 @@
 package cc.devfun.pbrpc.mina;
 
 import cc.devfun.pbrpc.Message;
+import com.google.protobuf.nano.CodedOutputByteBufferNano;
+import com.google.protobuf.nano.MessageNano;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
@@ -9,8 +11,6 @@ import org.apache.mina.filter.codec.ProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
-
-import com.google.protobuf.GeneratedMessage;
 
 /**
  * 消息编码器工厂
@@ -46,16 +46,19 @@ class MessageEncoder implements ProtocolEncoder {
 		Message message = (Message) obj;
 		IoBuffer buffer = IoBuffer.allocate(4096);
 		int messageSize = 9;
-		GeneratedMessage arg = message.getArgument();
+		MessageNano arg = message.getArgument();
+		int serializedSize = 0;
 		if (arg != null) {
-			messageSize += arg.getSerializedSize();
+			serializedSize = arg.getSerializedSize();
+			messageSize += serializedSize;
 		}
 		buffer.putInt(messageSize);
 		buffer.putInt(message.getStamp());
 		buffer.putInt(message.getServiceId());
 		buffer.put(message.getFeature());
 		if (arg != null) {
-			arg.writeTo(buffer.asOutputStream());
+			arg.writeTo(CodedOutputByteBufferNano.newInstance(buffer.array(), buffer.position(), serializedSize));
+			buffer.position(buffer.position() + serializedSize);
 		}
 		buffer.flip();
 		out.write(buffer);

@@ -8,6 +8,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import cc.devfun.pbrpc.*;
+import com.google.protobuf.nano.MessageNano;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -94,13 +95,13 @@ public class ProtobufRpcHandler implements IoHandler {
 		logger.debug(format(">> IoSession(%d) received message: " + message, session.getId()));
 		int serviceId = message.getServiceId();
 		int stamp = message.getStamp();
-		GeneratedMessage argument = message.getArgument();
+		MessageNano argument = message.getArgument();
 		if (message.isRequest()) {
 			Message response = null;
 			ServiceRegistry registry = endpoint.getRegistry(serviceId);
 			if (registry != null && registry.hasImplementation()) {
 				try {
-					GeneratedMessage returnsValue = registry.invokeService(serviceId, argument, new MinaServerSession(session));
+					MessageNano returnsValue = registry.invokeService(serviceId, argument, new MinaServerSession(session));
 					response = new ResponseMessage(serviceId, stamp, returnsValue);
 				} catch (Throwable t) {
 					response = new ResponseMessage(message.getServiceId(), message.getStamp(), null);

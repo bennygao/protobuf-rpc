@@ -2,10 +2,11 @@ package cc.devfun.pbrpc.mina;
 
 import cc.devfun.pbrpc.Endpoint;
 import cc.devfun.pbrpc.Message;
+import com.google.protobuf.nano.CodedInputByteBufferNano;
+import com.google.protobuf.nano.MessageNano;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 
-import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Parser;
 import cc.devfun.pbrpc.ServiceRegistry;
 
@@ -64,9 +65,9 @@ public class IoBufferMessageReceiver {
 		}
 
 		// protobuf格式的参数
-		GeneratedMessage protobuf = null;
+		MessageNano protobuf = null;
 		Message message = null;
-		Parser<? extends GeneratedMessage> parser = null;
+		Class<? extends MessageNano> clazz = null;
 		ServiceRegistry registry = endpoint.getRegistry(serviceId);
 		if (registry == null) { // 请求的服务未注册
 			message = Message.createMessage(serviceId, stamp, feature, null);
@@ -76,13 +77,15 @@ public class IoBufferMessageReceiver {
 			buffer.position(buffer.position() + need);
 		} else {
 			if (Message.isRequest(feature)) {
-				parser = registry.getParserForRequest(serviceId);
+				clazz = registry.getClassForRequest(serviceId);
 			} else {
-				parser = registry.getParserForResponse(serviceId);
+				clazz = registry.getClassForResponse(serviceId);
 			}
 
 			if (need > 0) {
-				protobuf = parser.parseFrom(buffer.asInputStream());
+				protobuf = clazz.newInstance();
+				protobuf.mergeFrom(CodedInputByteBufferNano.newInstance(buffer.array(), buffer.position(), need));
+                buffer.position(buffer.position() + need);
 			}
 
 			message = Message.createMessage(serviceId, stamp, feature, protobuf);

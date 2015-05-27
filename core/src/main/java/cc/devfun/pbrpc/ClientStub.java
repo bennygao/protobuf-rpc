@@ -1,10 +1,11 @@
 package cc.devfun.pbrpc;
 
+import com.google.protobuf.nano.MessageNano;
+
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.protobuf.GeneratedMessage;
 
 public class ClientStub {
 	private final static AtomicInteger STAMP = new AtomicInteger(0);
@@ -33,7 +34,7 @@ public class ClientStub {
 		}
 	}
 
-	protected GeneratedMessage syncRpc(int serviceId, GeneratedMessage arg)
+	protected MessageNano syncRpc(int serviceId, MessageNano arg)
 			throws Exception {
 		Message request = new RequestMessage(serviceId, STAMP.incrementAndGet(), arg);
 		LinkedBlockingQueue<Message> queue = borrowQueue();
@@ -60,7 +61,7 @@ public class ClientStub {
 		}
 	}
 
-	protected void asyncRpc(int serviceId, GeneratedMessage arg,
+	protected void asyncRpc(int serviceId, MessageNano arg,
 			Endpoint.Callback callback) throws Exception {
 		Message request = new RequestMessage(serviceId, STAMP.incrementAndGet(), arg);
 		request.setResponseHandle(new ResponseHandle(callback));

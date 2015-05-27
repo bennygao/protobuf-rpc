@@ -3,6 +3,8 @@ package com.yingshibao.app.client;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import cc.devfun.pbrpc.MessageNanoPrinter;
+import com.google.protobuf.nano.MessageNano;
 import com.yingshibao.app.idl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,15 +54,17 @@ public class Client {
 
 	public void testRegisteredService() throws Exception {
 		UserManager.Client client = new UserManager.Client(new NioClientSession(endpoint));
-		UserInfo userInfo = UserInfo.newBuilder().setChannelName("360应用商店")
-				.setPhone("13810773316").setExamType(1).setNickName("Johnn")
-				.build();
+		UserInfo userInfo = new UserInfo();
+		userInfo.channelName = "360应用商店";
+		userInfo.phone = "13810773316";
+		userInfo.examType = 1;
+		userInfo.nickName = "Johnn";
 
 		client.registerNewUser(userInfo, new Endpoint.Callback() {
 			@Override
-			public void onResponse(GeneratedMessage response) {
+			public void onResponse(MessageNano response) {
 				RegisterResult result = (RegisterResult) response;
-				logger.info("ASYNC:注册用户返回:" + TextFormat.printToUnicodeString(result));
+				logger.info("ASYNC:注册用户返回:" + MessageNanoPrinter.print(result));
                 latch.countDown();
 			}
 
@@ -80,29 +84,31 @@ public class Client {
 		});
 		
 		RegisterResult result = client.registerNewUser(userInfo);
-		logger.info("SYNC:注册用户返回:" + TextFormat.printToUnicodeString(result));
+		logger.info("SYNC:注册用户返回:" + MessageNanoPrinter.print(result));
 
 	}
 
 	public void testUnregisteredService() throws Exception {
+        CourseType courseType = new CourseType();
+        courseType.num = 10;
+        courseType.pageNum =1;
+        courseType.courseType=1;
+
 		try {
-			CourseType courseType = CourseType.newBuilder().setNum(10).setPageNum(1).setCourseType(1).build();
 			CourseManager.Client client = new CourseManager.Client(new NioClientSession(endpoint));
 			CourseList courseList = client.getCourseList(courseType);
-			logger.info("SYNC:注册用户返回:" + TextFormat.printToUnicodeString(courseList));
+			logger.info("SYNC:注册用户返回:" + MessageNanoPrinter.print(courseList));
 		} catch (Exception e) {
 			logger.error("SYNC: 获取课程列表出错。", e);
 		}
 
-		CourseType courseType = CourseType.newBuilder().setNum(10).setPageNum(1).setCourseType(1).build();
 		CourseManager.Client client = new CourseManager.Client(new NioClientSession(endpoint));
-
 		client.getCourseList(courseType, new Endpoint.Callback() {
 			@Override
-			public void onResponse(GeneratedMessage response) {
+			public void onResponse(MessageNano response) {
                 latch.countDown();
 				CourseList courseList = (CourseList) response;
-				logger.error("SYNC:注册用户返回:" + TextFormat.printToUnicodeString(courseList));
+				logger.error("SYNC:注册用户返回:" + MessageNanoPrinter.print(courseList));
 			}
 
 			@Override

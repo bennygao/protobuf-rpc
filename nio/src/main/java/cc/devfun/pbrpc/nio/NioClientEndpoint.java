@@ -22,6 +22,9 @@ import cc.devfun.pbrpc.*;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Parser;
+import com.google.protobuf.nano.CodedInputByteBufferNano;
+import com.google.protobuf.nano.CodedOutputByteBufferNano;
+import com.google.protobuf.nano.MessageNano;
 
 public class NioClientEndpoint extends Endpoint implements Runnable {
     enum ControlCommand {
@@ -30,27 +33,22 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
     }
 
     class IoBufferHolder {
-        private final static int DEFAULT_BUFFER_SIZE = 1024;
-        private ByteBuffer ioBuffer = ByteBuffer
-                .allocateDirect(DEFAULT_BUFFER_SIZE);
+        final static int DEFAULT_BUFFER_SIZE = 1024;
+        protected byte[] flatArray;
+
+        IoBufferHolder() {
+            flatArray = new byte[DEFAULT_BUFFER_SIZE];
+        }
 
         ByteBuffer getIoBuffer() {
             return getIoBuffer(DEFAULT_BUFFER_SIZE);
         }
 
         synchronized ByteBuffer getIoBuffer(int expectedSize) {
-            if (ioBuffer == null) {
-                if (expectedSize <= DEFAULT_BUFFER_SIZE) {
-                    ioBuffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE);
-                } else {
-                    ioBuffer = ByteBuffer.allocateDirect(expectedSize);
-                }
-
-            } else if (ioBuffer.capacity() < expectedSize) {
-                ioBuffer = ByteBuffer.allocateDirect(expectedSize);
+            if (flatArray.length < expectedSize) {
+                flatArray = new byte[expectedSize];
             }
-
-            return ioBuffer;
+            return ByteBuffer.wrap(flatArray);
         }
     }
 
@@ -61,9 +59,11 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
         void sendMessage(Message message, SocketChannel channel)
                 throws IOException {
             int messageSize = 9; // int32(stamp) + int32(serviceId) + byte(feature)
-            GeneratedMessage arg = message.getArgument();
+            MessageNano arg = message.getArgument();
+            int serializedSize = 0;
             if (arg != null) {
-                messageSize += arg.getSerializedSize();
+                serializedSize = arg.getSerializedSize();
+                messageSize += serializedSize;
             }
 
             ByteBuffer buffer = getIoBuffer(messageSize);
@@ -73,7 +73,8 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
             buffer.putInt(message.getServiceId());
             buffer.put(message.getFeature());
             if (arg != null) {
-                arg.writeTo(new ByteBufferOutputStream(buffer));
+                arg.writeTo(CodedOutputByteBufferNano.newInstance(flatArray, buffer.position(), serializedSize));
+                buffer.position(buffer.position() + serializedSize);
             }
 
             buffer.flip();
@@ -101,7 +102,7 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
             currentPhase = PHASE_INIT;
         }
 
-        Message recvMessage(SocketChannel channel) throws IOException {
+        Message recvMessage(SocketChannel channel) throws IllegalAccessException, InstantiationException, IOException {
             ByteBuffer buffer;
 
             if (currentPhase == PHASE_INIT) {
@@ -151,11 +152,11 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
         }
 
         private Message parseMessage(ByteBuffer buffer)
-                throws InvalidProtocolBufferException {
+                throws IllegalAccessException, InstantiationException, IOException {
             int stamp = buffer.getInt();
             int serviceId = buffer.getInt();
             byte feature = buffer.get();
-            GeneratedMessage arg = null;
+            MessageNano arg = null;
             Message message = null;
             if (buffer.remaining() > 0) {
                 InputStream is = new ByteBufferInputStream(buffer);
@@ -166,10 +167,11 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
                     // 略去protobuf的数据
                     buffer.position(buffer.position() + buffer.remaining());
                 } else {
-                    Parser<? extends GeneratedMessage> parser = (Message.isRequest(feature)) ?
-                            registry.getParserForRequest(serviceId) :
-                            registry.getParserForResponse(serviceId);
-                    arg = parser.parseFrom(is);
+                    Class<? extends MessageNano> clazz = (Message.isRequest(feature)) ?
+                            registry.getClassForRequest(serviceId) :
+                            registry.getClassForResponse(serviceId);
+                    arg = clazz.newInstance();
+                    arg.mergeFrom(CodedInputByteBufferNano.newInstance(flatArray, buffer.position(), buffer.remaining()));
                     message = Message.createMessage(serviceId, stamp, feature, arg);
                 }
             } else {

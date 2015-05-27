@@ -1,6 +1,6 @@
 package cc.devfun.pbrpc;
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.nano.MessageNano;
 
 public class RequestHandle implements Runnable {
     private Message request;
@@ -24,7 +24,7 @@ public class RequestHandle implements Runnable {
     @Override
     public void run() {
         try {
-            GeneratedMessage returns = registry.invokeService(request.getServiceId(),
+            MessageNano returns = registry.invokeService(request.getServiceId(),
                     request.getArgument(),
                     session);
             Message response = new ResponseMessage(request.getServiceId(),

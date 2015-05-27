@@ -1,9 +1,9 @@
 package com.yingshibao.app.server;
 
+import cc.devfun.pbrpc.MessageNanoPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.protobuf.TextFormat;
 import com.yingshibao.app.idl.Barrage;
 import com.yingshibao.app.idl.Push;
 import com.yingshibao.app.idl.RegisterResult;
@@ -18,23 +18,26 @@ public class UserManagerImpl implements UserManager.Impl {
 	@Override
 	public RegisterResult registerNewUser(UserInfo userInfo, RpcSession session) {
 		logger.info("call UserManager.registerNewUser -> " +
-				TextFormat.printToUnicodeString(userInfo));
+				MessageNanoPrinter.print(userInfo));
 		
-		RegisterResult.Builder rspBuilder = RegisterResult.newBuilder();
-		if (userInfo.getNickName().equalsIgnoreCase("John")) {
-			rspBuilder.setErrorMessage("昵称已经存在: John");
+		RegisterResult result = new RegisterResult();
+		if ("John".equalsIgnoreCase(userInfo.nickName)) {
+			result.errorMessage = "昵称已经存在: John";
 		} else {
-			rspBuilder.setUserId(userId ++).setErrorMessage("");
-			rspBuilder.setSessionId("ABCDEFG0123456789");
+			result.userId = userId ++;
+			result.errorMessage = "";
+			result.sessionId = "ABCDEFG0123456789";
 		}
 		
 		push(session);
 		
-		return rspBuilder.build();
+		return result;
 	}
 	
 	private void push(RpcSession session) {
-		Barrage barrage = Barrage.newBuilder().setSenderNickname("卡拉拉" + userId).setMessage("大家好/花").build();
+		Barrage barrage = new Barrage();
+		barrage.senderNickname = "卡拉拉" + userId;
+		barrage.message = "大家好/花";
 		Push.Client client = new Push.Client(session);
 		try {
 			logger.info("Server call Client => push");

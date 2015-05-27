@@ -1,12 +1,11 @@
 package cc.devfun.pbrpc;
 
-import com.google.protobuf.GeneratedMessage;
-import com.google.protobuf.Parser;
+import com.google.protobuf.nano.MessageNano;
 
 public interface ServiceRegistry {
 	public int[] getServiceList();
 	public boolean hasImplementation();
-	public GeneratedMessage invokeService(int serviceId, GeneratedMessage arg, RpcSession session);
-	public Parser<? extends GeneratedMessage> getParserForRequest(int serviceId);
-	public Parser<? extends GeneratedMessage> getParserForResponse(int serviceId);
+	public MessageNano invokeService(int serviceId, MessageNano arg, RpcSession session);
+	public Class<? extends MessageNano> getClassForRequest(int serviceId);
+	public Class<? extends MessageNano> getClassForResponse(int serviceId);
 }

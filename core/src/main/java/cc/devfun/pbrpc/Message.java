@@ -1,7 +1,7 @@
 package cc.devfun.pbrpc;
 
-import com.google.protobuf.GeneratedMessage;
-import com.google.protobuf.TextFormat;
+import com.google.protobuf.nano.MessageNano;
+import com.google.protobuf.nano.MessageNanoPrinter;
 
 public abstract class Message {
 	public final static byte MASK_RESPONSE = 0x01; // 最低位，0表示请求，1表示响应
@@ -12,10 +12,10 @@ public abstract class Message {
 	private int serviceId = 0;
 	private int stamp = 0;
 	private byte feature = 0;
-	private GeneratedMessage argument = null;
+	private MessageNano argument = null;
 	private ResponseHandle responseHandle = null;
 
-	public static Message createMessage(int serviceId, int stamp, byte feature, GeneratedMessage arg) {
+	public static Message createMessage(int serviceId, int stamp, byte feature, MessageNano arg) {
 		Message message;
 		if (isRequest(feature)) {
 			message = new RequestMessage(serviceId, stamp, arg);
@@ -27,7 +27,7 @@ public abstract class Message {
 		return message;
 	}
 
-	public Message(int serviceId, int stamp, GeneratedMessage arg) {
+	public Message(int serviceId, int stamp, MessageNano arg) {
 		this.serviceId = serviceId;
 		this.stamp = stamp;
 		this.argument = arg;
@@ -45,7 +45,7 @@ public abstract class Message {
 		return stamp;
 	}
 
-	public GeneratedMessage getArgument() {
+	public MessageNano getArgument() {
 		return argument;
 	}
 
@@ -105,7 +105,7 @@ public abstract class Message {
 		if (argument == null) {
 			sb.append("null");
 		} else {
-			sb.append(TextFormat.printToUnicodeString(argument)).append(']');
+			sb.append(MessageNanoPrinter.print(argument)).append(']');
 		}
 		sb.append("}");
 		return sb.toString();

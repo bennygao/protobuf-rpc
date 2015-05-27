@@ -1,9 +1,9 @@
 package cc.devfun.pbrpc;
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.nano.MessageNano;
 
 public class RequestMessage extends Message {
-    public RequestMessage(int serviceId, int stamp, GeneratedMessage arg){
+    public RequestMessage(int serviceId, int stamp, MessageNano arg){
         super(serviceId, stamp, arg);
         setToRequest();
     }

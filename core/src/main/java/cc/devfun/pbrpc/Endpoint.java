@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.nano.MessageNano;
 
 public abstract class Endpoint {
 
@@ -16,7 +16,7 @@ public abstract class Endpoint {
 	}
 
 	public interface Callback {
-		public void onResponse(GeneratedMessage response); // 正常响应
+		public void onResponse(MessageNano response); // 正常响应
 		public void onError(RpcError state); // RPC发生错误
 	}
 
