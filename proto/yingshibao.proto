@@ -8,26 +8,6 @@ import public "module.proto";
 
 package yingshibao;
 
-/* 用户管理相关服务 */
-service UserManager {
-	// 注册新用户
-	rpc registerNewUser(UserInfo) returns (RegisterResult) {}
-}
-
-/** 
- * 服务器端调用客户端的服务
- */
-service Push {
-	// 通知弹幕消息
-	rpc pushBarrage(Barrage) returns (None) {}
-}
-
-/* 课程管理相关服务 */
-service CourseManager {
-	// 拉取课程列表
-	rpc getCourseList(CourseType) returns (CourseList) {}
-}
-
 // 用户注册请求信息
 message UserInfo {
 	/* 
