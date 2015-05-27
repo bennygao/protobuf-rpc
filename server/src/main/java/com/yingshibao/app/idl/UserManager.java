@@ -1,7 +1,6 @@
 package com.yingshibao.app.idl;
 
-import com.google.protobuf.GeneratedMessage;
-import com.google.protobuf.Parser;
+import com.google.protobuf.nano.MessageNano;
 
 import cc.devfun.pbrpc.ClientStub;
 import cc.devfun.pbrpc.Endpoint;
@@ -57,7 +56,7 @@ public class UserManager implements ServiceRegistry {
 	}
 
 	@Override
-	public GeneratedMessage invokeService(int serviceId, GeneratedMessage arg, RpcSession session) {
+	public MessageNano invokeService(int serviceId, MessageNano arg, RpcSession session) {
 		switch (serviceId) {
 		case -2051187760:
 			return serviceImpl.registerNewUser((UserInfo) arg, session);
@@ -67,20 +66,20 @@ public class UserManager implements ServiceRegistry {
 	}
 
 	@Override
-	public Parser<? extends GeneratedMessage> getParserForRequest(int serviceId) {
+	public Class<? extends MessageNano> getClassForRequest(int serviceId) {
 		switch (serviceId) {
 		case -2051187760:
-			return UserInfo.PARSER;
+			return UserInfo.class;
 		default:
 			throw new IllegalArgumentException("not existed service-id: " + serviceId);
 		}
 	}
 
 	@Override
-	public Parser<? extends GeneratedMessage> getParserForResponse(int serviceId) {
+	public Class<? extends MessageNano> getClassForResponse(int serviceId) {
 		switch (serviceId) {
 		case -2051187760:
-			return RegisterResult.PARSER;
+			return RegisterResult.class;
 		default:
 			throw new IllegalArgumentException("not existed service-id: " + serviceId);
 		}

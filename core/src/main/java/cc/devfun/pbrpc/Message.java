@@ -1,7 +1,6 @@
 package cc.devfun.pbrpc;
 
 import com.google.protobuf.nano.MessageNano;
-import com.google.protobuf.nano.MessageNanoPrinter;
 
 public abstract class Message {
 	public final static byte MASK_RESPONSE = 0x01; // 最低位，0表示请求，1表示响应

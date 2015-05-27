@@ -1,7 +1,6 @@
 package ${package};
 
-import com.google.protobuf.GeneratedMessage;
-import com.google.protobuf.Parser;
+import com.google.protobuf.nano.MessageNano;
 
 import cc.devfun.pbrpc.ClientStub;
 import cc.devfun.pbrpc.Endpoint;
@@ -77,7 +76,7 @@ public class ${serviceName} implements ServiceRegistry {
 	}
 
 	@Override
-	public GeneratedMessage invokeService(int serviceId, GeneratedMessage arg, RpcSession session) {
+	public MessageNano invokeService(int serviceId, MessageNano arg, RpcSession session) {
 		switch (serviceId) {
 #foreach ($method in $methods)
 #set ($methodCode = ${util.hashCode($method)})
@@ -93,7 +92,7 @@ public class ${serviceName} implements ServiceRegistry {
 	}
 
 	@Override
-	public Parser<? extends GeneratedMessage> getParserForRequest(int serviceId) {
+	public Class<? extends MessageNano> getClassForRequest(int serviceId) {
 		switch (serviceId) {
 #foreach ($method in $methods)
 #set ($methodCode = ${util.hashCode($method)})
@@ -101,7 +100,7 @@ public class ${serviceName} implements ServiceRegistry {
 #set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
 #set ($outputType = ${util.getBaseName($method.outputType)})
 		case ${methodCode}:
-			return ${inputType}.PARSER;
+			return ${inputType}.class;
 #end
 		default:
 			throw new IllegalArgumentException("not existed service-id: " + serviceId);
@@ -109,7 +108,7 @@ public class ${serviceName} implements ServiceRegistry {
 	}
 
 	@Override
-	public Parser<? extends GeneratedMessage> getParserForResponse(int serviceId) {
+	public Class<? extends MessageNano> getClassForResponse(int serviceId) {
 		switch (serviceId) {
 #foreach ($method in $methods)
 #set ($methodCode = ${util.hashCode($method)})
@@ -117,7 +116,7 @@ public class ${serviceName} implements ServiceRegistry {
 #set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
 #set ($outputType = ${util.getBaseName($method.outputType)})
 		case ${methodCode}:
-			return ${outputType}.PARSER;
+			return ${outputType}.class;
 #end
 		default:
 			throw new IllegalArgumentException("not existed service-id: " + serviceId);

@@ -198,18 +198,19 @@ public final class MessageNanoPrinter {
      * Converts an identifier of the format "FieldName" into "field_name".
      */
     private static String deCamelCaseify(String identifier) {
-        StringBuffer out = new StringBuffer();
-        for (int i = 0; i < identifier.length(); i++) {
-            char currentChar = identifier.charAt(i);
-            if (i == 0) {
-                out.append(Character.toLowerCase(currentChar));
-            } else if (Character.isUpperCase(currentChar)) {
-                out.append('_').append(Character.toLowerCase(currentChar));
-            } else {
-                out.append(currentChar);
-            }
-        }
-        return out.toString();
+        return identifier;
+//        StringBuffer out = new StringBuffer();
+//        for (int i = 0; i < identifier.length(); i++) {
+//            char currentChar = identifier.charAt(i);
+//            if (i == 0) {
+//                out.append(Character.toLowerCase(currentChar));
+//            } else if (Character.isUpperCase(currentChar)) {
+//                out.append('_').append(Character.toLowerCase(currentChar));
+//            } else {
+//                out.append(currentChar);
+//            }
+//        }
+//        return out.toString();
     }
 
     /**
@@ -220,7 +221,8 @@ public final class MessageNanoPrinter {
             // Trim non-URL strings.
             str = str.substring(0, MAX_STRING_LEN) + "[...]";
         }
-        return escapeString(str);
+//        return escapeString(str);
+        return str;
     }
 
     /**

@@ -33,7 +33,7 @@ public class RpcGenerator {
 		}
 
 		CodeGeneratorFactory factory;
-		if (params[0].equalsIgnoreCase("java")) {
+		if (params[0].equalsIgnoreCase("javasvc")) {
 			factory = new JavaCodeGeneratorFactory();
 		} else if (params[0].equalsIgnoreCase("objc")) {
 			factory = new ObjcCodeGeneratorFactory();

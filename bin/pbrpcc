@@ -5,7 +5,7 @@ script_dir=$(cd "$(dirname "$0")"; pwd)
 show_usage()
 {
         echo "`printf %-16s "Usage: genrpc"` -h"
-        echo "`printf %-16s ` -g <java | objc | html> -o <src_dir> proto_files..."
+        echo "`printf %-16s ` -g <javanano|javasvc|objc| html> -o <src_dir> proto_files..."
 }
 
 while getopts "hg:o:" arg
@@ -32,7 +32,7 @@ if [ ! -n "$target" ]; then
 	echo "ERROR: -g option must be specified."
 	show_usage
 	exit 2
-elif [ "$target" != "java" ] && [ "$target" != "objc" ] && [ "$target" != "html" ]; then
+elif [ "$target" != "javanano" ] && [ "$target" != "javasvc" ] && [ "$target" != "objc" ] && [ "$target" != "html" ]; then
 	echo "ERROR: not support generate $target code."
 	show_usage
 	exit 3
@@ -45,8 +45,10 @@ if [ ! -n "$outdir" ]; then
 fi
 
 #set -x
-if [ "$target" = "java" ]; then
-	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir --java_out=$outdir $*
+if [ "$target" = "javanano" ]; then
+	$script_dir/protoc --javanano_out=$outdir $*
+elif [ "$target" = "javasvc" ]; then
+	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir $*
 elif [ "$target" = "objc" ]; then
 	GENRPC_ARGS="$target $outdir" $script_dir/protoc --plugin=protoc-gen-objc=$script_dir/protoc-gen-objc --objc_out=$outdir --plugin=protoc-gen-rpc=$script_dir/protoc-gen-rpc --rpc_out=$outdir $*
 elif [ "$target" = "html" ]; then

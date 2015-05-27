@@ -1,7 +1,6 @@
 package cc.devfun.pbrpc.nio;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -35,9 +34,11 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
     class IoBufferHolder {
         final static int DEFAULT_BUFFER_SIZE = 1024;
         protected byte[] flatArray;
+        private ByteBuffer ioBuffer;
 
         IoBufferHolder() {
             flatArray = new byte[DEFAULT_BUFFER_SIZE];
+            ioBuffer = ByteBuffer.wrap(flatArray);
         }
 
         ByteBuffer getIoBuffer() {
@@ -47,8 +48,10 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
         synchronized ByteBuffer getIoBuffer(int expectedSize) {
             if (flatArray.length < expectedSize) {
                 flatArray = new byte[expectedSize];
+                ioBuffer = ByteBuffer.wrap(flatArray);
             }
-            return ByteBuffer.wrap(flatArray);
+
+            return ioBuffer;
         }
     }
 
@@ -159,7 +162,6 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
             MessageNano arg = null;
             Message message = null;
             if (buffer.remaining() > 0) {
-                InputStream is = new ByteBufferInputStream(buffer);
                 ServiceRegistry registry = endpoint.getRegistry(serviceId);
                 if (registry == null) {
                     message = Message.createMessage(serviceId, stamp, feature, null);
