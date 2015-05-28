@@ -56,10 +56,9 @@ public class Client {
 				.setPhone("13810773316").setExamType(1).setNickName("Johnn")
 				.build();
 
-		client.registerNewUser(userInfo, new Endpoint.Callback() {
+		client.registerNewUser(userInfo, new Endpoint.Callback<RegisterResult>() {
 			@Override
-			public void onResponse(GeneratedMessage response) {
-				RegisterResult result = (RegisterResult) response;
+			public void onResponse(RegisterResult result) {
 				logger.info("ASYNC:注册用户返回:" + TextFormat.printToUnicodeString(result));
                 latch.countDown();
 			}
@@ -97,11 +96,10 @@ public class Client {
 		CourseType courseType = CourseType.newBuilder().setNum(10).setPageNum(1).setCourseType(1).build();
 		CourseManager.Client client = new CourseManager.Client(new NioClientSession(endpoint));
 
-		client.getCourseList(courseType, new Endpoint.Callback() {
+		client.getCourseList(courseType, new Endpoint.Callback<CourseList>() {
 			@Override
-			public void onResponse(GeneratedMessage response) {
+			public void onResponse(CourseList courseList) {
                 latch.countDown();
-				CourseList courseList = (CourseList) response;
 				logger.error("SYNC:注册用户返回:" + TextFormat.printToUnicodeString(courseList));
 			}
 

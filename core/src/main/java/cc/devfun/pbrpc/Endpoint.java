@@ -15,8 +15,8 @@ public abstract class Endpoint {
 		service_exception
 	}
 
-	public interface Callback {
-		public void onResponse(GeneratedMessage response); // 正常响应
+	public interface Callback<T extends GeneratedMessage> {
+		public void onResponse(T response); // 正常响应
 		public void onError(RpcError state); // RPC发生错误
 	}
 
