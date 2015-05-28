@@ -12,11 +12,12 @@ public abstract class Endpoint {
 	public enum RpcError {
 		service_not_exist,
 		rpc_canceled,
-		service_exception
+		service_exception,
+		illegal_argument
 	}
 
-	public interface Callback {
-		public void onResponse(MessageNano response); // 正常响应
+	public interface Callback<T extends MessageNano> {
+		public void onResponse(T response); // 正常响应
 		public void onError(RpcError state); // RPC发生错误
 	}
 

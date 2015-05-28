@@ -363,6 +363,38 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
         }
     }
 
+    private void onSendRequestError(Message request) {
+        try {
+            ResponseHandle handle = request.getResponseHandle();
+            if (handle != null) {
+                ResponseMessage response = new ResponseMessage(request.getServiceId(), request.getStamp(), null);
+                response.setIllegalArgument();
+                handle.assignResponse(response);
+                executors.submit(handle);
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
+    private void onSendResponseError(Message response) {
+        try {
+            Message newone = new ResponseMessage(response.getServiceId(), response.getStamp(), null);
+            newone.setServiceException();
+            sendMessage(newone);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
+    private void onSendError(Message message) {
+       if (message.isRequest()) {
+           onSendRequestError(message);
+       } else {
+           onSendResponseError(message);
+       }
+    }
+
     private boolean handleKey(SelectionKey key) throws Exception {
         if (key.isReadable()) {
             SelectableChannel channel = key.channel();
@@ -377,8 +409,12 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
                     } else {
                         Message message;
                         while ((message = sendQueue.poll()) != null) {
-                            sender.sendMessage(message, remoteChannel);
-                            registerMessage(message);
+                            try {
+                                sender.sendMessage(message, remoteChannel);
+                                registerMessage(message);
+                            } catch (Throwable t) {
+                                onSendError(message);
+                            }
                         }
                     }
                 }
@@ -390,7 +426,6 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
                     System.out.println("received message: " + message);
                     onReceivedMessage(message);
                 }
-
             }
         }
 

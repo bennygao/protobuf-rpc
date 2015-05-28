@@ -43,7 +43,9 @@ public class ResponseHandle implements Runnable {
                     callback.onError(Endpoint.RpcError.service_not_exist);
 				} else if (response.isServiceException()) {
                     callback.onError(Endpoint.RpcError.service_exception);
-				} else {
+				} else if (response.isIllegalArgument()) {
+                    callback.onError(Endpoint.RpcError.illegal_argument);
+                } else {
 					callback.onResponse(response.getArgument());
 				}
 			}

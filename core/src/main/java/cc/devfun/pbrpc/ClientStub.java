@@ -34,8 +34,17 @@ public class ClientStub {
 		}
 	}
 
+    private void checkArgument(MessageNano arg) throws Exception {
+        try {
+            arg.getSerializedSize();
+        } catch (Throwable t) {
+            throw new IllegalArgumentException("RPC input argument has null value field. message=" + arg);
+        }
+    }
+
 	protected MessageNano syncRpc(int serviceId, MessageNano arg)
 			throws Exception {
+        checkArgument(arg);
 		Message request = new RequestMessage(serviceId, STAMP.incrementAndGet(), arg);
 		LinkedBlockingQueue<Message> queue = borrowQueue();
 		queue.clear();
@@ -56,6 +65,8 @@ public class ClientStub {
 			throw new NoSuchMethodException("remote endpoint doesn't register invoked service.");
 		} else if (response.isServiceException()) {
 			throw new RuntimeException("remote endpoint service process occured exception.");
+		} else if (response.isIllegalArgument()) {
+			throw new IllegalArgumentException("request's argument message has error.");
 		} else {
 			return response.getArgument();
 		}
@@ -63,6 +74,7 @@ public class ClientStub {
 
 	protected void asyncRpc(int serviceId, MessageNano arg,
 			Endpoint.Callback callback) throws Exception {
+        checkArgument(arg);
 		Message request = new RequestMessage(serviceId, STAMP.incrementAndGet(), arg);
 		request.setResponseHandle(new ResponseHandle(callback));
 		session.sendMessage(request);

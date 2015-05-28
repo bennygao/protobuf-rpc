@@ -27,6 +27,7 @@ public class UserManagerImpl implements UserManager.Impl {
 			result.userId = userId ++;
 			result.errorMessage = "";
 			result.sessionId = "ABCDEFG0123456789";
+//			result.sessionId = null;
 		}
 		
 		push(session);

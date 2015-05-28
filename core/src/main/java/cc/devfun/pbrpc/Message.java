@@ -7,6 +7,7 @@ public abstract class Message {
 	public final static byte MASK_SERVICE_NOT_EXIST = 0x02; // 调用的服务未注册
 	public final static byte MASK_RPC_CANCELED = 0x04; // 调用被取消（网络连接中断）
 	public final static byte MASK_SERVICE_EXCEPTION = 0x08; // 远端处理服务时发生异常
+	public final static byte MASK_ILLEGAL_ARGUMENT = 0x10; // 请求调用参数错误
 
 	private int serviceId = 0;
 	private int stamp = 0;
@@ -31,6 +32,11 @@ public abstract class Message {
 		this.stamp = stamp;
 		this.argument = arg;
 	}
+
+    @Override
+    public Message clone() {
+        return createMessage(serviceId, stamp, feature, argument);
+    }
 
 	public int getServiceId() {
 		return serviceId;
@@ -57,7 +63,7 @@ public abstract class Message {
 	}
 
 	public boolean isServiceNotExist() {
-		return (feature & MASK_SERVICE_NOT_EXIST) > 0;
+		return (feature & MASK_SERVICE_NOT_EXIST) != 0;
 	}
 
 	public void setRpcCanceled() {
@@ -65,7 +71,7 @@ public abstract class Message {
 	}
 
 	public boolean isRpcCanceled() {
-		return (feature & MASK_RPC_CANCELED) > 0;
+		return (feature & MASK_RPC_CANCELED) != 0;
 	}
 
 	public void setServiceException() {
@@ -73,8 +79,16 @@ public abstract class Message {
 	}
 
 	public boolean isServiceException() {
-		return (feature & MASK_SERVICE_EXCEPTION) > 0;
+		return (feature & MASK_SERVICE_EXCEPTION) != 0;
 	}
+
+    public void setIllegalArgument() {
+        feature |= MASK_ILLEGAL_ARGUMENT;
+    }
+
+    public boolean isIllegalArgument() {
+        return (feature & MASK_ILLEGAL_ARGUMENT) != 0;
+    }
 
 	void setToRequest() {
 		feature &= ~MASK_RESPONSE;
