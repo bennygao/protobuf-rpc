@@ -12,8 +12,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.protobuf.GeneratedMessage;
-import com.google.protobuf.TextFormat;
+import com.google.protobuf.nano.MessageNano;
+
 import com.yingshibao.app.idl.Barrage;
 import com.yingshibao.app.idl.None;
 import com.yingshibao.app.idl.Push;
@@ -27,6 +27,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import cc.devfun.pbrpc.Endpoint;
 import cc.devfun.pbrpc.RpcSession;
+import cc.devfun.pbrpc.MessagePrinter;
 import cc.devfun.pbrpc.nio.NioClientEndpoint;
 import cc.devfun.pbrpc.nio.NioClientSession;
 
@@ -43,9 +44,9 @@ public class MainActivity extends ActionBarActivity {
         public void handleMessage(Message msg) {
             TextView textView = tv.get();
             if (textView != null) {
-                GeneratedMessage response = (GeneratedMessage) msg.obj;
+                MessageNano response = (MessageNano) msg.obj;
                 textView.append("\n--------\n");
-                textView.append(TextFormat.printToUnicodeString(response));
+                textView.append(MessagePrinter.print(response));
             }
             super.handleMessage(msg);
         }
@@ -99,25 +100,32 @@ public class MainActivity extends ActionBarActivity {
 
                 // 创建UserManager#registerNewUser的调用参数UserInfo
                 UserManager.Client client = new UserManager.Client(new NioClientSession(endpoint));
-                UserInfo userInfo = UserInfo.newBuilder().setChannelName("360应用商店")
-                        .setPhone("13810773316").setExamType(1).setNickName("Johnn")
-                        .build();
+                UserInfo userInfo = new UserInfo();
+                userInfo.channelName = "360应用商店";
+                userInfo.phone = "13810773316";
+//        userInfo.phone = null;
+                userInfo.examType = 1;
+                userInfo.nickName = "Johnn";
                 while (true) {
                     try {
                         Integer command = commandQueue.take();
                         if (command == TEST_SYNC) { // 同步调用
-                            RegisterResult result = client.registerNewUser(userInfo);
-                            Message msg = new Message();
-                            msg.what = 0;
-                            msg.obj = result;
-                            handler.sendMessage(msg);
+                            try {
+                                RegisterResult result = client.registerNewUser(userInfo);
+                                Message msg = new Message();
+                                msg.what = 0;
+                                msg.obj = result;
+                                handler.sendMessage(msg);
+                            } catch (Throwable t) {
+                                t.printStackTrace();
+                            }
                         } else { // 异步调用
-                            client.registerNewUser(userInfo, new Endpoint.Callback() {
+                            client.registerNewUser(userInfo, new Endpoint.Callback<RegisterResult>() {
                                 @Override
-                                public void onResponse(GeneratedMessage generatedMessage) { // 异步调用成功
+                                public void onResponse(RegisterResult result) { // 异步调用成功
                                     Message msg = new Message();
                                     msg.what = 0;
-                                    msg.obj = generatedMessage;
+                                    msg.obj = result;
                                     handler.sendMessage(msg);
                                 }
 

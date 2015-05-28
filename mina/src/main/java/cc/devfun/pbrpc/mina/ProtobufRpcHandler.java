@@ -15,8 +15,6 @@ import org.apache.mina.core.session.IoSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.protobuf.GeneratedMessage;
-
 public class ProtobufRpcHandler implements IoHandler {
     private Logger logger = LoggerFactory.getLogger(getClass());
     private Endpoint endpoint;

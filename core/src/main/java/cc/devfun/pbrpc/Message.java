@@ -118,7 +118,7 @@ public abstract class Message {
 		if (argument == null) {
 			sb.append("null");
 		} else {
-			sb.append(MessageNanoPrinter.print(argument)).append(']');
+			sb.append(MessagePrinter.print(argument)).append(']');
 		}
 		sb.append("}");
 		return sb.toString();

@@ -1,16 +1,13 @@
 package com.yingshibao.app.client;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import cc.devfun.pbrpc.MessageNanoPrinter;
+import cc.devfun.pbrpc.MessagePrinter;
 import com.google.protobuf.nano.MessageNano;
 import com.yingshibao.app.idl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.protobuf.GeneratedMessage;
-import com.google.protobuf.TextFormat;
 import cc.devfun.pbrpc.Endpoint;
 import cc.devfun.pbrpc.nio.NioClientEndpoint;
 import cc.devfun.pbrpc.nio.NioClientSession;
@@ -64,7 +61,7 @@ public class Client {
         client.registerNewUser(userInfo, new Endpoint.Callback<RegisterResult>() {
             @Override
             public void onResponse(RegisterResult result) {
-                logger.info("ASYNC:注册用户返回:" + MessageNanoPrinter.print(result));
+                logger.info("ASYNC:注册用户返回:" + MessagePrinter.print(result));
                 latch.countDown();
             }
 
@@ -87,7 +84,7 @@ public class Client {
 
         try {
             RegisterResult result = client.registerNewUser(userInfo);
-            logger.info("SYNC:注册用户返回:" + MessageNanoPrinter.print(result));
+            logger.info("SYNC:注册用户返回:" + MessagePrinter.print(result));
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -103,7 +100,7 @@ public class Client {
         try {
             CourseManager.Client client = new CourseManager.Client(new NioClientSession(endpoint));
             CourseList courseList = client.getCourseList(courseType);
-            logger.info("SYNC:注册用户返回:" + MessageNanoPrinter.print(courseList));
+            logger.info("SYNC:注册用户返回:" + MessagePrinter.print(courseList));
         } catch (Exception e) {
             logger.error("SYNC: 获取课程列表出错。", e);
         }
@@ -114,7 +111,7 @@ public class Client {
             public void onResponse(MessageNano response) {
                 latch.countDown();
                 CourseList courseList = (CourseList) response;
-                logger.error("SYNC:注册用户返回:" + MessageNanoPrinter.print(courseList));
+                logger.error("SYNC:注册用户返回:" + MessagePrinter.print(courseList));
             }
 
             @Override

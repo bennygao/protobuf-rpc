@@ -44,9 +44,9 @@ import java.lang.reflect.Modifier;
  *
  * @author flynn@google.com Andrew Flynn
  */
-public final class MessageNanoPrinter {
+public final class MessagePrinter {
     // Do not allow instantiation
-    private MessageNanoPrinter() {
+    private MessagePrinter() {
     }
 
     private static final String INDENT = "  ";

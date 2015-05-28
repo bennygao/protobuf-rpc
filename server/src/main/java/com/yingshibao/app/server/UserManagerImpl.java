@@ -1,6 +1,6 @@
 package com.yingshibao.app.server;
 
-import cc.devfun.pbrpc.MessageNanoPrinter;
+import cc.devfun.pbrpc.MessagePrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +18,7 @@ public class UserManagerImpl implements UserManager.Impl {
 	@Override
 	public RegisterResult registerNewUser(UserInfo userInfo, RpcSession session) {
 		logger.info("call UserManager.registerNewUser -> " +
-				MessageNanoPrinter.print(userInfo));
+				MessagePrinter.print(userInfo));
 		
 		RegisterResult result = new RegisterResult();
 		if ("John".equalsIgnoreCase(userInfo.nickName)) {
