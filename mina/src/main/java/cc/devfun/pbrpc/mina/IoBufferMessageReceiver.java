@@ -7,7 +7,6 @@ import com.google.protobuf.nano.MessageNano;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 
-import com.google.protobuf.Parser;
 import cc.devfun.pbrpc.ServiceRegistry;
 
 public class IoBufferMessageReceiver {

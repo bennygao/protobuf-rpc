@@ -1,7 +1,6 @@
 package com.yingshibao.app.client;
 
 import cc.devfun.pbrpc.MessagePrinter;
-import com.google.protobuf.TextFormat;
 import com.yingshibao.app.idl.Barrage;
 import com.yingshibao.app.idl.None;
 import com.yingshibao.app.idl.Push;
