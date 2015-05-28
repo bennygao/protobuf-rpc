@@ -64,6 +64,15 @@ public class Utils {
 		return idx >= 0 ? pathname.substring(idx + 1) : pathname;
 	}
 
+	public String getFirstName(String name) {
+		int idx = name.lastIndexOf('.');
+		return idx >= 0 ? name.substring(0, idx) : name;
+	}
+
+	public String firstLetterUpperCaseFirstName(String name) {
+        return firstLetterUpperCase(getFirstName(name));
+	}
+
 	public String firstLetterLowerCase(String name) {
 		return name.substring(0, 1).toLowerCase() + name.substring(1);
 	}

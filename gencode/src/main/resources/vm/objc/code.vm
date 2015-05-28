@@ -7,7 +7,7 @@
 #import "${protoName}.rpc.h"
 
 #foreach ($service in $services)
-#set ($serviceName = $service.name)
+#set ($serviceName = $service.descriptor.name)
 @implementation ${serviceName}
 - (${serviceName}*) init {
     return [self initWithServiceImpl:nil];
@@ -20,7 +20,7 @@
 
 - (NSArray*) getServiceList {
     return [NSArray arrayWithObjects:
-#foreach ($method in $service.methodList)
+#foreach ($method in $service.descriptor.methodList)
 #set ($methodCode = ${util.hashCode($method)})
             [NSNumber numberWithInt:${methodCode}],
 #end
@@ -29,7 +29,7 @@
 
 - (PBGeneratedMessage*) invokeService:(int32_t)serviceId :(PBGeneratedMessage *)arg {
     switch (serviceId) {
-#foreach ($method in $service.methodList)
+#foreach ($method in $service.descriptor.methodList)
 #set ($methodCode = ${util.hashCode($method)})
 #set ($inputType = ${util.getBaseName(${method.inputType})})
 #set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
@@ -46,7 +46,7 @@
 
 - (PBGeneratedMessageBuilder*) getBuilderForRequest:(int32_t)serviceId {
     switch (serviceId) {
-#foreach ($method in $service.methodList)
+#foreach ($method in $service.descriptor.methodList)
 #set ($methodCode = ${util.hashCode($method)})
 #set ($inputType = ${util.getBaseName(${method.inputType})})
 #set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
@@ -63,7 +63,7 @@
 
 - (PBGeneratedMessageBuilder*) getBuilderForResponse:(int32_t)serviceId {
     switch (serviceId) {
-#foreach ($method in $service.methodList)
+#foreach ($method in $service.descriptor.methodList)
 #set ($methodCode = ${util.hashCode($method)})
 #set ($inputType = ${util.getBaseName(${method.inputType})})
 #set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
@@ -85,7 +85,7 @@
     return self;
 }
 
-#foreach ($method in $service.methodList)
+#foreach ($method in $service.descriptor.methodList)
 #set ($methodCode = ${util.hashCode($method)})
 #set ($inputType = ${util.getBaseName(${method.inputType})})
 #set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})

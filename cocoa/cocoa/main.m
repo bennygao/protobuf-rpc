@@ -8,7 +8,6 @@
 #import <stdio.h>
 #import <Foundation/Foundation.h>
 #import <ProtocolBuffers/TextFormat.h>
-#import "Yingshibao.pb.h"
 #import "ProtobufRpc.h"
 #import "Yingshibao.rpc.h"
 

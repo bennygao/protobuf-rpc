@@ -1,32 +1,33 @@
 // Yingshibao.rpc.h
 // Created by protobuf-rpc-gencode.
-// Fri May 22 13:08:58 CST 2015
+// Thu May 28 22:55:33 CST 2015
 // DO NOT EDIT!
 
 #ifndef __Yingshibao_rpc_H__
 #define __Yingshibao_rpc_H__
 
 #import "ProtobufRpc.h"
-#import "Yingshibao.pb.h"
+#import "Messages.pb.h"
+#import "Services.pb.h"
 
-@protocol UserManagerService <NSObject>
+@protocol CourseManagerService <NSObject>
 @required
-- (RegisterResult*) registerNewUser:(UserInfo*) userInfo;
+- (CourseList*) getCourseList:(CourseType*) courseType;
 @end
 
-@interface UserManagerClient: ClientStub
-- (UserManagerClient*) initWithRpcSession:(RpcSession*) session;
-- (RegisterResult*) registerNewUser:(UserInfo*) userInfo;
-- (void) registerNewUserAsync:(UserInfo*) userInfo :(CallbackBlock) callback;
+@interface CourseManagerClient: ClientStub
+- (CourseManagerClient*) initWithRpcSession:(RpcSession*) session;
+- (CourseList*) getCourseList:(CourseType*) courseType;
+- (void) getCourseListAsync:(CourseType*) courseType :(CallbackBlock) callback;
 @end
 
-@interface UserManager : NSObject <RpcServiceRegistry> {
+@interface CourseManager : NSObject <RpcServiceRegistry> {
 @private
-    id<UserManagerService> serviceImpl;
+    id<CourseManagerService> serviceImpl;
 }
 
-- (UserManager*) init;
-- (UserManager*) initWithServiceImpl:(id<UserManagerService>) impl;
+- (CourseManager*) init;
+- (CourseManager*) initWithServiceImpl:(id<CourseManagerService>) impl;
 @end
 
 @protocol PushService <NSObject>
@@ -49,24 +50,24 @@
 - (Push*) initWithServiceImpl:(id<PushService>) impl;
 @end
 
-@protocol CourseManagerService <NSObject>
+@protocol UserManagerService <NSObject>
 @required
-- (CourseList*) getCourseList:(CourseType*) courseType;
+- (RegisterResult*) registerNewUser:(UserInfo*) userInfo;
 @end
 
-@interface CourseManagerClient: ClientStub
-- (CourseManagerClient*) initWithRpcSession:(RpcSession*) session;
-- (CourseList*) getCourseList:(CourseType*) courseType;
-- (void) getCourseListAsync:(CourseType*) courseType :(CallbackBlock) callback;
+@interface UserManagerClient: ClientStub
+- (UserManagerClient*) initWithRpcSession:(RpcSession*) session;
+- (RegisterResult*) registerNewUser:(UserInfo*) userInfo;
+- (void) registerNewUserAsync:(UserInfo*) userInfo :(CallbackBlock) callback;
 @end
 
-@interface CourseManager : NSObject <RpcServiceRegistry> {
+@interface UserManager : NSObject <RpcServiceRegistry> {
 @private
-    id<CourseManagerService> serviceImpl;
+    id<UserManagerService> serviceImpl;
 }
 
-- (CourseManager*) init;
-- (CourseManager*) initWithServiceImpl:(id<CourseManagerService>) impl;
+- (UserManager*) init;
+- (UserManager*) initWithServiceImpl:(id<UserManagerService>) impl;
 @end
 
 #endif

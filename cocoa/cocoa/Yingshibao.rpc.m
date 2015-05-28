@@ -1,31 +1,31 @@
 // Yingshibao.rpc.m
 // Created by protobuf-rpc-gencode.
-// Fri May 22 13:08:58 CST 2015
+// Thu May 28 22:55:33 CST 2015
 // DO NOT EDIT!
 
 #import <Foundation/Foundation.h>
 #import "Yingshibao.rpc.h"
 
-@implementation UserManager
-- (UserManager*) init {
+@implementation CourseManager
+- (CourseManager*) init {
     return [self initWithServiceImpl:nil];
 }
 
-- (UserManager*) initWithServiceImpl:(id<UserManagerService>)impl {
+- (CourseManager*) initWithServiceImpl:(id<CourseManagerService>)impl {
     serviceImpl = impl;
     return self;
 }
 
 - (NSArray*) getServiceList {
     return [NSArray arrayWithObjects:
-            [NSNumber numberWithInt:-2051187760],
+            [NSNumber numberWithInt:-1712929388],
             nil];
 }
 
 - (PBGeneratedMessage*) invokeService:(int32_t)serviceId :(PBGeneratedMessage *)arg {
     switch (serviceId) {
-        case -2051187760:
-            return [serviceImpl registerNewUser:(UserInfo*) arg];
+        case -1712929388:
+            return [serviceImpl getCourseList:(CourseType*) arg];
         default:
             @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
                                            reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
@@ -35,8 +35,8 @@
 
 - (PBGeneratedMessageBuilder*) getBuilderForRequest:(int32_t)serviceId {
     switch (serviceId) {
-        case -2051187760:
-            return [UserInfo builder];
+        case -1712929388:
+            return [CourseType builder];
         default:
             @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
                                            reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
@@ -46,8 +46,8 @@
 
 - (PBGeneratedMessageBuilder*) getBuilderForResponse:(int32_t)serviceId {
     switch (serviceId) {
-        case -2051187760:
-            return [RegisterResult builder];
+        case -1712929388:
+            return [CourseList builder];
         default:
             @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
                                            reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
@@ -56,18 +56,18 @@
 }
 @end
 
-@implementation UserManagerClient
-- (UserManagerClient*) initWithRpcSession:(RpcSession*)session {
+@implementation CourseManagerClient
+- (CourseManagerClient*) initWithRpcSession:(RpcSession*)session {
     self = [super initWithRpcSession:session];
     return self;
 }
 
-- (RegisterResult*) registerNewUser:(UserInfo*)userInfo {
-    return (RegisterResult*) [self syncRpc:-2051187760 :userInfo];
+- (CourseList*) getCourseList:(CourseType*)courseType {
+    return (CourseList*) [self syncRpc:-1712929388 :courseType];
 }
 
-- (void) registerNewUserAsync:(UserInfo*)userInfo :(CallbackBlock)callback {
-    [self asyncRpc:-2051187760 :userInfo :callback];
+- (void) getCourseListAsync:(CourseType*)courseType :(CallbackBlock)callback {
+    [self asyncRpc:-1712929388 :courseType :callback];
 }
 @end
 
@@ -136,26 +136,26 @@
 }
 @end
 
-@implementation CourseManager
-- (CourseManager*) init {
+@implementation UserManager
+- (UserManager*) init {
     return [self initWithServiceImpl:nil];
 }
 
-- (CourseManager*) initWithServiceImpl:(id<CourseManagerService>)impl {
+- (UserManager*) initWithServiceImpl:(id<UserManagerService>)impl {
     serviceImpl = impl;
     return self;
 }
 
 - (NSArray*) getServiceList {
     return [NSArray arrayWithObjects:
-            [NSNumber numberWithInt:-1712929388],
+            [NSNumber numberWithInt:-2051187760],
             nil];
 }
 
 - (PBGeneratedMessage*) invokeService:(int32_t)serviceId :(PBGeneratedMessage *)arg {
     switch (serviceId) {
-        case -1712929388:
-            return [serviceImpl getCourseList:(CourseType*) arg];
+        case -2051187760:
+            return [serviceImpl registerNewUser:(UserInfo*) arg];
         default:
             @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
                                            reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
@@ -165,8 +165,8 @@
 
 - (PBGeneratedMessageBuilder*) getBuilderForRequest:(int32_t)serviceId {
     switch (serviceId) {
-        case -1712929388:
-            return [CourseType builder];
+        case -2051187760:
+            return [UserInfo builder];
         default:
             @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
                                            reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
@@ -176,8 +176,8 @@
 
 - (PBGeneratedMessageBuilder*) getBuilderForResponse:(int32_t)serviceId {
     switch (serviceId) {
-        case -1712929388:
-            return [CourseList builder];
+        case -2051187760:
+            return [RegisterResult builder];
         default:
             @throw [NSException exceptionWithName:@"NonexistentServiceIdException"
                                            reason:[NSString stringWithFormat:@"ServiceClass:%@ ServiceId:%d", [[self class] description], serviceId]
@@ -186,18 +186,18 @@
 }
 @end
 
-@implementation CourseManagerClient
-- (CourseManagerClient*) initWithRpcSession:(RpcSession*)session {
+@implementation UserManagerClient
+- (UserManagerClient*) initWithRpcSession:(RpcSession*)session {
     self = [super initWithRpcSession:session];
     return self;
 }
 
-- (CourseList*) getCourseList:(CourseType*)courseType {
-    return (CourseList*) [self syncRpc:-1712929388 :courseType];
+- (RegisterResult*) registerNewUser:(UserInfo*)userInfo {
+    return (RegisterResult*) [self syncRpc:-2051187760 :userInfo];
 }
 
-- (void) getCourseListAsync:(CourseType*)courseType :(CallbackBlock)callback {
-    [self asyncRpc:-1712929388 :courseType :callback];
+- (void) registerNewUserAsync:(UserInfo*)userInfo :(CallbackBlock)callback {
+    [self asyncRpc:-2051187760 :userInfo :callback];
 }
 @end
 

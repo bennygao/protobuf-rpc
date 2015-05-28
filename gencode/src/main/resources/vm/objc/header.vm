@@ -7,13 +7,15 @@
 \#define __${protoName}_rpc_H__
 
 #import "ProtobufRpc.h"
-#import "${protoName}.pb.h"
+#foreach ($proto in $protoList)
+#import "${util.firstLetterUpperCaseFirstName($proto.name)}.pb.h"
+#end
 
 #foreach ($service in $services)
-#set ($serviceName = $service.name)
+#set ($serviceName = $service.descriptor.name)
 @protocol ${serviceName}Service <NSObject>
 @required
-#foreach ($method in $service.methodList)
+#foreach ($method in $service.descriptor.methodList)
 #set ($methodCode = ${util.hashCode($method)})
 #set ($inputType = ${util.getBaseName(${method.inputType})})
 #set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
@@ -24,7 +26,7 @@
 
 @interface ${serviceName}Client: ClientStub
 - (${serviceName}Client*) initWithRpcSession:(RpcSession*) session;
-#foreach ($method in $service.methodList)
+#foreach ($method in $service.descriptor.methodList)
 #set ($methodCode = ${util.hashCode($method)})
 #set ($inputType = ${util.getBaseName(${method.inputType})})
 #set ($argName = ${util.firstLetterLowerCaseBaseName($inputType)})
