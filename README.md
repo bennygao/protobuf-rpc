@@ -24,6 +24,11 @@ protobuf-rpc在网络连接层面使用TCP长连接，减少了连接建立次�
 
 protobuf-rpc能够让Client和Server对等地、灵活地相互调用对方提供的服务。
 
+# 引用的外部库和组件
+
+* 支持生成javanano代码的protobuf-2.6.1 (https://github.com/android/platform_external_protobuf)
+* protoc 2.6.1 生成Objective-C代码的plugin (https://github.com/alexeyxo/protobuf-objc)
+
 # 安装
 
 ## 依赖
