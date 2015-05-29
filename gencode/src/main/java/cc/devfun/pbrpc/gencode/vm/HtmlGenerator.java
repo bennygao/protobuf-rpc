@@ -21,6 +21,7 @@ public class HtmlGenerator extends VelocityCodeGeneratorTemplate implements Code
         VelocityContext vc = new VelocityContext();
         vc.put("createTime", new Date());
         vc.put("util", util);
+        vc.put("package", getJavaPackage(request));
 
         File outDir = new File(srcDir);
         if (! outDir.exists()) {
