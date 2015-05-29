@@ -52,7 +52,7 @@ IF "%TARGET%"=="javanano" (
 ) ELSE IF "%TARGET%"=="javasvc" (
 	%BINDIR%\protoc.exe --plugin=protoc-gen-rpc=%BINDIR%\protoc-gen-rpc.bat --rpc_out=%OUTDIR% %1 %2 %3 %4 %5 %6 %7 %8 %9
 ) ELSE IF "%TARGET%"=="objc" (
-	ECHO Don't support generate objective-c source on Windows.
+	%BINDIR%\protoc.exe --plugin=protoc-gen-objc=%BINDIR%\protoc-gen-objc.exe --objc_out=%OUTDIR% --plugin=protoc-gen-rpc=%BINDIR%\protoc-gen-rpc.bat --rpc_out=%OUTDIR% %1 %2 %3 %4 %5 %6 %7 %8 %9
 ) ELSE IF "%TARGET%"=="html" (
 	%BINDIR%\protoc.exe --plugin=protoc-gen-rpc=%BINDIR%\protoc-gen-rpc.bat --rpc_out=%OUTDIR% %1 %2 %3 %4 %5 %6 %7 %8 %9
 )
