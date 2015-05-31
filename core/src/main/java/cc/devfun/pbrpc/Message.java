@@ -27,11 +27,17 @@ public abstract class Message {
 		return message;
 	}
 
+	public static Message createHeartbeatMessage() {
+		return new RequestMessage(0, 0, null);
+	}
+
 	public Message(int serviceId, int stamp, MessageNano arg) {
 		this.serviceId = serviceId;
 		this.stamp = stamp;
 		this.argument = arg;
 	}
+
+    public abstract Message createResponse(MessageNano arg);
 
     @Override
     public Message clone() {

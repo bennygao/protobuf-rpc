@@ -17,4 +17,9 @@ public class RequestMessage extends Message {
     public boolean isResponse() {
         return false;
     }
+
+    @Override
+    public Message createResponse(MessageNano arg) {
+        return new ResponseMessage(getServiceId(), getStamp(), arg);
+    }
 }

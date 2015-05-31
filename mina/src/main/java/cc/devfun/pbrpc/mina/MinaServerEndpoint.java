@@ -5,11 +5,16 @@ import static java.lang.String.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import cc.devfun.pbrpc.Endpoint;
 import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.service.IoHandler;
+import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.executor.ExecutorFilter;
@@ -24,18 +29,42 @@ public class MinaServerEndpoint extends Endpoint {
 	private String name;
 	private InetSocketAddress listenAddress;
 	private NioSocketAcceptor acceptor;
+    private List<ExecutorService> executors;
 	private IoHandler ioHandler;
+    private int executorsNum;
+    private int heartbeatInterval;
+	private SessionStateMonitor monitor;
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
-	public MinaServerEndpoint(String name, SocketAddress addr, SessionStateMonitor monitor) {
+	public MinaServerEndpoint(String name, SocketAddress addr, int executorsNum, int hbInterval, SessionStateMonitor monitor) {
 		this.name = name;
 		this.listenAddress = (InetSocketAddress) addr;
-		this.ioHandler = new ProtobufRpcHandler(this, monitor);
+        this.executorsNum = executorsNum;
+        this.heartbeatInterval = hbInterval;
+		this.monitor = monitor;
 	}
 
 	public String getName() {
 		return name;
 	}
+
+
+    public int getExecutorsNum() {
+        return executorsNum;
+    }
+
+    public void setExecutorsNum(int executorsNum) {
+        this.executorsNum = executorsNum;
+    }
+
+
+    public int getHeartbeatInterval() {
+        return heartbeatInterval;
+    }
+
+    public void setHeartbeatInterval(int heartbeatInterval) {
+        this.heartbeatInterval = heartbeatInterval;
+    }
 
 	@Override
 	public void start() throws IOException {
@@ -59,9 +88,14 @@ public class MinaServerEndpoint extends Endpoint {
 		// 设置ExecutorFilter(MINA 2.0开始要求)
 		// 设置Handler的初始线程数和最大线程数
 		chain.addLast("threadPool",
-				new ExecutorFilter(Executors.newCachedThreadPool()));
+				new ExecutorFilter(Executors.newSingleThreadExecutor()));
 
 		// 设置session的handler
+        executors = new ArrayList<>(executorsNum);
+        for (int i = 0; i < executorsNum; ++i) {
+            executors.add(Executors.newSingleThreadExecutor());
+        }
+		this.ioHandler = new ProtobufRpcHandler(this, executors, monitor);
 		acceptor.setHandler(ioHandler);
 
 		// 设置read buffer size
@@ -70,6 +104,7 @@ public class MinaServerEndpoint extends Endpoint {
 		config.setSendBufferSize(8192);
 		config.setTcpNoDelay(true);
 		config.setKeepAlive(true);
+		config.setIdleTime(IdleStatus.BOTH_IDLE, heartbeatInterval);
 
 		// 绑定地址并开始监听端口
 		acceptor.setReuseAddress(true);
@@ -84,6 +119,12 @@ public class MinaServerEndpoint extends Endpoint {
 		for (IoSession session : acceptor.getManagedSessions().values()) {
 			session.close(true);
 		}
+
+        for (ExecutorService e : executors) {
+            e.shutdown();
+        }
+
+        executors.clear();
 	}
 
 	public long getActivationTime() {

@@ -56,6 +56,10 @@ static const Byte MASK_SERVICE_EXCEPTION = 0x08;
     return self;
 }
 
+- (Message*) createResponse:(PBGeneratedMessage *)argument {
+    return nil;
+}
+
 - (void) setToRequest {
     feature &= ~MASK_RESPONSE;
 }
@@ -134,6 +138,10 @@ static const Byte MASK_SERVICE_EXCEPTION = 0x08;
     return false;
 }
 
+- (Message*) createResponse:(PBGeneratedMessage *)argument {
+    return [[ResponseMessage alloc] initwithServiceId:self.serviceId stamp:self.stamp argument:argument];
+}
+
 @end
 
 @implementation ResponseMessage
@@ -150,6 +158,10 @@ static const Byte MASK_SERVICE_EXCEPTION = 0x08;
 
 - (BOOL) isResponse {
     return true;
+}
+
+- (Message*) createResponse:(PBGeneratedMessage *)argument {
+    return nil;
 }
 
 @end
@@ -700,12 +712,14 @@ static uint32_t STAMP = 0;
 ///////////////////////////////////////////////////////////////////////////////
 // Implementation of Segment
 ///////////////////////////////////////////////////////////////////////////////
+const static int DEFAULT_CHECKING_HEARTBEAT_INTERVAL = 60;
+
 @implementation Endpoint
 
 @synthesize serverHost;
 @synthesize serverPort;
 
--(NSString *) getServerIpAddress {
+- (NSString *) getServerIpAddress {
     if (serverHost == nil) {
         return nil;
     }
@@ -720,7 +734,7 @@ static uint32_t STAMP = 0;
                               encoding:NSASCIIStringEncoding];
 }
 
--(void) setNonBlockSocket:(int) sock {
+- (void) setNonBlockSocket:(int) sock {
     int flags = fcntl(sock, F_GETFL, 0);
     if (fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1) {
         @throw [NSException exceptionWithName:@"SocketEngine#setNonBlock"
@@ -730,7 +744,7 @@ static uint32_t STAMP = 0;
     }
 }
 
--(void) initHostLink:(NSUInteger)timeout {
+- (void) initHostLink:(NSUInteger)timeout {
     hostLink = socket(AF_INET, SOCK_STREAM, 0);
     if (hostLink <= 0) {
         @throw [NSException exceptionWithName:@"SocketEngine#initHostLink"
@@ -798,7 +812,7 @@ static uint32_t STAMP = 0;
     }
 }
 
--(void) initLocalSocketPair {
+- (void) initLocalSocketPair {
     if (socketpair(AF_LOCAL, SOCK_STREAM, 0, localSocketPair)) {
         @throw [NSException exceptionWithName:@"SocketEngine#initLocalSocketPair"
                                        reason:GET_REASON("socketpair()")
@@ -809,7 +823,12 @@ static uint32_t STAMP = 0;
     [self setNonBlockSocket:localSocketPair[0]];
 }
 
-- (Endpoint *) init {
+- (Endpoint*) init {
+    self = [self initWithHeartbeatInterval:DEFAULT_CHECKING_HEARTBEAT_INTERVAL];
+    return self;
+}
+
+- (Endpoint *) initWithHeartbeatInterval:(int)hbi {
     serverHost = nil;
     serverPort = 0;
     
@@ -825,8 +844,12 @@ static uint32_t STAMP = 0;
     stampsMap = [[NSMutableDictionary alloc] init];
     operationQueue = [[NSOperationQueue alloc] init];
     
-    threadLock = [[NSCondition alloc] init];
+    threadLock = [[NSLock alloc] init];
     totalSendBytesNumber = 0;
+    
+    heartbeatInterval = hbi;
+    heartbeatMessage = [[RequestMessage alloc] initwithServiceId:0 stamp:0 argument:nil];
+    isCheckingHeartbeat = false;
     
     return self;
 }
@@ -866,6 +889,10 @@ static uint32_t STAMP = 0;
 
 -(void) start {
     [NSThread detachNewThreadSelector:@selector(run) toTarget:self withObject:nil];
+    while ([threadLock tryLock]) {
+        [threadLock unlock];
+        [NSThread sleepForTimeInterval:0.5f];
+    }
 }
 
 -(void) clear {
@@ -887,6 +914,7 @@ static uint32_t STAMP = 0;
         localSocketPair[1] = -1;
     }
     
+    isCheckingHeartbeat = false;
     [sendQueue clear];
     [segment reset];
     [buffer clear];
@@ -920,6 +948,12 @@ static uint32_t STAMP = 0;
 }
 
 -(void) sendMessage:(Message *)message {
+    if ([threadLock tryLock]) {
+        [threadLock unlock];
+        @throw [NSException exceptionWithName:@"Endpoint#sendMessage"
+                                       reason:@"Endpoint has already stopped or hasn't been started."
+                                     userInfo:nil];
+    }
     [sendQueue add:message];
     send(localSocketPair[1], &NOTIFY_TO_SEND_MESSAGE_BEAN, sizeof(Byte), 0);
 }
@@ -984,7 +1018,13 @@ static uint32_t STAMP = 0;
     int32_t stamp = message.stamp;
     NSBlockOperation *operation = nil;
     
-    if ([message isRequest]) { // 收到请求
+    if (serviceId == 0) { // heartbeat消息
+        if ([message isRequest]) {
+            [self sendMessage:[message createResponse:nil]];
+        } else {
+            isCheckingHeartbeat = false;
+        }
+    } else if ([message isRequest]) { // 收到请求
         id<RpcServiceRegistry> registry = [self getService:serviceId];
         if (registry == nil) {
             NSLog(@"%@", [NSString stringWithFormat:@"Unregistered handle for serviceId:%d", serviceId]);
@@ -1026,20 +1066,34 @@ static uint32_t STAMP = 0;
     int nread = 0;
     Byte notification = 0;
     Message *message;
-    time_t lastRead = time(NULL);
-    time_t current;
     struct timeval tval;
     
     bzero(&tval, sizeof(tval));
+    tval.tv_sec = heartbeatInterval;
     while (TRUE) {
         message = nil;
         FD_ZERO(&rset);
         FD_SET(hostLink, &rset);
         FD_SET(localSocketPair[0], &rset);
         
-        select(maxfd, &rset, NULL, NULL, NULL);
+        if (heartbeatInterval > 0) {
+            nread = select(maxfd, &rset, NULL, NULL, &tval);
+        } else {
+            nread = select(maxfd, &rset, NULL, NULL, NULL);
+        }
+        
+        if (nread < 0) { // socket错误
+            break;
+        } else if (nread == 0) { // 空闲
+            if (!isCheckingHeartbeat) {
+                [self sendMessage:heartbeatMessage];
+                isCheckingHeartbeat = true;
+            } else { // heartbeat检测失败，判定为连接已经丢失。
+                break;
+            }
+        }
+        
         if (FD_ISSET(hostLink, &rset)) {
-            lastRead = time(NULL);
             ioctl(hostLink, FIONREAD, &nread);
             if (nread == 0) { // 服务器端关闭了链接
 #ifdef DEBUG
@@ -1055,7 +1109,6 @@ static uint32_t STAMP = 0;
             }
         }
         
-        current = time(NULL);
         
         if (FD_ISSET(localSocketPair[0], &rset)) {
             recv(localSocketPair[0], &notification, sizeof(Byte), 0);

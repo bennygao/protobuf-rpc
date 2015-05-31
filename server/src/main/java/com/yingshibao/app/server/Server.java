@@ -27,11 +27,6 @@ public class Server {
 		}
 
 		@Override
-		public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
-			logger.info("++++ Session idel:" + session);
-		}
-
-		@Override
 		public void sessionOpened(IoSession session) throws Exception {
 			logger.info("++++ Session opened:" + session);
 		}
@@ -39,7 +34,7 @@ public class Server {
 
 	public static void main(String[] args) throws Exception {
 		Logger logger = LoggerFactory.getLogger(Server.class);
-		MinaServerEndpoint endpoint = new MinaServerEndpoint("MinaTcp", new InetSocketAddress(10000), new ServerSessionMonitor());
+		MinaServerEndpoint endpoint = new MinaServerEndpoint("MinaTcp", new InetSocketAddress(10000), 8, 5, new ServerSessionMonitor());
 
 		endpoint.registerService(new UserManager(new UserManagerImpl()));
 		endpoint.registerService(new Push());

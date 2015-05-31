@@ -8,6 +8,10 @@ public class ResponseMessage extends Message {
         setToResponse();
     }
 
+    @Override
+    public Message createResponse(MessageNano arg) {
+        throw new UnsupportedOperationException("cannot create response for response.");
+    }
 
     @Override
     public boolean isRequest() {

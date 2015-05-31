@@ -182,7 +182,7 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
     }
 
 
-    public final static int DEFAULT_EXECUTORS_NUM = 2;
+    public final static int DEFAULT_EXECUTORS_NUM = 1;
 
     private SocketAddress remoteAddress;
     private Queue<Message> sendQueue;
@@ -191,23 +191,23 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
     private Pipe.SinkChannel sinkChannel;
     private Pipe.SourceChannel sourceChannel;
     private Selector selector;
-    private ByteBuffer commandBuffer;
-    private ByteBuffer cmdBuffer;
+    private ByteBuffer commandRxBuffer;
+    private ByteBuffer commandTxBuffer;
     private Receiver receiver;
     private Sender sender;
     private ExecutorService executors;
     private Map<Integer, ResponseHandle> stampsMap;
     private Thread thread;
-    private int executorsNum;
+    private boolean isCheckingHeartbeat;
+    private int heartbeatInterval;
+    private Message heartbeatRequest;
 
-    public NioClientEndpoint(int executorsNum) {
-        this.executorsNum = executorsNum;
-
+    public NioClientEndpoint(int heartbeatInterval) {
         sendQueue = new ConcurrentLinkedQueue<>();
-        cmdBuffer = ByteBuffer.allocateDirect(8);
+        commandTxBuffer = ByteBuffer.allocateDirect(1);
+        commandRxBuffer = ByteBuffer.allocate(1);
         receiver = new Receiver(this);
         sender = new Sender();
-        commandBuffer = ByteBuffer.allocate(1);
         stampsMap = new HashMap<>();
 
         remoteAddress = null;
@@ -217,10 +217,9 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
         sourceChannel = null;
         selector = null;
         thread = null;
-    }
-
-    public NioClientEndpoint() {
-        this(DEFAULT_EXECUTORS_NUM);
+        isCheckingHeartbeat = false;
+        this.heartbeatInterval = heartbeatInterval;
+        heartbeatRequest = Message.createHeartbeatMessage();
     }
 
     public boolean connect(String remoteAddr, int port) {
@@ -250,7 +249,7 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
     @Override
     public void start() throws IOException {
         try {
-            executors = Executors.newFixedThreadPool(executorsNum);
+            executors = Executors.newFixedThreadPool(DEFAULT_EXECUTORS_NUM);
 
             pipe = Pipe.open();
             sinkChannel = pipe.sink();
@@ -267,15 +266,15 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
     }
 
     @Override
-    public void stop() throws IOException {
+    public synchronized void stop() throws IOException {
         if (thread == null) {
             return;
         }
 
-        cmdBuffer.clear();
-        cmdBuffer.putInt(ControlCommand.stop.ordinal());
-        cmdBuffer.flip();
-        sinkChannel.write(cmdBuffer);
+        commandTxBuffer.clear();
+        commandTxBuffer.put((byte) ControlCommand.stop.ordinal());
+        commandTxBuffer.flip();
+        sinkChannel.write(commandTxBuffer);
 
         try {
             thread.join();
@@ -298,14 +297,23 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
 
         while (true) {
             try {
-                selector.select();
+                selector.select(heartbeatInterval * 1000L);
                 Set<SelectionKey> selectionKeys = selector.selectedKeys();
                 Iterator<SelectionKey> iterator = selectionKeys.iterator();
-                while (iterator.hasNext()) {
-                    SelectionKey selectionKey = iterator.next();
-                    iterator.remove();
-                    if (!handleKey(selectionKey)) { // 收到退出command
+                if (iterator.hasNext()) {
+                    while (iterator.hasNext()) {
+                        SelectionKey selectionKey = iterator.next();
+                        iterator.remove();
+                        if (!handleKey(selectionKey)) { // 收到退出command
+                            return;
+                        }
+                    }
+                } else { // 空闲
+                    if (isCheckingHeartbeat) { // 已经检测heartbeat，又再超时，认为连接已经中断。
                         return;
+                    } else {
+                        sendMessage(heartbeatRequest);
+                        isCheckingHeartbeat = true;
                     }
                 }
             } catch (ClosedSelectorException cse) { // Endpoint关闭
@@ -323,11 +331,11 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
             throw new IllegalStateException("endpoint hasn't started.");
         }
 
-        cmdBuffer.clear();
-        cmdBuffer.putInt(ControlCommand.send_message.ordinal());
-        cmdBuffer.flip();
+        commandTxBuffer.clear();
+        commandTxBuffer.put((byte) ControlCommand.send_message.ordinal());
+        commandTxBuffer.flip();
         sendQueue.add(message);
-        sinkChannel.write(cmdBuffer);
+        sinkChannel.write(commandTxBuffer);
     }
 
     private void registerMessage(Message message) {
@@ -337,9 +345,19 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
         }
     }
 
+    private void onHeartbeatMessage(Message message) throws Exception {
+        if (message.isRequest()) {
+            sendMessage(message.createResponse(null));
+        } else {
+            isCheckingHeartbeat = false;
+        }
+    }
+
     private void onReceivedMessage(Message message) throws Exception {
         int serviceId = message.getServiceId();
-        if (message.isResponse()) { // 处理响应
+        if (serviceId == 0) { // 收到heartbeat检测消息
+            onHeartbeatMessage(message);
+        } else if (message.isResponse()) { // 处理响应
             ResponseHandle handle = stampsMap.remove(message.getStamp());
             if (handle == null) {
                 System.err.println("unregistered handle for response: " + message);
@@ -396,11 +414,11 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
         if (key.isReadable()) {
             SelectableChannel channel = key.channel();
             if (channel == sourceChannel) { // 有数据要发送
-                commandBuffer.clear();
-                sourceChannel.read(commandBuffer);
-                commandBuffer.flip();
-                if (commandBuffer.remaining() > 0) {
-                    int cmd = commandBuffer.get();
+                commandRxBuffer.clear();
+                sourceChannel.read(commandRxBuffer);
+                commandRxBuffer.flip();
+                if (commandRxBuffer.remaining() > 0) {
+                    int cmd = commandRxBuffer.get();
                     if (cmd == ControlCommand.stop.ordinal()) {
                         return false;
                     } else {
@@ -472,6 +490,7 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
 
         selector = null;
         thread = null;
+        isCheckingHeartbeat = false;
         sendQueue.clear();
         executors.shutdown();
     }

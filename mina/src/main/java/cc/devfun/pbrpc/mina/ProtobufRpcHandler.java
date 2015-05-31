@@ -3,7 +3,9 @@ package cc.devfun.pbrpc.mina;
 import static java.lang.String.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -16,21 +18,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ProtobufRpcHandler implements IoHandler {
+    private final static String KEY_CHECKING_HEARTBEAT = "CHECKING_HEARTBEAT";
+
     private Logger logger = LoggerFactory.getLogger(getClass());
     private Endpoint endpoint;
     private Map<Long, Map<Integer, ResponseHandle>> sessionStampsMap;
     private Lock lock;
     private SessionStateMonitor stateMonitor;
     private Message cancelMessage;
+    private Message heartbeatMessage;
+    private List<ExecutorService> executors;
 
-    public ProtobufRpcHandler(Endpoint endpoint, SessionStateMonitor monitor) {
+    public ProtobufRpcHandler(Endpoint endpoint, List<ExecutorService> executors, SessionStateMonitor monitor) {
         this.endpoint = endpoint;
+        this.executors = executors;
         this.stateMonitor = monitor;
         this.sessionStampsMap = new HashMap<>();
         this.lock = new ReentrantLock();
 
         cancelMessage = new ResponseMessage(0, 0, null);
         cancelMessage.setRpcCanceled();
+
+        heartbeatMessage = Message.createHeartbeatMessage();
     }
 
     private void addStampHandle(IoSession ioSession, Message message) {
@@ -80,11 +89,20 @@ public class ProtobufRpcHandler implements IoHandler {
         }
     }
 
+    private ExecutorService getExecutor(IoSession session) {
+        return executors.get((int) session.getId() % executors.size());
+    }
+
     @Override
     public void exceptionCaught(IoSession session, Throwable e)
             throws Exception {
         logger.warn("transport session caught exception.", e);
-        session.close(true);
+        getExecutor(session).submit(new Runnable() {
+            @Override
+            public void run() {
+                session.close(true);
+            }
+        });
     }
 
     private void sendResponse(IoSession session, Message response) {
@@ -109,52 +127,70 @@ public class ProtobufRpcHandler implements IoHandler {
         session.write(newone);
     }
 
-    @Override
-    public void messageReceived(IoSession session, Object arg) throws Exception {
-        Message message = (Message) arg;
-        logger.debug(format(">> IoSession(%d) received message: " + message, session.getId()));
-        int serviceId = message.getServiceId();
-        int stamp = message.getStamp();
-        MessageNano argument = message.getArgument();
+    private void onHeartbeatMessage(IoSession session, Message message) {
         if (message.isRequest()) {
-            Message response = null;
-            ServiceRegistry registry = endpoint.getRegistry(serviceId);
-            if (registry != null && registry.hasImplementation()) {
-                try {
-                    MessageNano returnsValue = registry.invokeService(serviceId, argument, new MinaServerSession(session));
-                    response = new ResponseMessage(serviceId, stamp, returnsValue);
-                } catch (Throwable t) {
-                    response = new ResponseMessage(message.getServiceId(), message.getStamp(), null);
-                    response.setServiceException();
-                }
-            } else { // 请求的服务未注册
-                response = new ResponseMessage(message.getServiceId(), message.getStamp(), null);
-                response.setServiceNotExist();
-
-            }
-
-            sendResponse(session, response);
+            sendResponse(session, message.createResponse(null));
         } else {
-            if (message.isServiceNotExist()) {
-                logger.error("remote endpoint doesn't supply service for serviceId " + message.getServiceId());
-            }
-
-            ResponseHandle handle = getStampHandle(session, message.getStamp());
-            if (handle == null) {
-                logger.warn("response's handle unregistered: " + message);
-            } else {
-                handle.onResponse(message);
-            }
-
+            session.setAttribute(KEY_CHECKING_HEARTBEAT, false);
         }
     }
 
     @Override
-    public void messageSent(IoSession arg0, Object obj) throws Exception {
+    public void messageReceived(IoSession session, Object arg) throws Exception {
+        logger.debug(format(">> IoSession(%d) received message: " + arg, session.getId()));
+        Message message = (Message) arg;
+        int serviceId = message.getServiceId();
+        if (serviceId == 0) { // heartbeat消息
+            onHeartbeatMessage(session, message);
+            return;
+        }
+
+        int stamp = message.getStamp();
+        MessageNano argument = message.getArgument();
+        getExecutor(session).submit(new Runnable() {
+            @Override
+            public void run() {
+                if (message.isRequest()) {
+                    Message response = null;
+                    ServiceRegistry registry = endpoint.getRegistry(serviceId);
+                    if (registry != null && registry.hasImplementation()) {
+                        try {
+                            MessageNano returnsValue = registry.invokeService(serviceId, argument,
+                                    new MinaServerSession(session));
+                            response = new ResponseMessage(serviceId, stamp, returnsValue);
+                        } catch (Throwable t) {
+                            response = new ResponseMessage(serviceId, stamp, null);
+                            response.setServiceException();
+                        }
+                    } else { // 请求的服务未注册
+                        response = new ResponseMessage(serviceId, stamp, null);
+                        response.setServiceNotExist();
+                    }
+                    sendResponse(session, response);
+                } else {
+                    if (message.isServiceNotExist()) {
+                        logger.error("remote endpoint doesn't supply service for serviceId " + serviceId);
+                    }
+
+                    ResponseHandle handle = getStampHandle(session, stamp);
+                    if (handle == null) {
+                        logger.warn("response's handle unregistered: " + message);
+                    } else {
+                        handle.onResponse(message);
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    public void messageSent(IoSession session, Object obj) throws Exception {
         Message message = (Message) obj;
         logger.debug(format("<< IoSession(%d) sent messag: " + message,
-                arg0.getId()));
-        addStampHandle(arg0, message);
+                session.getId()));
+        if (message.getServiceId() != 0) { // 应用消息
+            addStampHandle(session, message);
+        }
     }
 
     @Override
@@ -166,7 +202,19 @@ public class ProtobufRpcHandler implements IoHandler {
         // 清理session上注册的响应事件处理
         clearStampHandle(session);
 
-        stateMonitor.sessionClosed(session);
+        if (stateMonitor != null) {
+            getExecutor(session).submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        stateMonitor.sessionClosed(session);
+                    } catch (Exception e) {
+                        logger.error("sessionClosed monitor error.", e);
+                    }
+                }
+            });
+        }
+
     }
 
     @Override
@@ -175,17 +223,47 @@ public class ProtobufRpcHandler implements IoHandler {
         session.setAttribute(IoBufferMessageReceiver.KEY,
                 new IoBufferMessageReceiver(session, endpoint));
 
-        stateMonitor.sessionCreated(session);
+        if (stateMonitor != null) {
+            getExecutor(session).submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        stateMonitor.sessionCreated(session);
+                    } catch (Exception e) {
+                        logger.error("sessionCreated monitor error.", e);
+                    }
+                }
+            });
+        }
     }
 
     @Override
     public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
-        stateMonitor.sessionIdle(session, status);
+        boolean isCheckingHeartbeat = (boolean) session.getAttribute("CHECKING_HEARTBEAT", false);
+        if (!isCheckingHeartbeat) {
+            session.write(heartbeatMessage);
+            session.setAttribute("CHECKING_HEARTBEAT", true);
+            logger.info("begin check heartbeat... " + session);
+        } else { // heartbeat检测失败
+            logger.error("session check heartbeat failed. " + session);
+            session.close(true);
+        }
     }
 
     @Override
     public void sessionOpened(IoSession session) throws Exception {
-        stateMonitor.sessionOpened(session);
+        if (stateMonitor != null) {
+            getExecutor(session).submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        stateMonitor.sessionOpened(session);
+                    } catch (Exception e) {
+                        logger.error("sessionOpened monitor error.", e);
+                    }
+                }
+            });
+        }
     }
 
     @Override

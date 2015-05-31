@@ -57,6 +57,7 @@ typedef void (^ CallbackBlock)(PBGeneratedMessage*, RpcState);
 
 - (void) setServiceException;
 - (BOOL) isServiceException;
+- (Message*) createResponse:(PBGeneratedMessage*) argument;
 
 + (BOOL) isRequest:(Byte)feature;
 + (BOOL) isResponse:(Byte)feature;
@@ -224,15 +225,19 @@ typedef enum  {
     
     NSMutableDictionary *serviceRegistry;
     Segment *segment;
-    NSCondition *threadLock;
+    NSLock *threadLock;
     NSMutableDictionary *stampsMap;
     NSOperationQueue *operationQueue;
+    
+    int heartbeatInterval;
+    Message* heartbeatMessage;
+    BOOL isCheckingHeartbeat;
 }
 
 @property (readonly) NSString *serverHost;
 @property (readonly) ushort serverPort;
 
-- (Endpoint *) init;
+- (Endpoint *) initWithHeartbeatInterval:(int) hbi;
 - (NSString *) getServerIpAddress;
 
 - (BOOL) connectToHost:(NSString *)addr withPort:(ushort)port inSeconds:(NSUInteger)timeout;

@@ -118,9 +118,6 @@ int main(int argc, const char * argv[]) {
         } else {
             NSLog(@"与服务器建立连接失败");
         }
-        
-        
-
     }
     
     return 0;

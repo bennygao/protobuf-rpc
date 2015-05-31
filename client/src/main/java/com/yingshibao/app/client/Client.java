@@ -1,6 +1,7 @@
 package com.yingshibao.app.client;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import cc.devfun.pbrpc.MessagePrinter;
 import com.google.protobuf.nano.MessageNano;
@@ -21,18 +22,18 @@ public class Client {
     }
 
 
-    final static int LOOP_COUNT = 10;
+    final static int LOOP_COUNT = 1;
     private NioClientEndpoint endpoint;
     private Logger logger = LoggerFactory.getLogger(getClass());
     String remoteAddr;
     int remotePort;
-    CountDownLatch latch;
+    AtomicInteger counter = new AtomicInteger(0);
 
     public Client(String addr, int port) throws Exception {
         this.remoteAddr = addr;
         this.remotePort = port;
 
-        endpoint = new NioClientEndpoint();
+        endpoint = new NioClientEndpoint(10);
         endpoint.registerService(new Push(new PushImpl()));
         endpoint.registerService(new UserManager());
 
@@ -42,7 +43,6 @@ public class Client {
         endpoint.connect(remoteAddr, remotePort);
         endpoint.start();
 
-        latch = new CountDownLatch(2 * LOOP_COUNT);
         for (int i = 0; i < LOOP_COUNT; ++i) {
             testUnregisteredService();
             testRegisteredService();
@@ -58,16 +58,17 @@ public class Client {
         userInfo.examType = 1;
         userInfo.nickName = "Johnn";
 
+        counter.incrementAndGet();
         client.registerNewUser(userInfo, new Endpoint.Callback<RegisterResult>() {
             @Override
             public void onResponse(RegisterResult result) {
                 logger.info("ASYNC:注册用户返回:" + MessagePrinter.print(result));
-                latch.countDown();
+                counter.decrementAndGet();
             }
 
             @Override
             public void onError(Endpoint.RpcError error) {
-                latch.countDown();
+                counter.decrementAndGet();
                 if (error == Endpoint.RpcError.rpc_canceled) {
                     logger.error("ASYNC:RPC调用被取消");
                 } else if (error == Endpoint.RpcError.service_not_exist) {
@@ -106,17 +107,18 @@ public class Client {
         }
 
         CourseManager.Client client = new CourseManager.Client(new NioClientSession(endpoint));
+        counter.incrementAndGet();
         client.getCourseList(courseType, new Endpoint.Callback() {
             @Override
             public void onResponse(MessageNano response) {
-                latch.countDown();
+                counter.decrementAndGet();
                 CourseList courseList = (CourseList) response;
                 logger.error("SYNC:注册用户返回:" + MessagePrinter.print(courseList));
             }
 
             @Override
             public void onError(Endpoint.RpcError error) {
-                latch.countDown();
+                counter.decrementAndGet();
                 if (error == Endpoint.RpcError.rpc_canceled) {
                     logger.error("ASYNC:RPC调用被取消");
                 } else if (error == Endpoint.RpcError.service_not_exist) {
@@ -132,7 +134,10 @@ public class Client {
     }
 
     public void stop() throws Exception {
-        latch.await();
+        while (counter.get() > 0) {
+            Thread.sleep(1000L);
+        }
+
         endpoint.stop();
     }
 }
