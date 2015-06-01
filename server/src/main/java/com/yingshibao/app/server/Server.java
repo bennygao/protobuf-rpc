@@ -34,7 +34,7 @@ public class Server {
 
 	public static void main(String[] args) throws Exception {
 		Logger logger = LoggerFactory.getLogger(Server.class);
-		MinaServerEndpoint endpoint = new MinaServerEndpoint("MinaTcp", new InetSocketAddress(10000), 8, 5, new ServerSessionMonitor());
+		MinaServerEndpoint endpoint = new MinaServerEndpoint("MinaTcp", new InetSocketAddress(10000), 8, 30, new ServerSessionMonitor());
 
 		endpoint.registerService(new UserManager(new UserManagerImpl()));
 		endpoint.registerService(new Push());

@@ -1121,6 +1121,7 @@ const static int DEFAULT_CHECKING_HEARTBEAT_INTERVAL = 60;
         }
     }
     
+    [self cancelAllWaitingCall];
     [threadLock unlock];
 }
 

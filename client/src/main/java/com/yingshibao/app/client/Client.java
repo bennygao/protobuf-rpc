@@ -33,7 +33,7 @@ public class Client {
         this.remoteAddr = addr;
         this.remotePort = port;
 
-        endpoint = new NioClientEndpoint(10);
+        endpoint = new NioClientEndpoint(30);
         endpoint.registerService(new Push(new PushImpl()));
         endpoint.registerService(new UserManager());
 

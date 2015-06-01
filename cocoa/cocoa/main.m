@@ -44,6 +44,27 @@ void test_unregistered_service(Endpoint *endpoint)
         NSLog(@"CourseManager#getCourseList 同步RPC调用异常:%@", exception);
     }
     
+    // 异步调用
+    CallbackBlock callback = ^(PBGeneratedMessage* response, RpcState state) {
+        if (state == service_not_exist) {
+            NSLog(@"对方endpoint不提供getCourseList服务");
+        } else if (state == rpc_canceled) {
+            NSLog(@"RPC调用被取消");
+        } else if (state == service_exception) {
+            NSLog(@"对方endpoint处理请求时异常");
+        } else {
+            NSLog(@"异步RPC调用 - 课程列表:%@", response);
+        }
+        [condition lock];
+        [condition signal];
+        [condition unlock];
+    };
+    
+    [condition lock];
+    [client getCourseListAsync:courseType :callback];
+    [condition wait];
+    [condition unlock];
+    
 }
 
 void test_registered_service(Endpoint *endpoint)

@@ -94,7 +94,7 @@ public class ProtobufRpcHandler implements IoHandler {
     }
 
     @Override
-    public void exceptionCaught(IoSession session, Throwable e)
+    public void exceptionCaught(final IoSession session, Throwable e)
             throws Exception {
         logger.warn("transport session caught exception.", e);
         getExecutor(session).submit(new Runnable() {
@@ -136,17 +136,17 @@ public class ProtobufRpcHandler implements IoHandler {
     }
 
     @Override
-    public void messageReceived(IoSession session, Object arg) throws Exception {
+    public void messageReceived(final IoSession session, Object arg) throws Exception {
         logger.debug(format(">> IoSession(%d) received message: " + arg, session.getId()));
-        Message message = (Message) arg;
-        int serviceId = message.getServiceId();
+        final Message message = (Message) arg;
+        final int serviceId = message.getServiceId();
         if (serviceId == 0) { // heartbeat消息
             onHeartbeatMessage(session, message);
             return;
         }
 
-        int stamp = message.getStamp();
-        MessageNano argument = message.getArgument();
+        final int stamp = message.getStamp();
+        final MessageNano argument = message.getArgument();
         getExecutor(session).submit(new Runnable() {
             @Override
             public void run() {
@@ -194,7 +194,7 @@ public class ProtobufRpcHandler implements IoHandler {
     }
 
     @Override
-    public void sessionClosed(IoSession session) throws Exception {
+    public void sessionClosed(final IoSession session) throws Exception {
         logger.debug("-- IoSession(%d) closed.", session.getId());
         // 删除session上绑定的receiver对象
         session.removeAttribute(IoBufferMessageReceiver.KEY);
@@ -218,7 +218,7 @@ public class ProtobufRpcHandler implements IoHandler {
     }
 
     @Override
-    public void sessionCreated(IoSession session) throws Exception {
+    public void sessionCreated(final IoSession session) throws Exception {
         // 把Receiver对象绑定在session上
         session.setAttribute(IoBufferMessageReceiver.KEY,
                 new IoBufferMessageReceiver(session, endpoint));
@@ -251,7 +251,7 @@ public class ProtobufRpcHandler implements IoHandler {
     }
 
     @Override
-    public void sessionOpened(IoSession session) throws Exception {
+    public void sessionOpened(final IoSession session) throws Exception {
         if (stateMonitor != null) {
             getExecutor(session).submit(new Runnable() {
                 @Override
