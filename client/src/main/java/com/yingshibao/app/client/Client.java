@@ -1,6 +1,5 @@
 package com.yingshibao.app.client;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import cc.devfun.pbrpc.MessagePrinter;
@@ -22,7 +21,7 @@ public class Client {
     }
 
 
-    final static int LOOP_COUNT = 1;
+    final static int LOOP_COUNT = 1000;
     private NioClientEndpoint endpoint;
     private Logger logger = LoggerFactory.getLogger(getClass());
     String remoteAddr;
@@ -138,6 +137,6 @@ public class Client {
             Thread.sleep(1000L);
         }
 
-        endpoint.stop();
+        endpoint.destroy();
     }
 }
