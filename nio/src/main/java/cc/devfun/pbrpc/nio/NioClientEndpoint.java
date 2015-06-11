@@ -15,9 +15,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import cc.devfun.pbrpc.*;
 
@@ -184,33 +181,6 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
         }
     }
 
-    class AsyncTaskResult {
-        boolean success;
-        Throwable cause;
-
-        AsyncTaskResult(boolean success) {
-            this(success, null);
-        }
-
-        AsyncTaskResult(boolean success, Throwable cause) {
-            this.success = success;
-            this.cause = cause;
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public Throwable getCause() {
-            return cause;
-        }
-    }
-
-    interface AsyncTask {
-        boolean run() throws Exception;
-    }
-
-
     public final static int DEFAULT_EXECUTORS_NUM = 1;
     public final static int DEFAULT_HEARTBEAT_INTERVAL = 30;
 
@@ -229,7 +199,6 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
 
     private ExecutorService executors;
     private int executorsNum;
-    private Lock asyncTaskLock;
 
     private Map<Integer, ResponseHandle> stampsMap;
     private Thread thread;
@@ -266,91 +235,36 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
 
         this.executorsNum = executorsNum > 0 ? executorsNum : DEFAULT_EXECUTORS_NUM;
         executors = Executors.newFixedThreadPool(this.executorsNum);
-        asyncTaskLock = new ReentrantLock();
     }
 
-    private void asyncTask(AsyncTask task) {
-        asyncTask(task, false);
-    }
 
-    private AsyncTaskResult asyncTask(final AsyncTask task, boolean waitingResult) {
-        asyncTaskLock.lock();
-        final LinkedBlockingQueue<AsyncTaskResult> resultQueue = new LinkedBlockingQueue<>(1);
+    public boolean connect(final String remoteAddr, final int port) {
         try {
-            executors.submit(new Runnable() {
-                @Override
-                public void run() {
-                    boolean success = false;
-                    Throwable cause = null;
-                    try {
-                        success = task.run();
-                    } catch (Exception e) {
-                        cause = e;
-                    }
-                    resultQueue.add(new AsyncTaskResult(success, cause));
-                }
-            });
-
-            if (waitingResult) {
+            remoteAddress = new InetSocketAddress(remoteAddr, port);
+            remoteChannel = SocketChannel.open();
+            remoteChannel.connect(remoteAddress);
+            remoteChannel.configureBlocking(false);
+            return true;
+        } catch (Exception e) {
+            if (remoteChannel != null) {
                 try {
-                    AsyncTaskResult result = resultQueue.take();
-                    return result;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return new AsyncTaskResult(false, e);
+                    remoteChannel.close();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                } finally {
+                    remoteChannel = null;
                 }
-            } else {
-                return null;
             }
-        } finally {
-            asyncTaskLock.unlock();
+
+            return false;
         }
     }
 
-    public boolean connect(final String remoteAddr, final int port) {
-        AsyncTaskResult result = asyncTask(new AsyncTask() {
-            @Override
-            public boolean run() throws Exception {
-                try {
-                    remoteAddress = new InetSocketAddress(remoteAddr, port);
-                    remoteChannel = SocketChannel.open();
-                    remoteChannel.connect(remoteAddress);
-                    remoteChannel.configureBlocking(false);
-                    return true;
-                } catch (Exception e) {
-                    if (remoteChannel != null) {
-                        try {
-                            remoteChannel.close();
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        } finally {
-                            remoteChannel = null;
-                        }
-                    }
-
-                    throw e;
-                }
-            }
-        }, true);
-
-        return result.isSuccess();
-    }
-
-    public void sendMessage(final Message message) throws IOException {
+    public synchronized void sendMessage(final Message message) throws IOException {
         if (thread == null) {
             throw new IllegalStateException("endpoint hasn't started.");
         }
 
-        asyncTask(new AsyncTask() {
-            @Override
-            public boolean run() throws Exception {
-                send(message);
-                return true;
-            }
-        });
-    }
-
-    private synchronized void send(Message message) throws IOException {
         commandTxBuffer.clear();
         commandTxBuffer.put((byte) ControlCommand.send_message.ordinal());
         commandTxBuffer.flip();
@@ -422,7 +336,7 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
                     if (isCheckingHeartbeat) { // 已经检测heartbeat，又再超时，认为连接已经中断。
                         return;
                     } else {
-                        send(heartbeatRequest);
+                        sendMessage(heartbeatRequest);
                         isCheckingHeartbeat = true;
                     }
                 }
@@ -445,7 +359,7 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
 
     private void onHeartbeatMessage(Message message) throws Exception {
         if (message.isRequest()) {
-            send(message.createResponse(null));
+            sendMessage(message.createResponse(null));
         } else {
             isCheckingHeartbeat = false;
         }
@@ -468,7 +382,7 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
             if (registry == null) { // 请求调用的服务未注册
                 Message response = new ResponseMessage(serviceId, message.getStamp(), null);
                 response.setServiceNotExist();
-                send(response);
+                sendMessage(response);
             } else {
                 RequestHandle handle = new RequestHandle(message, registry, new NioClientSession(this));
                 executors.submit(handle);
@@ -494,7 +408,7 @@ public class NioClientEndpoint extends Endpoint implements Runnable {
         try {
             Message newone = new ResponseMessage(response.getServiceId(), response.getStamp(), null);
             newone.setServiceException();
-            send(newone);
+            sendMessage(newone);
         } catch (Throwable t) {
             t.printStackTrace();
         }
